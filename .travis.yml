@@ -16,7 +16,6 @@ install:
   # Install virtual enviroment 
   - conda create -q -n quantumpropagator python=3.5
   - conda install --name quantumpropagator -c anaconda hdf5
-  - conda install -c numba llvmdev="3.7*"
   - source activate quantumpropagator
 
   # Package dependencies

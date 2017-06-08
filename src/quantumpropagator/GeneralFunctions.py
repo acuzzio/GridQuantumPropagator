@@ -4,13 +4,11 @@ This is the module for general purposes functions
 
 import multiprocessing as mp
 import numpy as np
-import numba
 
 def asyncFun(f, *args, **kwargs):
     job = mp.Process(target=f, args=args, kwargs=kwargs)
     job.start()
 
-@numba.vectorize([numba.float64(numba.complex128), numba.float32(numba.complex64)])
 def abs2(x):
     return x.real**2 + x.imag**2
 
