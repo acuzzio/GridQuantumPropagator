@@ -1,13 +1,12 @@
 
 import numpy as np
-from math import sqrt
 import itertools as it
 
-import h5Reader as hf
-import Propagator as Pr
-import pulse as pp
-import GeneralFunctions as gf
-import graph as gg
+import .h5Reader as hf
+import .Propagator as Pr
+import .pulse as pp
+import .GeneralFunctions as gf
+import .graph as gg
 
 
 
@@ -26,6 +25,7 @@ def singlePointIntegration(h5fn,h,ts,specPulse,graph,fileO):
     nstates = number of roots of the calculation
     states = array of population :: [Complex]
     '''
+
     [tdp,ene] = hf.retrieve_hdf5_data(fn,['MLTPL','SFS_ENERGIES'])
     eneZero = ene - (ene[0])
     matV = np.diag(eneZero)
@@ -87,15 +87,13 @@ def singlePointIntegration(h5fn,h,ts,specPulse,graph,fileO):
 
 
 if __name__ == "__main__":
-    '''
-    singlePointIntegration(h5file, timestepDT, timestepN, Graph, OutputFile)
-    h5file            String      Name of the single point h5 file
-    timestepDT        Double      dt
-    timestepN         Double      number of steps
-    pulse             [[Double]]  [t1[x,y,z],t2[x,y,z]] extern electromagnetic field at each t(x,y,z)
-    Graph             True/False  To make the graph
-    OutputFile        True/False  To write an external file
-    '''
+    # singlePointIntegration(h5file, timestepDT, timestepN, Graph, OutputFile)
+    # h5file            String      Name of the single point h5 file
+    # timestepDT        Double      dt
+    # timestepN         Double      number of steps
+    # pulse             [[Double]]  [t1[x,y,z],t2[x,y,z]] extern electromagnetic field at each t(x,y,z)
+    # Graph             True/False  To make the graph
+    # OutputFile        True/False  To write an external file
 
     singlePointIntegration('LiH.rassi.h5', 0.04, 10, pp.specificPulse, True, True)
 

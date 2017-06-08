@@ -1,8 +1,7 @@
+from os.path import join
 import numpy as np
 
-import graph as gg
-
-def astridParser(cutAt,gridN):
+def astridParser(cutAt,gridN,folder):
     '''
     This is the function that loads the initial files. It returns several arrays from files:
     dist     :: arr(gridN)
@@ -13,11 +12,10 @@ def astridParser(cutAt,gridN):
     Along the grid long gridN, dist is the x coordinate, newEne are the potential energies
     newDipo the dipole moments, newNAC the adiabatic couplings, newGAC the derivative of newNAC
     '''
-    folder       = '/home/alessio/y-LiegiInitialReport/ast2/'
-    eneF         = folder + 'potentials_energies.txt'
-    dipF         = folder + 'potentials_transition_dipoles_z.txt'
-    perDipF      = folder + 'potentials_perm_dipoles_z.txt'
-    neighNAC     = folder + 'potentials_neihboring_nacs.txt'
+    eneF         = join(folder, 'potentials_energies.txt')
+    dipF         = join(folder, 'potentials_transition_dipoles_z.txt')
+    perDipF      = join(folder, 'potentials_perm_dipoles_z.txt')
+    neighNAC     = join(folder, 'potentials_neihboring_nacs.txt')
     nstates      = 5
     nstateI      = nstates + 1
     nstatesRange = np.arange(nstates-1)
@@ -40,8 +38,8 @@ def astridParser(cutAt,gridN):
         new += new.T
         new[np.diag_indices(nstates)] = diag
         dipo[i,0] = new
-        ''' From the problem of Astrid, this matrix is an offdiagonal one,
-         zero except when [nstatesRange,nstatesRange+1] and [nstatesRange+1,nstatesRange]'''
+        # From the problem of Astrid, this matrix is an offdiagonal one,
+        # zero except when [nstatesRange,nstatesRange+1] and [nstatesRange+1,nstatesRange]
         offdiagonalNAC = NACACUT[i]
         NAC[i,nstatesRange,nstatesRange+1]=offdiagonalNAC
         NAC[i,nstatesRange+1,nstatesRange]=-offdiagonalNAC
@@ -60,15 +58,15 @@ def calculateGradientOnMatrix0(newNAC,dist):
     allM = np.apply_along_axis(np.gradient, 0, newNAC, deltaX)
     return allM
 
-'''
-dm = np.arange((15))
-tri = np.zeros((5, 5))
-tri[np.triu_indices(5, 0)] = dm  <- with diagonal
-tri[np.triu_indices(5, 1)] = dm  <- without diagonal
-'''
+
+#dm = np.arange((15))
+#tri = np.zeros((5, 5))
+#tri[np.triu_indices(5, 0)] = dm  <- with diagonal
+#tri[np.triu_indices(5, 1)] = dm  <- without diagonal
+
 
 if __name__ == "__main__":
-    (dist,newEne,newDipo,newNAC,newGac) = astridParser2States(4,400)
+    (dist,newEne,newDipo,newNAC,newGac) = astridParser(4,400,'/home/alessio/y-LiegiInitialReport/ast2')
     print(newGac)
     print(dist.shape, newEne.shape, newDipo.shape, newNAC.shape, newGac.shape)
 

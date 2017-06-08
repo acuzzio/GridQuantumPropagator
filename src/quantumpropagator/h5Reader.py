@@ -149,12 +149,12 @@ def secondCorrection(globalE, outlabel, nstates, proparraylength):
     '''
     This is an old correction with absolute value
     '''
-    files                         = npArrayOfFiles(globalE)
+    #files                         = npArrayOfFiles(globalE)
     (tdMatrices, energies, geoms) = readAllhdf51D(globalE, nstates, proparraylength)
     (a,_)                         = np.unravel_index(energies.argmin(), energies.shape)
     reference                     = np.sign(tdMatrices[a])
     (filenumber,_,_)              = geoms.shape
-    newdipoleM                    = np.empty((filenumber,3,nstates,nstates))   
+    newdipoleM                    = np.empty((filenumber,3,nstates,nstates))
     for fileN in range(filenumber):
         tdMatrix   = tdMatrices[fileN]
         for k in range(3):

@@ -147,7 +147,7 @@ def absorbingPotential3Right(dist,x0fromRight):
 
 if __name__ == "__main__":
      from   astridParser import astridParser2, astridParser2States
-     import graph as gg
+     #import graph as gg
      (distSmall,eneSmall,dipoSmall,newNAC,newGac) = astridParser2States(4,400)
      (gridNSmall,nstates)           = eneSmall.shape
      deltaX                         = distSmall[1] - distSmall[0]

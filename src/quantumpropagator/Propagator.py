@@ -1,10 +1,5 @@
 import numpy as np
-import pulse as pp
 from multiprocessing import Pool
-from functools import partial
-#from scipy.fftpack import fft,ifft
-
-import GeneralFunctions as gf
 
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):

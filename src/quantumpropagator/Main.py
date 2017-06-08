@@ -10,7 +10,7 @@ import SinglePointIntegrator as spInt
 #                                                #
 ##################################################
 
-if __name__ == "__main__":
+def main():
     '''
     singlePointIntegration(h5file, timestepDT, timestepN, Graph, OutputFile)
     h5file            String      Name of the single point h5 file
@@ -21,6 +21,7 @@ if __name__ == "__main__":
     OutputFile        True/False  To write an external file
     '''
 
-    #spInt.singlePointIntegration('LiH.rassi.h5', 0.04, 10, pp.specificPulse, False, False)
     spInt.singlePointIntegration('LiH.rassi.h5', 0.04, 1000, pp.specificPulse, True, True)
 
+if __name__ == "__main__":
+    main()

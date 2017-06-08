@@ -19,7 +19,7 @@ install:
   - source activate quantumpropagator
 
   # Package dependencies
-  #  - pip install nose coverage
+  - pip install nose coverage
   - source activate quantumpropagator
 
   # Install quantumpropagator package
@@ -27,7 +27,7 @@ install:
   
 script:
   # Run the unitary tests excluding the expensive computations
-  #  - nosetests --with-coverage --cover-erase --cover-package=quantumpropagator -a 'fast' -v
+  - nosetests --with-coverage --cover-erase --cover-package=quantumpropagator -v
 
 branches:
   only:

@@ -1,6 +1,5 @@
 import numpy as np
 import multiprocessing
-import itertools as it
 import os
 from collections import namedtuple
 from math import sqrt
@@ -27,14 +26,14 @@ def grid1DIntegrationAstrid(inputs):
     GRID :: [[Complex]] -> nstates, gridN
     '''
 
-    ''' prepare folder '''
+    # prepare folder
     folderN     = inputs.OutFolder
     LAB         = inputs.label
     folderN     = folderN + LAB
     gfs.ensure_dir(folderN)
     nameRoot = folderN + '/' + LAB
 
-    ''' GET and prepare INPUTS '''
+    # GET and prepare INPUTS
     startState = 4
     startgridN = 971
     (distSmall,eneSmall,dipoSmall,NACsmall,Gelesmall) = astridParser(startState,startgridN)
@@ -45,13 +44,13 @@ def grid1DIntegrationAstrid(inputs):
     energyHar   = gf.EvtoHar(eneZero)
     deltaX      = distSmall[1] - distSmall[0]
 
-    ''' Initial Gaussian '''
+    # Initial Gaussian
     reducedMass = ic.reducedMassLiH()
     LiHomega    = gf.fromCmMin1toHartree(1285)
     mu          = 3               # shift of the gaussian in the dist coordinate (in bohr)
     moment      = 0               # initial moment
 
-    ''' Pulse '''
+    # Pulse
     Ed    = 0.032
     omega = 7 * 0.0367493   # to pass from Ev to Hartree 4 will excite second state in astrid data
     sigmP = 40
@@ -64,7 +63,7 @@ def grid1DIntegrationAstrid(inputs):
         whole = inputs.fullTime
     gg.grapPulse(whole, h, Ed, omega, sigmP, phi, t0P, filePulse)
 
-    ''' Add well or not?'''
+    # Add well or not?
     if inputs.expand:
         points = 60
         absorbRight = 60

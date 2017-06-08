@@ -2,7 +2,7 @@
 import glob
 import os
 import numpy as np
-from shutil import copy, rmtree
+from shutil import copy
 from subprocess import call
 
 import GeneralFunctionsSystem as gfs

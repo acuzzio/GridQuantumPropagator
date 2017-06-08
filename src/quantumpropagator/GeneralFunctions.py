@@ -11,11 +11,9 @@ def asyncFun(f,*args,**kwargs):
 def abs2(x):
         return x.real**2 + x.imag**2
 
-'''
-Debug time
-import pdb
-pdb.set_trace() #to debug h=help
-'''
+#Debug time
+#import pdb
+#pdb.set_trace() #to debug h=help
 
 def population(grid):
     ''' given a single state it calculates the populations '''

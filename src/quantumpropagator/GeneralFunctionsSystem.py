@@ -1,6 +1,4 @@
-import numpy as np
 import os
-from shutil import copy, rmtree
 from contextlib import contextmanager
 
 from errors import err

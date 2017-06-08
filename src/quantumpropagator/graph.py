@@ -168,13 +168,13 @@ def makeMultiPlotMatrix(xs, ys, fn, systemName, nstates):
     transp     = False
     my_dpi     = 250
     ratio      = (16, 9)
-    fontsize   = 10
+    #fontsize   = 10
     label_size = 20
     limit      = np.absolute(ys).max()
     f, axarr   = plt.subplots(nstates, nstates, figsize=ratio)
     f.subplots_adjust(hspace=0.0, wspace=0.0)
     f.suptitle(str(limit)+ ' ' + fn)
-    (statesLab,colorsA) = getLabels(systemName)()
+    statesLab = getLabels(systemName)()[0]
     for i in range(nstates):
         n   = list(reversed(range(nstates)))[i]
         for j in range(nstates):
