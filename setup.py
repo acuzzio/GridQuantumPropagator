@@ -23,6 +23,6 @@ setup(
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
     #scripts=['Scripts/PutScripthere.py'],
-    install_requires=['h5py', 'numpy', 'scipy'],
+    install_requires=['h5py', 'numpy', 'scipy', 'numba'],
     extras_require={'test': ['nose', 'coverage']}
 )
