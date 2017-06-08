@@ -2,11 +2,11 @@
 import numpy as np
 import itertools as it
 
-import .h5Reader as hf
-import .Propagator as Pr
-import .pulse as pp
-import .GeneralFunctions as gf
-import .graph as gg
+import quantumpropagator.h5Reader as hf
+import quantumpropagator.Propagator as Pr
+import quantumpropagator.pulse as pp
+import quantumpropagator.GeneralFunctions as gf
+import quantumpropagator.graph as gg
 
 
 

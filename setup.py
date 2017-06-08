@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+'''
+My setup !
+'''
 
 from setuptools import setup
 
@@ -20,6 +22,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
+    #scripts=['Scripts/PutScripthere.py'],
     install_requires=['h5py', 'numpy', 'scipy'],
     extras_require={'test': ['nose', 'coverage']}
 )

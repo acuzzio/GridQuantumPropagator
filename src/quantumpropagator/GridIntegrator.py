@@ -4,16 +4,16 @@ import os
 from collections import namedtuple
 from math import sqrt
 
-import graph as gg
-import Propagator as Pr
-import pulse as pp
-import GeneralFunctions as gf
-import GeneralFunctionsSystem as gfs
-import h5Reader as h5
-import initialConditions as ic
-import commandlineParser as cmd
-from astridParser import astridParser
-from errors import err, good
+import quantumpropagator.graph as gg
+import quantumpropagator.Propagator as Pr
+import quantumpropagator.pulse as pp
+import quantumpropagator.GeneralFunctions as gf
+import quantumpropagator.GeneralFunctionsSystem as gfs
+import quantumpropagator.h5Reader as h5
+import quantumpropagator.initialConditions as ic
+import quantumpropagator.commandlineParser as cmd
+from quantumpropagator.astridParser import astridParser
+from quantumpropagator.errors import err, good
 
 
 def grid1DIntegrationAstrid(inputs):
@@ -84,12 +84,12 @@ def grid1DIntegrationAstrid(inputs):
         NAC            = NACsmall
         Gele           = Gelesmall
 
-    ''' Prepare variables '''
+    # Prepare variables
     gridN       = dist.size
     sigma       = np.sqrt(1/(reducedMass*LiHomega))
     GRID        = ic.createInitialState(nstates, gridN, dist, mu, sigma, moment)
 
-    ''' INITIAL VALUES '''
+    # INITIAL VALUES
     t        = 0                  # initial time
     kaxisR   = Pr.createXaxisReciprocalspace1d(gridN,deltaX)
     deltaK   = kaxisR[1]-kaxisR[0]
@@ -102,7 +102,7 @@ def grid1DIntegrationAstrid(inputs):
     h5name = nameRoot + 'WaveFun' + '{:04}'.format(counter) + '.h5'
     h5.writeH5file(h5name,[("WF", GRID)])
 
-    ''' GRAPHICS initial conditions Asyncs '''
+    # GRAPHICS initial conditions Asyncs
     if inputs.dipoleMatrixGraph:
         gf.asyncFun(gg.dipoleMatrixGraph1d,inputs,name,['Z'],nstates,gridN,distSmall,dipoSmall)
     if inputs.EneGraph:
@@ -130,7 +130,7 @@ def grid1DIntegrationAstrid(inputs):
 
 
 
-    ''' INTEGRATION '''
+    # INTEGRATION
     for ii in range(inputs.fullTime):
       tStr   = '{:3.2f}'.format(t)
       pulseV = [inputs.specPulse(t,Ed,omega,sigmP,phi,t0P),inputs.specPulse(t+0.5*h,Ed,omega,sigmP,phi,t0P),inputs.specPulse(t+h,Ed,omega,sigmP,phi,t0P)] # FIX THIS AS SOON AS YOU HAVE TIME
@@ -138,11 +138,11 @@ def grid1DIntegrationAstrid(inputs):
       t     = t + h
 
 
-      ''' OUTPUT '''
+      # OUTPUT
       if (ii % inputs.deltasGraph) == 0:
          Total  = Pr.calculateTotal(t,GRID,pulseV,ene,dipo,NAC,Gele,nstates,gridN,kaxisR,reducedMass,absorbPot)
 
-         ''' modsquare every elements -> sum them up -> square root '''
+         # modsquare every elements -> sum them up -> square root
          (pop,sumPop)  = gf.population(GRID)
          popuS = gf.ndprint(pop, format_string ='{:17.15f}')
          totalString = '{:17.10e}'.format(Total.real)
@@ -162,11 +162,11 @@ def grid1DIntegrationAstrid(inputs):
          h5.writeH5file(h5name,[("WF", GRID),("Time", [t/41.5,t]),("Pulse",pulseV[0][2]),("Norm Deviation",normDeviation),("Populations",pop),("iter", ii)])
 
 
-    ''' These lines added to quickly profile:
-        On a first run the code creates a file with some results.
-        If this file exists, every next run in the same folder will
-        be matched against this, creating a "Test passed/failed" message
-    '''
+    # These lines added to quickly profile:
+    # On a first run the code creates a file with some results.
+    # If this file exists, every next run in the same folder will
+    # be matched against this, creating a "Test passed/failed" message
+
     filenameProf = nameRoot + 'resultsProfile'
     if os.path.exists(filenameProf):
        azer = gf.loadComplex(filenameProf)
@@ -183,7 +183,7 @@ def grid1DIntegrationAstrid(inputs):
 
 
 ##############################################################
-''' NAMED TUPLES '''
+# NAMED TUPLES
 inputData = namedtuple("inputData",
                             (#"glob",
                             # "nstates",

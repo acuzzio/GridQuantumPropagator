@@ -1,6 +1,10 @@
+'''
+This is the module that deals with the electromagnetic pulse
+'''
+
 import numpy as np
 
-##################################################    
+##################################################
 #                                                #
 #                 Pulse Section                  #
 #                                                #

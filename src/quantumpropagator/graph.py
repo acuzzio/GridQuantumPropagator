@@ -1,11 +1,15 @@
+'''
+This is the module where the program generates graphics
+'''
 
 import numpy as np
 import matplotlib as mpl
-import h5Reader as h5
-import GeneralFunctions as gf
-import pulse as pp
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+
+import quantumpropagator.h5Reader as h5
+import quantumpropagator.GeneralFunctions as gf
+import quantumpropagator.pulse as pp
 
 
 def getLabels(string):
@@ -24,8 +28,6 @@ def LiHLab():
     statesSym = ['s','s','p','p','s','s','p','p','s']
     statesLab = createStatesLab(statesSym)
     return (statesLab,colorsA)
-
-
 
 def createStatesLab(statesSym):
     labels = {'s' : '\Sigma', 'p' : '\Pi'}

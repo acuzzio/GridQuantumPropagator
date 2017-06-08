@@ -17,9 +17,9 @@ def derivative1d(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gri
             #if g > 971 and g < 1000 and summa[Ici] > 0.00001:
             #print('Summa -> {} -> {}'.format(Ici,summa[Ici]))
     '''
-    con      = -1j
-    new      = np.empty((nstates,gridN),dtype = complex)
-    (doublederivative,singlederivative) = NuclearKinetic1d(GRID, kaxisR, nstates, gridN)
+    con = -1j
+    new = np.empty((nstates, gridN), dtype=complex)
+    (doulederivative,singlederivative) = NuclearKinetic1d(GRID, kaxisR, nstates, gridN)
     for g in range(gridN):
         states  = GRID[:,g]
         d2R     = doublederivative[:,g]

@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 
-from errors import err
+from quantumpropagator.errors import err
 
 
 @contextmanager

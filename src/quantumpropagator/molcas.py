@@ -5,7 +5,7 @@ import numpy as np
 from shutil import copy
 from subprocess import call
 
-import GeneralFunctionsSystem as gfs
+import quantumpropagator.GeneralFunctionsSystem as gfs
 
 
 def launchSPfromGeom(geom):

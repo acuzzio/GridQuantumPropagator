@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-import GeneralFunctions as gf
+import quantumpropagator.GeneralFunctions as gf
 
 def addPhase(k,grid,dist,gridN):
     '''
@@ -146,8 +146,8 @@ def absorbingPotential3Right(dist,x0fromRight):
     return dist3.clip(min=0)
 
 if __name__ == "__main__":
-     from   astridParser import astridParser2, astridParser2States
-     #import graph as gg
+     from quantumpropagator.astridParser import astridParser2, astridParser2States
+     #import quantumpropagator.graph as gg
      (distSmall,eneSmall,dipoSmall,newNAC,newGac) = astridParser2States(4,400)
      (gridNSmall,nstates)           = eneSmall.shape
      deltaX                         = distSmall[1] - distSmall[0]

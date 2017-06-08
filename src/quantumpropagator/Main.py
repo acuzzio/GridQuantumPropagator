@@ -1,8 +1,7 @@
-import h5Reader as hf
-import Propagator as Pr
-import pulse as pp
-import GeneralFunctions as gf
-import SinglePointIntegrator as spInt
+import quantumpropagator.h5Reader as hf
+import quantumpropagator.Propagator as Pr
+import quantumpropagator.pulse as pp
+import quantumpropagator.SinglePointIntegrator as spInt
 
 ##################################################
 #                                                #
