@@ -202,12 +202,12 @@ inputData = namedtuple("inputData",
                              "specPulse"
                              )
                       )
-#passage = namedtuple("passage",(
-#                          "nstates",
-#                          "gridN",
-#                          "kaxisR",
-#                          "reducedMass")
-#                    )
+passage = namedtuple("passage",(
+                          "nstates",
+                          "gridN",
+                          "kaxisR",
+                          "reducedMass")
+                    )
 ###############################################################
 
 if __name__ == "__main__":
