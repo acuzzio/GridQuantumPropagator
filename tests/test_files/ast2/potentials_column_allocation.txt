@@ -1,0 +1,22 @@
+This file summarizes what can be found in which file. It gives the units and shows which column refer to which (combination of) states
+
+ potentials_dipole_p1_x.txt : Transition dipoles (in au) in x-direction for state P1 to all the sigma states:
+  Li-H distance (bohr),  P1-GS , P1-1S, P1-2S, P1-3S, P1-4S
+
+ potentials_dipole_p2_x.txt : Transition dipoles (in au) in x-direction for state P2 to all the sigma states:
+  Li-H distance (bohr),  P2-GS , P2-1S, P2-2S, P2-3S, P2-4S
+
+ potentials_energies.txt : energy curves (in eV) for the states:
+  Li-H distance (bohr), GS, 1S, 2S, 3S, 4S, 1P, 2P 
+
+ potentials_neihboring_nacs.txt : non adiabatic coupling coefficients tau (in 1/bohr) between neighboring sigma states:
+  Li-H distance (bohr), GS-1S, 1S-2S, 2S-3S, 3S-4S
+
+ potentials_perm_dipoles_z.txt : Permanent dipoles (in au) in z-direction for all states:
+  Li-H distance (bohr), GS, 1S, 2S, 3S, 4S, 1P, 2P 
+
+ potentials_transition_dipoles_z.txt: Transition dipoles (in au) in z-direction for all non-zero combinations of one state to all the larger states
+  (For easier orientation there is a larger space between the columns when the first state changes, thus the first block of columns belongs to the transition with GS, the second one to the transitions of 1S):
+
+  Li-H distance (bohr), GS-1S, GS-2S, GS-3S, GS-4S,  1S-2S, 1S-3S, 1S-4S,  2S-3S, 2S-4S,  3S-4S,  1P-2P
+
