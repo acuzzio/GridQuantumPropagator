@@ -1,0 +1,41 @@
+\subsection{Computer settings}
+So at first I was struggling a little bit with Molcas output parsers. Then I decided to let it go and try hdf5 files.
+
+I installed hdf5 (this works in opensuse):
+\begin{verbatim}
+zypper install hdf5
+\end{verbatim}
+and recompiled Molcas with this flag enabled.
+
+Now the calculation is giving me new \texttt{\$project.\$module.h5} files in the working directory. I was able to modify Molcas code to get this matrix directly, without the need of log parsers.
+
+\td{check the \href{https://cobalt.itc.univie.ac.at/molcasforum/}{Molcas forum}}
+
+\subsubsection{Installing the ipython environment}
+\begin{verbatim}
+$ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+$ chmod 744 Miniconda3-latest-Linux-x86_64.sh
+$ ./Miniconda3-latest-Linux-x86_64.sh
+$ conda install numpy pandas h5py ipython ipykernel matplotlib scipy
+$ pip install --upgrade pip
+$ pip install pymonad pyprof2calltree line_profiler
+$ pip3 install --upgrade pip
+$ pip3 install jupyter mpld3
+\end{verbatim}
+
+I then changed the \texttt{.bashrc} file to lunch ipython3. I also wrote two small python routines that reads up the h5 file. I also installed this package \textit{kcachegrind}.
+To profile, these are the commands:
+\begin{verbatim}
+$ python3 -m cProfile -o prof.out ./Main.py
+$ pyprof2calltree -i prof.out -k
+\end{verbatim}
+To line-to-line profiling, I activate the decorators on the functions I am running:
+\begin{verbatim}
+@profile
+def HamiltonianEle(Ici,Icj,matV,matMu,pulseV):
+...
+\end{verbatim}
+then:
+\begin{verbatim}
+$ kernprof -l -v Main.py
+\end{verbatim}

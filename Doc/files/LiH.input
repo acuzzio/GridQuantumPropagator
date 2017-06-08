@@ -1,0 +1,17 @@
+&Gateway
+  coord=$Project.xyz
+  basis=6-31G**
+  group=NoSym
+
+&Seward
+
+&Rasscf
+  nactel = 4 0 0
+  ras2 = 16
+  inactive = 0
+  ciroot = 8 8 1
+  prwf = 0.0
+
+&Rassi
+  mees
+

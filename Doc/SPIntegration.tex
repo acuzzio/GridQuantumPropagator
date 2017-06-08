@@ -1,0 +1,135 @@
+\section{Fixed nuclei}
+We will integrate the TDSE:
+\begin{equation}\label{tdse}
+i\hbar \dfrac{\partial\Psi}{\partial t} = \hat{H} \Psi
+\end{equation}
+
+The problem is to propagate the effect of a short electromagnetic pulse in the state distribution of LiH at equilibrium geometry. In fact, the pulse has the effect of mixing states depending on the transition dipole between them.
+
+\subsection{Molcas calculation}
+First I need to make a single point of LiH at equilibrium distance 1.63 \AA.
+\bee
+\item Basis: 6-31G**
+\item CASSCF(4/16)
+\item State Average 8 (lowest energy states)
+\ee
+\VerbatimInput{files/LiH.input}
+From this calculation we need the state energies (Rasscf) and the transition dipole matrices (Rassi keyword mees).
+
+\td{This setup gave me an equilibrium length of 2.12 \AA, way out of the 1.63 \AA \ reported in \cite{nikodem2016controlling}. This can be fault of the small basis set (small in terms of diffuse functions).}
+
+
+\subsection{Equations}
+We will consider the following total wavefunction:
+\begin{equation}\label{boexp}
+\Psi(t) = \sum^{s}_i c_i(t) |\Psi_i\rangle
+\end{equation}
+Where the sum is over the $s$ different electronic states $|\Psi_i\rangle$ solution of our Molcas calculation (this is the BO expansion). We are propagating the coefficients, so $c_i$ will change with time according to this equation:
+\begin{equation}\label{ctdse}
+\dot{c_i}=\dfrac{\partial c_i(t)}{\partial t} = \dfrac{1}{i\hbar} \sum_j \hat{H}_{ij} c_j(t)
+\end{equation}
+Where the Hamiltonian elements $H_{ij}$ are something like:
+\begin{equation}\label{hami1}
+H_{ij} = \langle i|\hat{H}^0 + \hat{T}_N + \hat{\mu}|j\rangle
+\end{equation}
+using the BO approximation (for $\hat{T}_N$) we could consider:
+\begin{equation}\label{hami2}
+H_{ij} = \langle i|\hat{H}^0|j\rangle \delta_{ij} + \langle i| \hat{T}_N |j\rangle \delta_{ij} - \vec{E}_0(t) \vec{\mu}_{ij}
+\end{equation}
+
+In the single point problem:
+\bee
+\item As we are not moving the geometry, there is no need of the Kinetic Energy operator on the nuclei, so $\hat{T}_N=0$.
+\item $\langle i|\hat{H}^0|j\rangle \delta_{ij}$ can be seen as matrix of the solutions of Molcas calculation.\\
+\begin{equation}
+\begin{pmatrix*}
+  V_1 & 0 & 0 \\
+  0 & V_2 & 0 \\
+  0 & 0 & V_3 \\
+\end{pmatrix*}
+\end{equation}
+\item $\vec{E}_0(t)$ is the amplitude of our pulse (calculated as a function of time by using equation \ref{pulse}). This of course will be coded along the Cartesian directions so that $\vec{E}_0(t)=E_x(t)\hat{x}+E_y(t)\hat{y}+E_z(t)\hat{z}$. It is possible to decide the orientation of our pulse with respect to the molecule, and this is something that is achievable experimentally. Having a strongly polarized molecule like LiH, we can experimentally lock (align) them with respect to the lab reference frame, so that we can control the directionality with polarized pulses.
+\item $\vec{\mu}_{ij}$ are the elements of the transition dipole matrix, obtained by Molcas. The higher the value of $\vec{\mu}_{ij}$, the higher the amount of amplitude that will be transferred from $c_i$ to $c_j$ (in case of a pulse). Anyway, this also depends on the pulse $\vec{E}_0(t)$, thus the scalar product with $\vec{\mu}_{ij}$. In fact, the whole term $- \vec{E}_0(t) \vec{\mu}_{ij}$ is the one changing the state amplitudes $c_i$.
+\ee
+
+\subsection{Electromagnetic pulse}
+
+\bee
+\item we intend a \textit{weak} pulse when it is around $5*10^{-4}$/$10^{-3}$ a.u. In this case we are basically linear, and by doubling the amplitude of the electric field, the transition will vary with a factor 4
+\item in a \textit{strong} pulse, instead, $5*10^{-3}$/$10^{-2}$, we start to see non linear effects, such as multiple jumps between states that are resonant with our wavelength.
+\ee
+
+$\omega$ is more complicated and needs to be explained with the Fourier transform.
+
+\begin{equation}\label{pulse}
+\vec{E}(t) = \sum_d E_d cos(\omega t + \phi)\cdot e^{-\dfrac{(t-t_0)^2}{2\sigma^2}} \ \ \ \ \ \   d={x,y,z}
+\end{equation}
+\td{$\omega$ and Fourier transform}
+where:
+\bee
+\item $\sigma$ is the standard deviation of the gaussian
+\item $2\pi \nu = \omega = \dfrac{2\pi}{T}   \ \ \ \ \ \    T = period$
+\item $E_x$ is the amplitude (component along x axis, fig.\ref{im:pulse}).
+\item $t_0$ is the offset, where the gaussian is centered
+\item $\phi$ is the initial phase of the wave.
+\ee
+
+\image{pulseh.png}{im:pulse}{the pulse shape in the x axis component $E_x(t)$ given by equation \ref{pulse}. This is done from \url{https://rechneronline.de/function-graphs/} using function \texttt{3sin(10x)*exp(-(x-2)\^{}2/3)}. This pulse of amplitude 3 and frequency 10 is gaussian shaped, centered in $x=2$ and with a $\sigma = 3$.}{0.4}
+
+\subsection{Integration}
+So we have to propagate with time eq. \ref{ctdse}. We will basically have a function that calculates our derivative at time $t$, starting from the value $c_i(t)$: $$\dot{c}_i(t)=\dfrac{\partial c_i(t)}{\partial t}=f(t,c_i(t)).$$ This function $f$, that calculates the changes on the coefficients $c_i$, is for us eq. \ref{ctdse}.
+\subsubsection{Euler method}
+This is the easiest integrator (a simple rectangle):
+\begin{equation}
+c_i (t + \Delta t) = c_i(t) + f(t,c_i(t)) \Delta t 
+\end{equation}
+meaning that from an initial value of $c_i(t)$, you can calculate the value of $c_i$ at time $(t + \Delta t)$, by adding the derivative $f(t,c_i(t))$ multiplied by $\Delta t$. Here, $f(t,c_i(t))$ stands for equation \ref{ctdse} applied having $c_i(t)$ as a value at time $t$. 
+\subsubsection{Runge-Kutta 4th order}
+This integration is more precise. Here we introduce 4 new coefficients $k$:
+\begin{equation}
+c (t + \Delta t) = c(t) + \dfrac{k_1+2k_2+2k_3+k_4}{6}
+\end{equation}
+where:
+\begin{equation}
+k_1=f(t,c_i(t)) \Delta t
+\end{equation}
+\begin{equation}
+k_2=f\left(t + \dfrac{\Delta t}{2},c_i(t) + \dfrac{k_1}{2}\right) \Delta t
+\end{equation}
+\begin{equation}
+k_3=f\left(t + \dfrac{\Delta t}{2},c_i(t) + \dfrac{k_2}{2}\right) \Delta t
+\end{equation}
+\begin{equation}
+k_4=f\left(t + \Delta t,c_i(t) + k_3\right) \Delta t
+\end{equation}
+so that we need to recompute for 4 times the function $f$, each time at slightly different values of $t$ and $c_i$. This means that in the code routine the whole $c_i$ array must be propagated 4 times, before giving the definitive values at time $t+\Delta t$.
+
+\subsubsection{Dipole Moment}
+Along the integration we can calculate the dipole moment $\vec{\mu}(t)$. The wavefunction amplitudes, the coefficients of equation \ref{boexp}, are changing with time, and as a consequence the molecule dipole moment is also changing. To have the components of $\vec{\mu}(t)$ we should implement the following equation:
+\begin{equation}
+\vec{\mu}(t) = \sum_i\sum_j c^*_i(t)c_j(t)\vec{\mu}_{ij}
+\end{equation}
+The hermitian $\sum_i\sum_j c^*_i(t)c_j(t)$ matrix can be also seen as two triangular matrix plus the diagonal:
+\begin{equation}
+\sum_i\sum_j c^*_i(t)c_j(t) = \sum_i\sum_{j<i} c^*_i(t)c_j(t) + \sum_i\sum_{j<i} c^*_j(t)c_i(t) + \sum_i c^*_i(t)c_i(t)
+\end{equation}
+in the end:
+\begin{equation}
+\sum_i\sum_j c^*_i(t)c_j(t) = \sum_i\sum_{j<i} (c^*_i(t)c_j(t) + c^*_j(t)c_i(t)) + \sum_i c^*_i(t)c_i(t)
+\end{equation}
+This means that:
+\begin{equation}
+\sum_i\sum_j c^*_i(t)c_j(t) = 2 \left(\sum_i\sum_{j<i} c^*_j(t)c_i(t)\right) + \sum_i c^*_i(t)c_i(t)
+\end{equation}
+now, if the complex number $c_i=(a_i+ib_i)$ and $c^*_i=(a_i-ib_i)$:
+\begin{equation}
+c^*_i(t)c_j(t) = a_i a_j - ia_j b_i + ia_i b_j + b_i b_j =  (a_i a_j + b_i b_j) + i(a_i b_j - a_j b_i)
+\end{equation}
+this ends up being:
+\begin{equation}
+\sum_i\sum_j c^*_i(t)c_j(t) = \left(\sum_i\sum_{j<i} 2(a_i a_j + b_i b_j)\right) + \sum_i c^*_i(t)c_i(t)
+\end{equation}
+I still have to implement it like this (this actually saves half of the computations), but... right now I just implemented the main formula.
+
+\td{go implementing this, what are you waiting??}
+

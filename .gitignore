@@ -99,3 +99,21 @@ ENV/
 
 # mypy
 .mypy_cache/
+AstridData/
+Doc/LiegiInitialReport.aux
+Doc/LiegiInitialReport.bbl
+Doc/LiegiInitialReport.blg
+Doc/LiegiInitialReport.log
+Doc/LiegiInitialReport.out
+Doc/LiegiInitialReport.synctex.gz
+Doc/LiegiInitialReport.tdo
+__pycache__/
+Results*
+Ene.png
+*.swp
+*.c
+*.so
+*.old
+build/
+*.out
+

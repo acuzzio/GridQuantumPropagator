@@ -1,0 +1,130 @@
+\section{Moving the Nuclei}
+In order to move the nuclei we need to consider our system on a grid of different distances between Li and H. I will call these points $g$. My problem is now 1 rank higher, so my new object to propagate is a matrix:
+
+\begin{equation}
+\begin{pmatrix*}
+ g_{11} & g_{21} & ... & g_{g1} \\
+ g_{12} & g_{22} & ... & g_{g2} \\
+ ... & ... & ... & ... \\
+ g_{1i} & g_{2i} & ... & g_{gi}\\
+\end{pmatrix*}
+\end{equation}
+
+Each of these elements are complex numbers, and the dimensionality is $g$:\textit{number of points in grid} and $i$:\textit{number of electronic states}. That is, in short, for each electronic state I have a 1D array of grid points, where I have calculated the potentials and the dipole moment matrices. In the following the coordinate $x$ is actually the x location of the hydrogen, but being the lithium in the origin, it is identical to consider the distance between two atoms.
+
+\subsection{The initial state}
+The initial state is gonna be a normalized gaussian that is solution of the harmonic oscillator, and that has the correct displacement and width along the grid for our system. The correct harmonic solution for any electronic state is the following:
+\begin{equation}
+\psi_n(x)=\dfrac{1}{(2^n n!)^{1/2}}\left(\dfrac{m\omega}{\pi\hbar}\right)^{1/4}exp\left(\dfrac{-m\omega x^2}{2\hbar}\right)H_n \left( \left( \dfrac{m\omega}{\hbar}\right)^{1/2}x \right),\ \ \ \ \ \ \ n=0,1,2,3, ...
+\end{equation}
+where $H_n$ are the hermite polynomials. In our problem, anyway, we want to start from the ground state ($n=0$) and we will normalize our vector just by calculating the array norm and dividing the array by it. This means that we drop the analytical calculation of the normalization constant, and even the Hermite polynomial part, as, when $n=0$: $$H_n \left( \left( \dfrac{m\omega}{\hbar}\right)^{1/2}x \right)=1$$
+So, we need to calculate along $g_i$ the non-normalized gaussian:
+\begin{equation}
+\psi_0(x) = exp\left(-\dfrac{m\omega x^2}{2\hbar}\right)
+\end{equation}
+To be able to make $\hbar=1$ I need to be sure that both $m$ and $\omega=(k/m)$ are expressed in AU. In our problem this is done by considering:
+\bee
+\item contracted mass of the system:    
+\begin{equation}\label{ciao}
+m_{LiH} = \dfrac{m_H m_{Li}}{m_H + m_{Li}} 
+\end{equation}
+
+where  $m_H=1.00794*1836.15$ and $m_{Li}=6.941*1836.15$.
+\item $\omega$, the oscillation frequency, depends on $m$ and on force constants $k$, i.e. second derivative of the energy along the x direction (where the grid is):
+\begin{equation}
+\omega=(k/m)^{1/2} \ \ \ \ \ \ \ where: \ \ k=\dfrac{\partial^2V}{\partial x^2}
+\end{equation}
+\item the energy are in Hartree and the coordinates of the array $g$ are expressed in Bohr.\\
+\ee
+This, when we are in atomic units, is how we calculate $\sigma$ to get the gaussian values along $g_i$:
+\begin{equation}
+exp\left(-\dfrac{(x-x_0)^2}{2\sigma^2}\right) = exp\left(-\dfrac{m\omega(x-x_0)^2}{2}\right)
+\end{equation}
+\begin{equation}
+\dfrac{1}{\sigma^2} = m\omega \ \ \ \ \ \ \ \ \ \sigma = \left(\dfrac{1}{m\omega}\right)^{1/2}
+\end{equation}
+here $x_0$ is the distance where the ground state energy is in a minimum, and $\sigma$ will be calculated using the energies of the ground state as well (force constants) and the atom masses. We know from B.Mignolet that $\omega$ is 1606 $cm^{-1}$.
+
+\subsection{Attempt at being rigorous}
+In the continuous space, whatever state $|\chi\rangle$ can be projected in the representation of eigenfunctions of the position operator (along R) $\chi(R)$ (a complete basis):
+\begin{equation}
+|\chi\rangle = \mathbb{1} |\chi\rangle = \int dR | R \rangle \langle R | \chi \rangle = \int dR \chi(R) | R \rangle 
+\end{equation}
+It is possible to define a subspace of R composed by a discrete distribution along R (be aware of the resolution of such subspace) such as $|\theta_g\rangle$. Those are basically delta functions on R:
+\begin{equation}
+|\theta_g\rangle : \langle R | \theta_g \rangle = \delta(R-R_g)
+\end{equation}
+we can now project our state $|\chi\rangle$ in this discrete space $|\theta_g\rangle$:
+\begin{equation}
+|\chi\rangle = \mathbb{1} |\chi\rangle = \sum_g  |\theta_g\rangle \langle \theta_g | \chi \rangle = \sum_g \chi_g |\theta_g\rangle
+\end{equation}
+\image{wvandspaces}{wvandspaces}{two different representations of the vector $|\chi\rangle$, green is continuous and red is discrete}{0.3}
+
+We do have the TDSE to solve now
+\begin{equation}
+i\hbar\dfrac{d|\Psi(t)\rangle}{dt} = \hat{H}|\Psi(t)\rangle
+\end{equation}
+but this time the wavefunction is projected into a subspace of internal coordinates on spacial grid points $\theta_g$ and on the electronic states $\Phi_i$:
+\begin{equation}
+|\Psi(t)\rangle = |\Phi_i,\theta_g\rangle
+\end{equation}
+\begin{equation}
+|\Psi(t)\rangle = \sum_g \sum_i c_{ig}(t) |\Phi_i,\theta_g\rangle
+\end{equation}
+\image{wvandspacesMulti}{wvandspacesMulti}{The representation of $|\Psi\rangle$ into $\sum_g \sum_i c_{ig}(t) |\Phi_i,\theta_g\rangle$.}{0.3}
+We can write down how every single coefficient $c_{ig}(t)$ changes with time:
+\begin{equation}
+\dot{c}_{ig}=\dfrac{\partial}{\partial t} c_{ig}(t) = 
+\end{equation}
+
+\subsection{Beyond BO}
+Indexes are $[i,j]$ for electronic states and $[g,h]$ for nuclear coordinates along x axis.
+\begin{multline}
+         \langle \Psi | \hat{T}_{N}  | \Psi \rangle = 
+         \sum_h \sum_j \langle \Phi_j,\theta_h | c^*_{jh}(t)  \hat{T}_{N}   \sum_g \sum_i c_{ig}(t) |\Phi_i,\theta_g \rangle =  
+         \sum_{h,g} \sum_{j,i} \langle \Phi_j,\theta_h | c^*_{jh}(t)  \hat{T}_{N}  c_{ig}(t) |\Phi_i,\theta_g \rangle
+\end{multline}
+
+\begin{multline}
+\langle \Psi | \hat{T}_{N}  | \Psi \rangle = \langle \Psi | \hat{T}_{N}  | \Psi \rangle
+\end{multline}
+
+%\begin{multline}
+%\langle \theta_h | \langle \Phi_j | c^*_{jh}(t)  \hat{T}_{N}  c_{ig}(t)  |\Phi_i\rangle | \theta_g \rangle =
+%-\dfrac{\hbar ^2}{2m} \langle \psi_{jh} | \dfrac{d^2}{dx^2}c_{ig}(t) | \psi_{ig} \rangle =
+%-\dfrac{\hbar ^2}{2m} \langle \psi_{jh} | \dfrac{d}{dx} \left[ \dfrac{d}{dx} c_{ig}(t) | \psi_{ig} \rangle + c_{ig}(t) \dfrac{d}{dx}| \psi_{ig} \rangle \right] = \\
+%-\dfrac{\hbar ^2}{2m} \langle \psi_{jh} | \left[ \dfrac{d^2}{dx^2} c_{ig}(t) | \psi_{ig} \rangle + \dfrac{d}{dx} c_{ig}(t) \dfrac{d}{dx}| \psi_{ig} \rangle + \dfrac{d}{dx} c_{ig}(t) \dfrac{d}{dx}| \psi_{ig} \rangle + c_{ig}(t) \dfrac{d^2}{dx^2}| \psi_{ig} \rangle \right] = \\
+%-\dfrac{\hbar ^2}{2m} \left[ \langle \psi_{jh} | \dfrac{d^2}{dx^2} c_{ig}(t)          | \psi_{ig} \rangle 
+%                         + 2 \langle \psi_{jh} | \dfrac{d}{dx} c_{ig}(t) \dfrac{d}{dx}| \psi_{ig} \rangle 
+%                         +   \langle \psi_{jh} | c_{ig}(t) \dfrac{d^2}{dx^2}          | \psi_{ig} \rangle \right]
+%\end{multline}
+
+%\td{Stephan, why is here $| \psi_{t;x} \rangle$ and not $| \psi_{ig} \rangle$}
+
+
+\subsection{About Scalar Product and integrals}
+Just to let you know. In every Scalar product an "integral is hidden". Remember:
+\begin{equation}
+I = \int | x \rangle \langle x | dr \ \ \ \ \ \ \ \ and \ \ \ \ \ \ \ \langle x | y \rangle = \langle y | x \rangle^*
+\end{equation}
+Then:
+\begin{equation}
+\langle a(r) | b(r) \rangle = \langle a(r) | I | b(r) \rangle = \int dr \langle a(r) | r \rangle \langle r | b(r) \rangle = \int dr \langle r | a(r) \rangle^* \langle r | b(r) \rangle
+\end{equation}
+This leads to the common formula, as $\langle r | b(r) \rangle=b(r)$ and $\langle r | a(r) \rangle^*=a^*(r)$:
+\begin{equation}
+\int dr \ \ a^*(r) b(r)
+\end{equation}
+\vspace{10cm}
+\begin{equation}
+H_{ij} = \langle i|\hat{H}^0 + \hat{T}_N + \hat{\mu}|j\rangle
+\end{equation}
+\begin{equation}
+H_{ij} = \langle i|\hat{H}^0|j\rangle \delta_{ij} + \langle i| \hat{T}_N |j\rangle \delta_{ij} - \vec{E}(t) \vec{\mu}_{ij}
+\end{equation}
+\begin{equation}
+i\dfrac{dc_i(t)}{dt}=\sum_j H_{ij}c_j(t)
+\end{equation}
+\begin{equation}
+H_{ij}=T_{ij}+V_{ij}\delta_{ij} - \vec{E} \cdot \vec{\mu}_{ij}
+\end{equation}

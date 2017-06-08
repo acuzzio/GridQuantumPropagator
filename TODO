@@ -1,0 +1,9 @@
+ 0) Track the C in case og Abs potential along the simulation
+ 1) IL PULSE DEVE CAMBIARE DENTRO IL RUNGE KUTTA !!
+ 2) Better time Zero output (in general, better output function, so we can clean the main)
+ 3) implement the dipole moment the other way (stephan) -> useful?
+ 4) Dipole moment on a line
+ 8) Graph with everything ( pulse -> time -> wavefunction -> potentials ) - Graph from h5
+11) fai un DEBUG MODE da mettere nella linea di comando
+12) CHECK of the threshold of population at the limit
+

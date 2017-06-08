@@ -1,0 +1,132 @@
+\documentclass[10pt]{article}
+
+%% FOR THE MISSING FIGURES !!!
+%%  \image{missing}{LABEL,CHANGE ME}{\td{missing figure explanation}}{0.8}
+
+\usepackage[paperwidth=21cm, paperheight=29.7cm, tmargin=2cm, bmargin=2cm, outer=2cm, inner=2cm]{geometry}
+
+%  colors
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+\definecolor{deepgreen2}{rgb}{0,0.4,0}
+\definecolor{violet}{rgb}{0,0.4,0.4}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{todonotes}
+\usepackage{float}
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{cite}
+\usepackage{comment}
+\usepackage{bbold}
+
+% better frames around code
+\usepackage[framemethod=TikZ]{mdframed}
+\mdfdefinestyle{listingstyle}{
+backgroundcolor=black!3,
+outerlinewidth=0.25pt,
+outerlinecolor=black,
+innerleftmargin=5pt,
+innerrightmargin=5pt,
+innertopmargin=0pt,
+innerbottommargin=0pt
+}
+
+% listings for python
+\usepackage{listings}
+\lstset{
+language=Python, 
+mathescape, 
+numbers=left, 
+numberstyle=\tiny, 
+basicstyle=\scriptsize, 
+showstringspaces=false, 
+breaklines=true,
+keywordstyle=\color{deepblue}, 
+emphstyle=\color{deepred}, 
+stringstyle=\color{deepgreen}, 
+morecomment=[s][\color{violet}]{'''}{'''}, 
+morecomment=[l][\color{deepgreen2}]{\#}}
+
+% to load external code
+\newcommand{\codeExt}[1]{\begin{mdframed}[style=listingstyle]\lstinputlisting{#1}\end{mdframed}}
+
+%to make the ref clickable in the pdf
+\usepackage[hidelinks]{hyperref}
+
+%for the enumeration separation
+\usepackage{enumitem}
+\setlist{nosep} % or \setlist{noitemsep} to leave space around whole list
+
+%image folder
+\graphicspath{ {images/} }
+
+\usepackage{bibentry}
+\nobibliography*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% better captions %%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[labelfont={bf}, font={small,it}, margin=1cm]{caption}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\bee}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\td}[1]{\todo[inline]{#1}}
+\newcommand{\image}[4]{\begin{figure}[h!]\centering \includegraphics[scale=#4]{#1} \caption{#3} \label{#2} \end{figure}}
+
+% colored matrices %%%%%%%%%%%%%%%%%
+\usepackage{tikz}
+\usetikzlibrary{arrows,matrix,positioning}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% better verbatims %%%%%%%%%%%%%%%%%
+\usepackage{fancyvrb}
+\RecustomVerbatimCommand{\VerbatimInput}{VerbatimInput}{fontsize=\footnotesize, frame=single, framesep=2em, numbers=left, baselinestretch=0.7}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% better matrices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{mathtools}
+\usepackage{xparse}
+\usepackage{tikz}
+\usetikzlibrary{matrix,backgrounds}
+\pgfdeclarelayer{myback}
+\pgfsetlayers{myback,background,main}
+
+\tikzset{mycolor/.style = {line width=1bp,color=#1}}%
+\tikzset{myfillcolor/.style = {draw,fill=#1}}%
+
+\NewDocumentCommand{\highlight}{O{black!40} m m}{%
+\draw[mycolor=#1] (#2.north west)rectangle (#3.south east);
+}
+
+\NewDocumentCommand{\fhighlight}{O{black!40} m m}{%
+\draw[myfillcolor=#1] (#2.north west)rectangle (#3.south east);
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Progresses}
+\author{Alessio Valentini}
+
+\begin{document}
+\maketitle
+%\tableofcontents
+\listoftodos
+\input{Preface}
+\input{SPIntegration}
+\input{Grid1d}
+\pagebreak
+\input{FutWor}
+\input{Installation}
+%\input{TheCode}
+
+\bibliographystyle{ChemEurJ}
+\bibliography{biblio}
+
+
+\end{document}

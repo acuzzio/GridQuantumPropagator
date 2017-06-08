@@ -1,0 +1,35 @@
+sudo: false
+language: python
+python:
+  - "3.5"
+install:
+  # Install python
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no --set auto_update_conda False
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  # Install virtual enviroment 
+  - conda create -q -n quantumpropagator python=3.5
+  - conda install --name quantumpropagator -c anaconda hdf5
+  - source activate quantumpropagator
+
+  # Package dependencies
+  #  - pip install nose coverage
+  - source activate quantumpropagator
+
+  # Install quantumpropagator package
+  - pip install .
+  
+script:
+  # Run the unitary tests excluding the expensive computations
+  #  - nosetests --with-coverage --cover-erase --cover-package=quantumpropagator -a 'fast' -v
+
+branches:
+  only:
+   - master
+
