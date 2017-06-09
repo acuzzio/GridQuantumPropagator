@@ -68,17 +68,17 @@ def makeJustAnother2Dgraph(xs,ys,fn,labl):
     plt.close('all')
 
 
-def grapPulse(totaltime,dt,Ed,omega,sigma,phi,t0,fn):
+def grapPulse(totaltime, dt, Ed, omega, sigma, phi, t0, fn):
     '''
     This makes a graph of a complete pulse from a single direction
     '''
     timesArray = np.arange(totaltime) * dt
-    gaus       = np.apply_along_axis(pp.envel,0,timesArray,Ed,sigma,t0)
-    puls       = np.apply_along_axis(pp.pulse,0,timesArray,Ed,omega,sigma,phi,t0)
-    transp     = False
-    my_dpi     = 150
-    ratio      = (16, 9)
-    fig, ax1   = plt.subplots(figsize=ratio)
+    gaus = np.apply_along_axis(pp.envel,0,timesArray,Ed,sigma,t0)
+    puls = np.apply_along_axis(pp.pulse,0,timesArray,Ed,omega,sigma,phi,t0)
+    transp = False
+    my_dpi = 150
+    ratio = (16, 9)
+    fig, ax1 = plt.subplots(figsize=ratio)
     ax1.set_ylabel('E A.U. (Hartree)')
     ax1.set_xlabel('Time A.U.')
     plt.plot(timesArray, gaus, linewidth=2.0, label="Envelope")
@@ -89,12 +89,12 @@ def grapPulse(totaltime,dt,Ed,omega,sigma,phi,t0,fn):
 
 
 def makeJustAnother2DgraphComplex(xs,ys,fn,labl):
-    transp    = False
-    my_dpi    = 150
-    ratio     = (16, 9)
-    imgL      = labl + " Imag"
-    reaL      = labl + " Real"
-    fig, ax1  = plt.subplots(figsize=ratio)
+    transp = False
+    my_dpi = 150
+    ratio = (16, 9)
+    imgL = labl + " Imag"
+    reaL = labl + " Real"
+    fig, ax1 = plt.subplots(figsize=ratio)
     ax1.set_ylim([-1,1])
     plt.plot(xs, np.real(ys), linewidth=3.0, label=reaL)
     plt.plot(xs, np.imag(ys), linewidth=3.0, label=imgL)
@@ -104,14 +104,13 @@ def makeJustAnother2DgraphComplex(xs,ys,fn,labl):
 
 
 def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=[1,14]):
-    (nstates,gridN) = yss.shape
-    transp    = False
-    my_dpi    = 150
-    ratio     = (16, 9)
-    fig, ax1  = plt.subplots(figsize=ratio)
+    nstates = yss.shape[0]
+    transp = False
+    my_dpi = 150
+    ratio = (16, 9)
+    fig, ax1 = plt.subplots(figsize=ratio)
     ax1.set_xlim(xaxisL)
     ax1.set_ylim([-0.3,2.3])
-    name = fn + '.png'
     for i in range(nstates):
         thing=yss[i]
         rea = np.real(thing)+(i/2)
@@ -126,13 +125,13 @@ def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=[1,14]):
 
 
 def makeJustAnother2DgraphComplexSINGLE(xs, ys, fn, labl, xaxisL):
-    transp    = False
-    my_dpi    = 150
-    ratio     = (16, 9)
-    imgL      = labl + " Imag"
-    reaL      = labl + " Real"
-    sqrL      = labl + r" $|\Psi|^2$"
-    fig, ax1  = plt.subplots(figsize=ratio)
+    transp = False
+    my_dpi = 150
+    ratio = (16, 9)
+    imgL = labl + " Imag"
+    reaL = labl + " Real"
+    sqrL = labl + r" $|\Psi|^2$"
+    fig, ax1 = plt.subplots(figsize=ratio)
     ax1.set_ylim([-1,1])
     ax1.set_xlim(xaxisL)
     plt.plot(xs, np.real(ys),linewidth=0.5,label=reaL,ls='--')
@@ -264,7 +263,7 @@ def createHeatMapfromH5(fol,fn):
     wf = h5.retrieve_hdf5_data(fs[0], 'WF')
     (nstates,gridN) = wf.shape
     final = np.empty((times,nstates,gridN), dtype = complex)
-    for i in range(len(fs)):
+    for i in range(times):
           final[i] = h5.retrieve_hdf5_data(fs[i], 'WF')
     fun = np.vectorize(gf.abs2)
     allP = fun(final)

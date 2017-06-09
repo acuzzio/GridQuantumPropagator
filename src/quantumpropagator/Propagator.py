@@ -7,7 +7,8 @@ def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,r
     k4 = h * f(t + h, y + k3, pulse[2], ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot)
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
-def derivative1d(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gridN, kaxisR, reducedMass, absP):
+def derivative1d(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gridN,
+                 kaxisR, reducedMass, absP):
     '''
     This is the correct one... holy cow holy cow
 
@@ -24,7 +25,9 @@ def derivative1d(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gri
         dR      = singlederivative[:,g]
         summa   = np.zeros(nstates, dtype = complex)
         for Ici in range(nstates):
-            hamilt = sum(HamiltonianEle1d(Ici,Icj,matVG[g],matMuG[g],pulseV,d2R,dR,g,states[Icj],reducedMass,matNACG[g],matGELEG[g],absP[g]) for Icj in range(nstates))
+            hamilt = sum(HamiltonianEle1d(Ici, Icj, matVG[g], matMuG[g], pulseV, d2R, dR, g,
+                         states[Icj], reducedMass, matNACG[g], matGELEG[g], absP[g])
+                         for Icj in range(nstates))
             summa[Ici] = con * hamilt
         new[:,g] = summa
     return new
@@ -102,16 +105,19 @@ def divideByTwo(n):
 #    print('Kinetic Energy -> ', np.real(kinetic))
 #    return kinetic
 
-def calculateTotal(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates,gridN,kaxisR,reducedMass,absP):
-    new      = np.empty((nstates,gridN),dtype = complex)
+def calculateTotal(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gridN,
+                   kaxisR, reducedMass, absP):
+    new = np.empty((nstates,gridN),dtype = complex)
     (doublederivative,singlederivative) = NuclearKinetic1d(GRID, kaxisR, nstates, gridN)
     for g in range(gridN):
-        states  = GRID[:,g]
-        d2R     = doublederivative[:,g]
-        dR      = singlederivative[:,g]
-        summa   = np.zeros(nstates, dtype = complex)
+        states = GRID[:,g]
+        d2R = doublederivative[:,g]
+        dR = singlederivative[:,g]
+        summa = np.zeros(nstates, dtype = complex)
         for Ici in range(nstates):
-            hamilt = sum(HamiltonianEle1d(Ici,Icj,matVG[g],matMuG[g],pulseV[0],d2R,dR,g,states[Icj],reducedMass,matNACG[g],matGELEG[g],absP[g]) for Icj in range(nstates))
+            hamilt = sum(HamiltonianEle1d(Ici, Icj, matVG[g], matMuG[g], pulseV[0], d2R, dR, g,
+                         states[Icj], reducedMass, matNACG[g], matGELEG[g], absP[g])
+                         for Icj in range(nstates))
             summa[Ici] = hamilt
         new[:,g] = summa
     total = np.vdot(GRID,new)
@@ -131,4 +137,57 @@ def rk6Ene1dSLOW(f, t, y, h, pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass)
 def EULER1d(f, t, y, h, pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass):
     k1 = h * f(t, y, pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass)
     return y + k1
+
+
+###########################
+# Single Point integrator #
+###########################
+
+
+def rk4Ene(f, t, y, h, pulse, matV, matMu):
+    '''
+    Runge-Kutta integrator for VECTORS, 'cause y here is gonna be an array of coefficients
+    f = the derivativeC function :: Double,[Complex],[[Double]],[3[[Double]]] -> [Complex]
+    t = time :: Double
+    y = coefficients vector :: [Complex]
+    matV = energies diagonal matrix :: [[Double]]
+    matMu = transition dipole matrix :: [3[[Double]]]
+    '''
+    k1 = h * f(t, y, pulse, matV, matMu)
+    k2 = h * f(t + 0.5 * h, y + 0.5 * k1, pulse, matV, matMu)
+    k3 = h * f(t + 0.5 * h, y + 0.5 * k2, pulse, matV, matMu)
+    k4 = h * f(t + h, y + k3, pulse, matV, matMu)
+    ny = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
+    return ny
+
+
+def derivativeC(t,states,pulse,matV,matMu):
+    '''
+    The derivative for our coefficients. It will apply the hamiltonian to every ci coefficient.
+    $\color{violet}\dot{c_i}=\dfrac{\partial c_i(t)}{\partial t} = \dfrac{1}{i\hbar} \sum_j \hat{H}_{ij} c_j(t)$
+    '''
+    con     = -1j
+    pulseV  = pulse(t)
+    nstates = states.size
+    summa   = np.zeros(nstates, dtype = complex)
+    for Ici in range(nstates):
+       #hamilt = np.sum([ HamiltonianEle(Ici,Icj,matV,matMu,pulseV) * states[Icj] for Icj in range(nstates) ])
+       hamilt = sum(HamiltonianEle(Ici,Icj,matV,matMu,pulseV) * states[Icj] for Icj in range(nstates))
+       summa[Ici]= con*hamilt
+    return summa
+
+
+def HamiltonianEle(Ici,Icj,matV,matMu,pulseV):
+    '''
+    This is the hamiltonian element for a system that is frozen in one geometry (no kinetic energy).
+    $\color{violet}H_{ij} = \langle i|\hat{H}^0|j\rangle \delta_{ij} + \hat{T}_N - \vec{E}_0(t) \vec{\mu}_{ij}$
+    The pulse depends on time
+    pulsev = the particular value of the external pulse at time t :: [x,y,z]
+    muij = the element of the transition dipole matrix :: [x,y,z]
+    the line "muij = matMu[:3, Ici, Icj]" creates a 3 long vector with [1,2,3][Ici][Icj]
+    '''
+    iH0j = matV[Ici, Icj]
+    muij = matMu[:3, Ici, Icj]
+    secondterm = np.dot(pulseV,muij)
+    return iH0j - secondterm
 

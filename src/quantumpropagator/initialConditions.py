@@ -146,7 +146,7 @@ def absorbingPotential3Right(dist,x0fromRight):
     return dist3.clip(min=0)
 
 if __name__ == "__main__":
-     from quantumpropagator.astridParser import astridParser2, astridParser2States
+     from quantumpropagator.astridParser import astridParser2States
      #import quantumpropagator.graph as gg
      (distSmall,eneSmall,dipoSmall,newNAC,newGac) = astridParser2States(4,400)
      (gridNSmall,nstates)           = eneSmall.shape

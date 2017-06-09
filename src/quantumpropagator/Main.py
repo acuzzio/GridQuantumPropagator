@@ -3,7 +3,7 @@ This is not a main anymore. I keep it in case I need singlepoint Integrator
 '''
 
 #import quantumpropagator.h5Reader as hf
-import quantumpropagator.Propagator as Pr
+#import quantumpropagator.Propagator as Pr
 import quantumpropagator.pulse as pp
 import quantumpropagator.SinglePointIntegrator as spInt
 
@@ -24,7 +24,8 @@ def main():
     OutputFile        True/False  To write an external file
     '''
 
-    spInt.singlePointIntegration('LiH.rassi.h5', 0.04, 1000, pp.specificPulse, True, True)
+    spInt.singlePointIntegration('LiH.rassi.h5', 0.04, 1000, pp.specificPulse,
+            'LiHAst', True, True)
 
 if __name__ == "__main__":
     main()

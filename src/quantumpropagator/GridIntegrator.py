@@ -1,5 +1,4 @@
 import numpy as np
-import multiprocessing
 import os
 from collections import namedtuple
 
@@ -132,7 +131,7 @@ def grid1DIntegrationAstrid(inputs):
 
     # INTEGRATION
     for ii in range(inputs.fullTime):
-      tStr   = '{:3.2f}'.format(t)
+      #tStr   = '{:3.2f}'.format(t)
       pulseV = [inputs.specPulse(t,Ed,omega,sigmP,phi,t0P),inputs.specPulse(t+0.5*h,Ed,omega,sigmP,phi,t0P),inputs.specPulse(t+h,Ed,omega,sigmP,phi,t0P)] # FIX THIS AS SOON AS YOU HAVE TIME
       GRID   = Pr.rk4Ene1dSLOW(Pr.derivative1d,t,GRID,h,pulseV,ene,dipo,NAC,Gele,nstates,gridN,kaxisR,reducedMass,absorbPot)
       t     = t + h

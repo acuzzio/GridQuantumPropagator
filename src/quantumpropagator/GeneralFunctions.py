@@ -5,6 +5,11 @@ This is the module for general purposes functions
 import multiprocessing as mp
 import numpy as np
 
+#Debug time
+#import pdb
+#pdb.set_trace() #to debug h=help
+
+
 def calculateGradientOnMatrix0(newNAC,dist):
     '''
     This calculate a matrix gradient along axis 0
@@ -15,12 +20,14 @@ def calculateGradientOnMatrix0(newNAC,dist):
     allM = np.apply_along_axis(np.gradient, 0, newNAC, deltaX)
     return allM
 
+
 def asyncFun(f, *args, **kwargs):
     '''
     Executes the f function on another thread.
     '''
     job = mp.Process(target=f, args=args, kwargs=kwargs)
     job.start()
+
 
 def abs2(x):
     '''
@@ -29,18 +36,15 @@ def abs2(x):
     '''
     return x.real**2 + x.imag**2
 
-#Debug time
-#import pdb
-#pdb.set_trace() #to debug h=help
 
 def population(grid):
     '''
     grid :: np.array[Complex]
     it calculates the populations of a 1D grid
     '''
-    gridN = grid.shape[1]
     pop = np.apply_along_axis(singlepop,1,grid)
     return(pop,sum(pop))
+
 
 def ndprint(a, format_string ='{0:15.12f}'):
     '''
@@ -49,11 +53,13 @@ def ndprint(a, format_string ='{0:15.12f}'):
     '''
     return " ".join([format_string.format(v,i) for i,v in enumerate(a)])
 
+
 def singlepop(GridSingleState):
     '''
     Calculates the population of a single state grid (1D)
     '''
     return sum(np.apply_along_axis(abs2,0,GridSingleState))
+
 
 def groundState(n):
     '''
@@ -65,6 +71,7 @@ def groundState(n):
     a[0]=1.0
     return a
 
+
 def gaussian(x, mu, sig):
     '''
     It calculates the gaussian value at point x. This gaussian is not normalized because
@@ -75,11 +82,13 @@ def gaussian(x, mu, sig):
     '''
     return (np.exp(-np.power((x - mu)/sig, 2.)/2)) + (0j)
 
+
 def saveComplex(fn,array):
     """ Saves a complex array into a txt file """
     # in one column
     #np.savetxt(fn, array.view(float))
     np.savetxt(fn, array.view(float).reshape(-1, 2))
+
 
 def loadComplex(fn):
     """ Load a complex array from a txt file """
@@ -87,9 +96,11 @@ def loadComplex(fn):
     #array = np.loadtxt('outfile.txt').view(complex)
     return np.loadtxt(fn).view(complex).reshape(-1)
 
+
 def print2ArrayInColumns(array1,array2,filename):
     """ Saves 2 arrays into 2 columns of a file"""
     np.savetxt(filename,np.stack((array1,array2),1))
+
 
 def dipoleMoment(states,matMu):
     '''
@@ -109,17 +120,21 @@ def dipoleMoment(states,matMu):
         dipole[component] = summa
     return dipole
 
+
 def BohToAng(n):
     ''' From bohr to Angstrom conversion '''
     return (n * 0.529177249)
+
 
 def EvtoHar(n):
     ''' From ElectronVolt to Hartree conversion '''
     return (n * 0.0367493)
 
+
 def fromCmMin1toHartree(x):
     ''' from cm-1 to hartree conversion '''
     return (x*4.5563e-06)
+
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 # https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/

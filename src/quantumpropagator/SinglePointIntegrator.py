@@ -10,7 +10,7 @@ import quantumpropagator.graph as gg
 
 
 
-def singlePointIntegration(h5fn,h,ts,specPulse,graph,systemName,fileO):
+def singlePointIntegration(h5fn, h, ts, specPulse, graph, systemName, fileO):
     '''
     Molcas parsers
     h  :: Double    time step
@@ -46,25 +46,25 @@ def singlePointIntegration(h5fn,h,ts,specPulse,graph,systemName,fileO):
     if graph:                     # initialize repa arrays for graphics
        print("graph ON")
        statesArr = np.empty((0,nstates))
-       pulseArr  = np.empty((0,3))
+       pulseArr = np.empty((0,3))
 
     print('\n')
 
     for ii in range(ts):
-        states    = Pr.rk4Ene(Pr.derivativeC, t, states, h, specPulse, matV, matMu) # Amplitudes
-        muOft     = np.real(gf.dipoleMoment(states,matMu)) # Dipole moments
-        norm      = np.linalg.norm(states) # Norms
+        states = Pr.rk4Ene(Pr.derivativeC, t, states, h, specPulse, matV, matMu) # Amplitudes
+        muOft = np.real(gf.dipoleMoment(states,matMu)) # Dipole moments
+        norm = np.linalg.norm(states) # Norms
     #    norms     = norms+[norm]
-        times     = times+[t]
-        t         = t + h
-        pulseV    = pp.specificPulse(t)
-        statesA   = np.absolute(states)
-        tStr      = '{:3.2f}'.format(t)
+        times = times+[t]
+        t = t + h
+        pulseV = pp.specificPulse(t)
+        statesA = np.absolute(states)
+        tStr = '{:3.2f}'.format(t)
         vectorFor = "{:.7f}"
         statesStr = " ".join(map(vectorFor.format, statesA))
         pulseVStr = ' '.join(map(vectorFor.format, pulseV))
-        muOftStr  = ' '.join(map(vectorFor.format, muOft))
-        normStr   = '{:20.18f}'.format(1.0-norm)
+        muOftStr = ' '.join(map(vectorFor.format, muOft))
+        normStr = '{:20.18f}'.format(1.0-norm)
         stringout = ' '.join([tStr,pulseVStr,statesStr,muOftStr,normStr])
         if fileO:   # to print results in a file.dat
            ffname = finalName + ".dat"
@@ -74,8 +74,8 @@ def singlePointIntegration(h5fn,h,ts,specPulse,graph,systemName,fileO):
            print(stringout)
         if graph:
            statesArr = np.append(statesArr,[statesA],axis=0)
-           pulseArr  = np.append(pulseArr,[pulseV],axis=0)
-           imagefn        = finalName + '.png'
+           pulseArr = np.append(pulseArr,[pulseV],axis=0)
+           imagefn = finalName + '.png'
 
     if fileO:
        print('File mode ON. A new file: ' + ffname + ' has been written')
@@ -97,5 +97,5 @@ if __name__ == "__main__":
     # OutputFile        True/False  To write an external file
 
     singlePointIntegration('LiH.rassi.h5', 0.04, 10, pp.specificPulse,
-            systemName, True, True)
+            'LiHAst', True, True)
 
