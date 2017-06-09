@@ -10,7 +10,7 @@ import quantumpropagator.graph as gg
 
 
 
-def singlePointIntegration(h5fn,h,ts,specPulse,graph,fileO):
+def singlePointIntegration(h5fn,h,ts,specPulse,graph,systemName,fileO):
     '''
     Molcas parsers
     h  :: Double    time step
@@ -83,7 +83,8 @@ def singlePointIntegration(h5fn,h,ts,specPulse,graph,fileO):
     print('\nFinal norm deviation from 1: ', '{:1.2e}'.format(1-(np.linalg.norm(states))),"\n")
 
     if graph:
-       gg.makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn, nstates)
+       gg.makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn,
+               systemName, nstates)
 
 
 if __name__ == "__main__":
@@ -95,5 +96,6 @@ if __name__ == "__main__":
     # Graph             True/False  To make the graph
     # OutputFile        True/False  To write an external file
 
-    singlePointIntegration('LiH.rassi.h5', 0.04, 10, pp.specificPulse, True, True)
+    singlePointIntegration('LiH.rassi.h5', 0.04, 10, pp.specificPulse,
+            systemName, True, True)
 

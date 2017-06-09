@@ -22,14 +22,14 @@ def ensure_dir_Secure(folder_path):
     This will abort if the folder is already there
     '''
     if not os.path.exists(folder_path):
-       os.makedirs(folder_path)
+        os.makedirs(folder_path)
     else:
-       err("The folder " + folder_path + " exists.")
+        err("The folder " + folder_path + " exists.")
 
 def ensure_dir(folder_path):
     '''
     if the folder in folder_path does not exists it creates one
     '''
     if not os.path.exists(folder_path):
-       os.makedirs(folder_path)
+        os.makedirs(folder_path)
 

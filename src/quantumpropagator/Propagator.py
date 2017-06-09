@@ -1,6 +1,4 @@
 import numpy as np
-from multiprocessing import Pool
-
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):
     k1 = h * f(t, y, pulse[0], ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot)
@@ -19,7 +17,7 @@ def derivative1d(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gri
     '''
     con = -1j
     new = np.empty((nstates, gridN), dtype=complex)
-    (doulederivative,singlederivative) = NuclearKinetic1d(GRID, kaxisR, nstates, gridN)
+    (doublederivative,singlederivative) = NuclearKinetic1d(GRID, kaxisR, nstates, gridN)
     for g in range(gridN):
         states  = GRID[:,g]
         d2R     = doublederivative[:,g]
@@ -130,7 +128,7 @@ def rk6Ene1dSLOW(f, t, y, h, pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass)
     k7 = h * f( t + h        , y + (9 * k1 - 36 * k2 + 63 * k3 + 72 * k4 - 64 * k5)/44 , pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass)
     return y + (11 * k1 + 81 * k3 + 81 * k4 - 32 * k5 - 32 * k6 + 11 * k7) / 120
 
-def EULER1d(f, t, y, h, pulse, ene, dipo, misc):
-    k1 = h * f(t, y, pulse, ene, dipo, misc)
+def EULER1d(f, t, y, h, pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass):
+    k1 = h * f(t, y, pulse, ene, dipo, nstates,gridN,kaxisR,reducedMass)
     return y + k1
 

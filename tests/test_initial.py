@@ -1,3 +1,6 @@
+'''
+First tests suite
+'''
 from quantumpropagator import astridParser
 
 def test_astridParser():

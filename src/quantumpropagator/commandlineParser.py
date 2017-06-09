@@ -1,7 +1,15 @@
+'''
+This module takes care of argument parsing.
+'''
+
 from collections import namedtuple
 from argparse import ArgumentParser
 
 def readArguments(inputs):
+    '''
+    This funcion reads the command line arguments and assign the values on
+    the namedTuple.
+    '''
     parser = ArgumentParser()
 
     parser.add_argument("-n", "--name",

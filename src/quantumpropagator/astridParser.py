@@ -1,5 +1,12 @@
+'''
+This module is a parser for a specific dataset from literature. It serves the purpose
+to test the propagator on a grid.
+'''
+
 from os.path import join
 import numpy as np
+
+from quantumpropagator.GeneralFunctions import calculateGradientOnMatrix0
 
 def astridParser(cutAt,gridN,folder):
     '''
@@ -50,15 +57,7 @@ def astridParser(cutAt,gridN,folder):
     return(dist, newEne, newDipo, newNAC, newGac)
 
 
-def calculateGradientOnMatrix0(newNAC,dist):
-    '''
-    This calculate a matrix gradient along axis 0
-    '''
-    deltaX      = dist[1] - dist[0]
-    allM = np.apply_along_axis(np.gradient, 0, newNAC, deltaX)
-    return allM
-
-
+# quick reminder of how triu works.
 #dm = np.arange((15))
 #tri = np.zeros((5, 5))
 #tri[np.triu_indices(5, 0)] = dm  <- with diagonal

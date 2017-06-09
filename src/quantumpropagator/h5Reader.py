@@ -69,15 +69,15 @@ def correctSignThem(folder, nstates, proparraylength):
     tdMatrices -> the dipole transition matrices.            dimension :: (nfiles,proparraylength,nstates,nstates)
 
     '''
-    abscorr                            = findCorrectionNumber(folder,nstates)
-    (gridN,_)                          = abscorr.shape
-    abscorrT                           = np.transpose(abscorr)
-    corrT                              = np.empty(abscorrT.shape)
+    abscorr    = findCorrectionNumber(folder,nstates)
+    (gridN,_)  = abscorr.shape
+    abscorrT   = np.transpose(abscorr)
+    corrT      = np.empty(abscorrT.shape)
     for i in range(nstates):
         corrT[i] = correctSignFromRelativeToAbsolute(abscorrT[i])
     corr = np.transpose(corrT)
     (tdMatrices, energies, geoms) = readAllhdf51D(folder + "*.rassi.h5", nstates,proparraylength)
-    newdipoleM                    = np.empty((gridN, 3, nstates, nstates)) 
+    newdipoleM                    = np.empty((gridN, 3, nstates, nstates))
     for fileN in range(gridN):
         tdMatrix   = tdMatrices[fileN]
         dipole     = tdMatrix[0:3]   # Molcas BOUND I need only the first three
@@ -89,8 +89,7 @@ def correctSignThem(folder, nstates, proparraylength):
                     newdipoleM[fileN,k,i,j] = dipole[k,i,j]*correctionforElement
         tupleZ   = [('MLTPL', newdipoleM[fileN]), ('SFS_ENERGIES', energies[fileN]), ('CENTER_COORDINATES', geoms[fileN])]
         filename = folder + 'fileOut' + '{:03}'.format(fileN) + '.h5'
-        writeH5file(filename, tupleZ) 
-
+        writeH5file(filename, tupleZ)
 
 
 def correctSignFromRelativeToAbsolute(vector):
@@ -119,7 +118,7 @@ def correctSignFromRelativeToAbsolute(vector):
 
 def findCorrectionNumber(folder,nstates):
     rasscfFiles = npArrayOfFiles(folder + '*.rasscf.h5')
-    nfiles      = rasscfFiles.size 
+    nfiles      = rasscfFiles.size
     result      = np.empty((nfiles,nstates))
     result[0,:] = 1.0
     for i in range(nfiles)[1:]:
@@ -144,6 +143,7 @@ def correctSign(rasscfh51, rasscfh52):
         else:
            new[i] = 1.0
     return new
+
 
 def secondCorrection(globalE, outlabel, nstates, proparraylength):
     '''

@@ -70,6 +70,7 @@ def WaterXyz(folder,distance,label):
  H     {distance:7.6f}     0.000000     0.000000
  H    -0.251204    -0.905813     0.000000
     """
+    return watxyz
 
 def generateLiHxyz(outfolder, rangearg):
     doubleList = list(np.arange(*rangearg).tolist())

@@ -13,23 +13,31 @@ import quantumpropagator.pulse as pp
 
 
 def getLabels(string):
+    '''
+    A dictionary for different labels/different systems.
+    It will be upgraded to something read from an input file
+    '''
     supportedSystems = {"LiH": LiHLab,
                         "LiHAst": LiHAstLab}
     return (supportedSystems[string])
 
 
 def LiHAstLab():
+    ''' The labels of the LiH of the test astrid dataset '''
     return (createStatesLab(['s','s','s','s','s']), ['b','g','r','c','m'])
 
-
-
 def LiHLab():
-    colorsA   = ['b','g','r','c','m','y','k','#808080', '#606060']
+    ''' The labels for the Lih - sigma pi for the 0D problem '''
+    colorsA = ['b','g','r','c','m','y','k','#808080', '#606060']
     statesSym = ['s','s','p','p','s','s','p','p','s']
     statesLab = createStatesLab(statesSym)
     return (statesLab,colorsA)
 
+
 def createStatesLab(statesSym):
+    '''
+    This function takes the label string and creates the correct LAteX label to use in the graph key
+    '''
     labels = {'s' : '\Sigma', 'p' : '\Pi'}
     init   = {'s' : 0, 'p' : 1}
     counter_d = {}
@@ -43,12 +51,16 @@ def createStatesLab(statesSym):
     return(correctlabel)
 
 
-
 def makeJustAnother2Dgraph(xs,ys,fn,labl):
+    '''
+    xs :: np.array[Double]
+    yx :: np.array[Double]
+    fn :: FilePath
+    labl :: String - the name on the key
+    '''
     transp    = False
     my_dpi    = 150
     ratio     = (16, 9)
-    fontsize  = 12
     fig, ax1  = plt.subplots(figsize=ratio)
     plt.plot(xs, ys,linewidth=3.0,label=labl)
     ax1.legend(loc='upper right')
@@ -56,15 +68,16 @@ def makeJustAnother2Dgraph(xs,ys,fn,labl):
     plt.close('all')
 
 
-
 def grapPulse(totaltime,dt,Ed,omega,sigma,phi,t0,fn):
+    '''
+    This makes a graph of a complete pulse from a single direction
+    '''
     timesArray = np.arange(totaltime) * dt
     gaus       = np.apply_along_axis(pp.envel,0,timesArray,Ed,sigma,t0)
     puls       = np.apply_along_axis(pp.pulse,0,timesArray,Ed,omega,sigma,phi,t0)
     transp     = False
     my_dpi     = 150
     ratio      = (16, 9)
-    fontsize   = 12
     fig, ax1   = plt.subplots(figsize=ratio)
     ax1.set_ylabel('E A.U. (Hartree)')
     ax1.set_xlabel('Time A.U.')
@@ -75,12 +88,10 @@ def grapPulse(totaltime,dt,Ed,omega,sigma,phi,t0,fn):
     plt.close('all')
 
 
-
 def makeJustAnother2DgraphComplex(xs,ys,fn,labl):
     transp    = False
     my_dpi    = 150
     ratio     = (16, 9)
-    fontsize  = 12
     imgL      = labl + " Imag"
     reaL      = labl + " Real"
     fig, ax1  = plt.subplots(figsize=ratio)
@@ -92,13 +103,11 @@ def makeJustAnother2DgraphComplex(xs,ys,fn,labl):
     plt.close('all')
 
 
-
-def makeJustAnother2DgraphComplexALLS(xs,yss,fn,labl,xaxisL=[1,14]):
+def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=[1,14]):
     (nstates,gridN) = yss.shape
     transp    = False
     my_dpi    = 150
     ratio     = (16, 9)
-    fontsize  = 12
     fig, ax1  = plt.subplots(figsize=ratio)
     ax1.set_xlim(xaxisL)
     ax1.set_ylim([-0.3,2.3])
@@ -116,12 +125,10 @@ def makeJustAnother2DgraphComplexALLS(xs,yss,fn,labl,xaxisL=[1,14]):
     plt.close('all')
 
 
-
-def makeJustAnother2DgraphComplexSINGLE(xs,ys,fn,labl,xaxisL):
+def makeJustAnother2DgraphComplexSINGLE(xs, ys, fn, labl, xaxisL):
     transp    = False
     my_dpi    = 150
     ratio     = (16, 9)
-    fontsize  = 12
     imgL      = labl + " Imag"
     reaL      = labl + " Real"
     sqrL      = labl + r" $|\Psi|^2$"
@@ -136,12 +143,10 @@ def makeJustAnother2DgraphComplexSINGLE(xs,ys,fn,labl,xaxisL):
     plt.close('all')
 
 
-
-
-def dipoleMatrixGraph1d(inputs,fn,labels,nstates,gridN,distSmall,dipoSmall):
+def dipoleMatrixGraph1d(inputs, fn, labels, nstates, gridN, distSmall, dipoSmall):
     gridpp      = distSmall.size
     dimensions = len(labels)
-    multiplotMtrx = np.empty((dimensions,nstates,nstates,gridpp))
+    multiplotMtrx = np.empty((dimensions, nstates, nstates, gridpp))
     for i in range(dimensions):
         l1 = labels[i]
         for j in range(nstates):
@@ -158,7 +163,6 @@ def dipoleMatrixGraph1d(inputs,fn,labels,nstates,gridN,distSmall,dipoSmall):
         makeMultiPlotMatrix(distSmall, multiplotMtrx[i], name, "LiHAst", nstates)
 
 
-
 def makeMultiPlotMatrix(xs, ys, fn, systemName, nstates):
     '''
     This will make a (nstate,nstate) matrix with changes along R.
@@ -170,7 +174,6 @@ def makeMultiPlotMatrix(xs, ys, fn, systemName, nstates):
     transp     = False
     my_dpi     = 250
     ratio      = (16, 9)
-    #fontsize   = 10
     label_size = 20
     limit      = np.absolute(ys).max()
     f, axarr   = plt.subplots(nstates, nstates, figsize=ratio)
@@ -196,9 +199,6 @@ def makeMultiPlotMatrix(xs, ys, fn, systemName, nstates):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
 
 
-
-
-
 def make2DgraphTranspose(xs, ys, fn, systemName, nstates):
     '''
     Makes a 2d graph with xs and the transpose set of value of ys -> ys[:,i]
@@ -218,9 +218,8 @@ def make2DgraphTranspose(xs, ys, fn, systemName, nstates):
     #ax1.set_xlim([2,5])
     [plt.plot(xs, ys[:,i], linewidth=3.0,color=colorsA[i],label=statesLab[i]) for i in range(nstates)]
     ax1.legend(loc='upper right')
+    plt.rcParams.update({'font.size': fontsize})
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
-
-
 
 
 def makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn, systemName, nstates):
@@ -253,6 +252,7 @@ def makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn, systemName, n
     plt.rcParams.update({'font.size': fontsize})
     plt.savefig(imagefn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
 
+
 def createHeatMapfromH5(fol,fn):
     '''
     From a folder with N files containing the wavefunction, it creates the time vs population
@@ -274,6 +274,7 @@ def createHeatMapfromH5(fol,fn):
         createSingleHeatmap(singlestate, fol,fn,label)
     print(allP.shape)
 
+
 def createSingleHeatmap(state,fol,fn,label):
     '''
     Given one eletronic state population evolution over time
@@ -286,12 +287,12 @@ def createSingleHeatmap(state,fol,fn,label):
     transp      = False
     my_dpi      = 250
     ratio       = (16, 9)
-    fontsize    = 12
     fig, ax1  = plt.subplots(figsize=ratio)
     im = plt.imshow(state, cmap='hot')
     plt.colorbar(im, orientation='horizontal')
     fn2 = fol + '/AAA' + fn + label + 'HeatMap.png'
     plt.savefig(fn2, bbox_inches='tight', dpi=my_dpi, transparent=transp)
+
 
 def createCoherenceHeatMapfromH5(fol,fn,xs):
     '''
@@ -307,16 +308,18 @@ def createCoherenceHeatMapfromH5(fol,fn,xs):
     wf = h5.retrieve_hdf5_data(fs[0], 'WF')
     (nstates,gridN) = wf.shape
     final = np.empty((times,nstates,gridN), dtype = complex)
-    for i in range(len(fs)):
+    for i in range(times):
         final[i] = h5.retrieve_hdf5_data(fs[i], 'WF')
     for (i,j) in xs:
         coherence = np.apply_along_axis(lambda t: ccmu(*t), 0, np.stack((final[:,i,:],final[:,j,:])))
         label = "COHE_" + str(i) + "_vs_" + str(j)
         createSingleHeatmap(coherence,fol,fn,label)
 
+
 def ccmu(a,b):
     ''' complex conjugate multiplication '''
     return ((np.conjugate(a))*b).real * 2
+
 
 if __name__ == "__main__":
     fol = 'output-graphics/ConcerningOne_Interpolated_longData_losenormAfterPulse'

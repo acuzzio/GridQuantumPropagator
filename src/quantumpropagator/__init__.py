@@ -2,13 +2,14 @@
 Init module to import quantumpropagator
 '''
 
-from .astridParser import (astridParser, calculateGradientOnMatrix0)
+from .astridParser import (astridParser)
 from .commandlineParser import (readArguments)
 from .errors import (err, good, box)
 from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
-                               groundState, gaussian, cm2inch, saveComplex,
+                               groundState, gaussian, saveComplex,
                                loadComplex, print2ArrayInColumns, dipoleMoment,
-                               BohToAng, EvtoHar, DFT_slow, fromCmMin1toHartree)
+                               BohToAng, EvtoHar, DFT_slow, fromCmMin1toHartree,
+                               calculateGradientOnMatrix0)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,
