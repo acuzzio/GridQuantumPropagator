@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import quantumpropagator.h5Reader as h5
 import quantumpropagator.GeneralFunctions as gf
-import quantumpropagator.pulse as pp
+import quantumpropagator.EMPulse as pp
 
 
 def getLabels(string):

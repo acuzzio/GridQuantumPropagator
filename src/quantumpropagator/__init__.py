@@ -33,6 +33,6 @@ from .Propagator import (rk4Ene1dSLOW, derivative1d, HamiltonianEle1d,
                          NuclearKinetic1d, doubleDeronK, singleDerOnK,
                          createXaxisReciprocalspace1d, divideByTwo, calculateTotal,
                          rk6Ene1dSLOW, EULER1d)
-from .pulse import (specificPulse, varPulseZ, specificPulseZero, component,
-                    envel, pulse)
+from .EMPulse import (specificPulse, varPulseZ, specificPulseZero, component,
+                      envel, pulse)
 from .SinglePointIntegrator import (singlePointIntegration)

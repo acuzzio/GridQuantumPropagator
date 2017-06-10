@@ -1,24 +1,30 @@
+'''
+This module launches single point propagations
+'''
 
 import numpy as np
 import itertools as it
 
 import quantumpropagator.h5Reader as hf
 import quantumpropagator.Propagator as Pr
-import quantumpropagator.pulse as pp
+import quantumpropagator.EMPulse as pp
 import quantumpropagator.GeneralFunctions as gf
 import quantumpropagator.graph as gg
 
 
-
-def singlePointIntegration(h5fn, h, ts, specPulse, graph, systemName, fileO):
+def singlePointIntegration(h5fn, h, ts, specPulse, systemName, graph, fileO):
     '''
     Molcas parsers
-    h  :: Double    time step
-    ts :: Int       Number of steps
-    fn :: FilePath
+    h :: Double - time step
+    ts :: Int - Number of steps
+    h5fn :: FilePath - path of h5 file
+    specPulse :: function - pulse function
+    systemName :: String - name of the system (for graph label)
+    graph :: Bool - turn off/on graph generation
+    fileO :: Bool - turn off/on file output generation
+
     tdp :: [3[[Double]]]
     ene :: [Double]
-
     eneZero = the energies are taken to be ground state = 0
     matV = energies needs to be in a diagonal matrix
     matMu = for now, we take them like this, until we modify Molcas
@@ -66,7 +72,7 @@ def singlePointIntegration(h5fn, h, ts, specPulse, graph, systemName, fileO):
         muOftStr = ' '.join(map(vectorFor.format, muOft))
         normStr = '{:20.18f}'.format(1.0-norm)
         stringout = ' '.join([tStr,pulseVStr,statesStr,muOftStr,normStr])
-        if fileO:   # to print results in a file.dat
+        if fileO: # to print results in a file.dat
            ffname = finalName + ".dat"
            with open(ffname, "a") as myfile:
                 myfile.write(stringout + '\n')
@@ -95,7 +101,7 @@ if __name__ == "__main__":
     # pulse             [[Double]]  [t1[x,y,z],t2[x,y,z]] extern electromagnetic field at each t(x,y,z)
     # Graph             True/False  To make the graph
     # OutputFile        True/False  To write an external file
-
-    singlePointIntegration('LiH.rassi.h5', 0.04, 10, pp.specificPulse,
+    pulse = pp.specificPulse(10)
+    singlePointIntegration('LiH.rassi.h5', 0.04, 10, pulse,
             'LiHAst', True, True)
 

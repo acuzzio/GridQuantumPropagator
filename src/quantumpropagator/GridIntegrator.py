@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import quantumpropagator.graph as gg
 import quantumpropagator.Propagator as Pr
-import quantumpropagator.pulse as pp
+import quantumpropagator.EMPulse as pp
 import quantumpropagator.GeneralFunctions as gf
 import quantumpropagator.GeneralFunctionsSystem as gfs
 import quantumpropagator.h5Reader as h5
