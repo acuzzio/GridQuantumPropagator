@@ -26,7 +26,6 @@ from .initialConditions import (addPhase, createInitialState, reducedMassLiH,
                                 extrapolateSxLinear, linebetween2points, morse, expandDist,
                                 expandDipo, expandEne, expandEneZero, expandEneArmonic, armonic,
                                 absorbingPotential3Right)
-from .Main import (main)
 from .molcas import (launchSPfromGeom, writeRassiLiHInput, LiHxyz, WaterXyz,
                      generateLiHxyz, generateWater)
 from .Propagator import (rk4Ene1dSLOW, derivative1d, HamiltonianEle1d,
@@ -35,4 +34,4 @@ from .Propagator import (rk4Ene1dSLOW, derivative1d, HamiltonianEle1d,
                          rk6Ene1dSLOW, EULER1d)
 from .EMPulse import (specificPulse, varPulseZ, specificPulseZero, component,
                       envel, pulse)
-from .SinglePointIntegrator import (singlePointIntegration)
+from .SinglePointPropagator import (single_point_propagation)

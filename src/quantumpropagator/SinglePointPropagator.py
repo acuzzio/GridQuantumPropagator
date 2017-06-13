@@ -1,43 +1,47 @@
 '''
-This module launches single point propagations
+This module launches single point propagations...
 '''
 
 import numpy as np
 import itertools as it
+from collections import namedtuple
 
 import quantumpropagator.h5Reader as hf
 import quantumpropagator.Propagator as Pr
 import quantumpropagator.EMPulse as pp
 import quantumpropagator.GeneralFunctions as gf
 import quantumpropagator.graph as gg
+import quantumpropagator.commandlineParser as cmd
 
 
-def singlePointIntegration(h5fn, h, ts, specPulse, systemName, graph, fileO):
+def single_point_propagation(h5fn, h, ts, specPulse, systemName, graph, fileO,
+        outFolder):
     '''
-    Molcas parsers
+    h5fn :: FilePath - path of h5 file
     h :: Double - time step
     ts :: Int - Number of steps
-    h5fn :: FilePath - path of h5 file
     specPulse :: function - pulse function
     systemName :: String - name of the system (for graph label)
     graph :: Bool - turn off/on graph generation
     fileO :: Bool - turn off/on file output generation
+    outFolder :: FilePath - folder to save outputs
 
     tdp :: [3[[Double]]]
     ene :: [Double]
-    eneZero = the energies are taken to be ground state = 0
-    matV = energies needs to be in a diagonal matrix
+    enezero = the energies are taken to be ground state = 0
+    mat_v = energies needs to be in a diagonal matrix
     matMu = for now, we take them like this, until we modify Molcas
     nstates = number of roots of the calculation
     states = array of population :: [Complex]
     '''
 
-    [tdp,ene] = hf.retrieve_hdf5_data(fn,['MLTPL','SFS_ENERGIES'])
-    eneZero = ene - (ene[0])
-    matV = np.diag(eneZero)
+    [tdp, ene] = hf.retrieve_hdf5_data(h5fn, ['PROPERTIES', 'SFS_ENERGIES'])
+    enezero = ene - (ene[0])
+    mat_v = np.diag(enezero)
     matMu = tdp[0:3]
     nstates = ene.size
     states = gf.groundState(nstates)
+#    print(states,nstates,matMu,mat_v,enezero,tdp,ene)
 
     #INITIAL VALUES
     t     = 0        # initial time
@@ -46,25 +50,24 @@ def singlePointIntegration(h5fn, h, ts, specPulse, systemName, graph, fileO):
     np.set_printoptions(precision=14,suppress=False)
 
     #projectname
-    longfilename = ''.join(it.takewhile(lambda x: x != '.',fn))
+    longfilename = ''.join(it.takewhile(lambda x: x != '.',h5fn))
     finalName = 'Results' + longfilename + "-Ts" + str(h)
-
     if graph:                     # initialize repa arrays for graphics
-       print("graph ON")
-       statesArr = np.empty((0,nstates))
-       pulseArr = np.empty((0,3))
+        print("graph ON")
+        statesArr = np.empty((0,nstates))
+        pulseArr = np.empty((0,3))
 
     print('\n')
 
     for ii in range(ts):
-        states = Pr.rk4Ene(Pr.derivativeC, t, states, h, specPulse, matV, matMu) # Amplitudes
+        states = Pr.rk4Ene(Pr.derivativeC, t, states, h, specPulse, mat_v, matMu) # Amplitudes
         muOft = np.real(gf.dipoleMoment(states,matMu)) # Dipole moments
         norm = np.linalg.norm(states) # Norms
     #    norms     = norms+[norm]
         times = times+[t]
         t = t + h
         pulseV = pp.specificPulse(t)
-        statesA = np.absolute(states)
+        statesA = gf.abs2(states)
         tStr = '{:3.2f}'.format(t)
         vectorFor = "{:.7f}"
         statesStr = " ".join(map(vectorFor.format, statesA))
@@ -79,9 +82,9 @@ def singlePointIntegration(h5fn, h, ts, specPulse, systemName, graph, fileO):
         else:
            print(stringout)
         if graph:
-           statesArr = np.append(statesArr,[statesA],axis=0)
-           pulseArr = np.append(pulseArr,[pulseV],axis=0)
-           imagefn = finalName + '.png'
+            statesArr = np.append(statesArr,[statesA],axis=0)
+            pulseArr = np.append(pulseArr,[pulseV],axis=0)
+            imagefn = finalName + '.png'
 
     if fileO:
        print('File mode ON. A new file: ' + ffname + ' has been written')
@@ -92,16 +95,33 @@ def singlePointIntegration(h5fn, h, ts, specPulse, systemName, graph, fileO):
        gg.makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn,
                systemName, nstates)
 
+single_inputs = namedtuple("single_input",
+            ("out_folder",
+             "nsteps",
+             "dt",
+             "H5file",
+             "graphs",
+             "outF"
+            )
+            )
 
 if __name__ == "__main__":
-    # singlePointIntegration(h5file, timestepDT, timestepN, Graph, OutputFile)
+    # single_point_propagation(h5file, timestepDT, timestepN, Graph, OutputFile)
     # h5file            String      Name of the single point h5 file
     # timestepDT        Double      dt
     # timestepN         Double      number of steps
-    # pulse             [[Double]]  [t1[x,y,z],t2[x,y,z]] extern electromagnetic field at each t(x,y,z)
+    # pulse             [[Double]]  [t1[x,y,z],t2[x,y,z]]
+    #                               extern electromagnetic field at each t(x,y,z)
     # Graph             True/False  To make the graph
     # OutputFile        True/False  To write an external file
-    pulse = pp.specificPulse(10)
-    singlePointIntegration('LiH.rassi.h5', 0.04, 10, pulse,
-            'LiHAst', True, True)
+    inputs = single_inputs("here",
+                           5,
+                           0.04,
+                           "cisbutadieneOUT.0.rassi.h5",
+                           True,
+                           True
+                           )
+    new_inp = cmd.read_single_arguments(inputs)
+    single_point_propagation(new_inp.H5file, new_inp.dt, new_inp.nsteps, pp.specificPulse,
+            'CisButa', new_inp.graphs, new_inp.outF, new_inp.out_folder)
 

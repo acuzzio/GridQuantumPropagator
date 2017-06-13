@@ -14,8 +14,8 @@ def specificPulse(t):
     A defined pulse with the three components x, y and z
     $\color{violet}\vec{E}(t) = \sum_d E_d cos(\omega t + \phi) \cdot e^{-\dfrac{(t-t_0)^2}{2\sigma^2}} \ \ \ \ \ \   d={x,y,z}$
     '''
-    pulseX=0
-    pulseY=0
+    pulseX=pulse(t,0.014,0.13,30,0,100)
+    pulseY=pulse(t,0.014,0.13,30,0,100)
     pulseZ=pulse(t,0.014,0.13,30,0,100)
     return np.array([pulseX,pulseY,pulseZ],dtype=float) ## AU
 

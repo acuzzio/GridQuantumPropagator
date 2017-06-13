@@ -22,7 +22,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
-    #scripts=['Scripts/PutScripthere.py'],
+    scripts=['Scripts/SinglePointPropagatorLauncher.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'matplotlib'],
     extras_require={'test': ['nose', 'coverage']}
 )

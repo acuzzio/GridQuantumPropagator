@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 def readArguments(inputs):
     '''
     This funcion reads the command line arguments and assign the values on
-    the namedTuple.
+    the namedTuple for the 1D grid propagator.
     '''
     parser = ArgumentParser()
 
@@ -29,14 +29,16 @@ def readArguments(inputs):
     if args.n != None:
         inputs = inputs._replace(label=args.n)
     if args.s != None:
-        inputs = inputs._replace(fullTime=args.s)
+        inputs = inputs._replace(fulltime=args.s)
     if args.d != None:
-        inputs = inputs._replace(timeStep=args.d)
+        inputs = inputs._replace(timestep=args.d)
 
     return inputs
+
 
 if __name__ == "__main__":
     inputData = namedtuple("inputData",("timeStep","fullTime","label"))
     inputs = inputData(0.04,10,"coi")
     a = readArguments(inputs)
     print(a)
+

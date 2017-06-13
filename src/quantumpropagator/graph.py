@@ -18,9 +18,15 @@ def getLabels(string):
     It will be upgraded to something read from an input file
     '''
     supportedSystems = {"LiH": LiHLab,
-                        "LiHAst": LiHAstLab}
+                        "LiHAst": LiHAstLab,
+                        "CisButa": CisButa}
     return (supportedSystems[string])
 
+
+def CisButa():
+    ''' labels of cisbutadiene '''
+    return (createStatesLab(['a','a','b','a','a','b']),
+            ['b','g','r','c','m','y']) # THIS IS NOT THE RIGHT ORDER!!
 
 def LiHAstLab():
     ''' The labels of the LiH of the test astrid dataset '''
@@ -38,8 +44,8 @@ def createStatesLab(statesSym):
     '''
     This function takes the label string and creates the correct LAteX label to use in the graph key
     '''
-    labels = {'s' : '\Sigma', 'p' : '\Pi'}
-    init   = {'s' : 0, 'p' : 1}
+    labels = {'s' : '\Sigma', 'p' : '\Pi', 'a' : 'A', 'b' : 'B'}
+    init   = {'s' : 0, 'p' : 1, 'a' : 1, 'b' : 1}
     counter_d = {}
     correctlabel = []
     for lab in statesSym:
@@ -238,7 +244,8 @@ def makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn, systemName, n
     fig, ax1    = plt.subplots(figsize=ratio)
     ax1.set_xlabel('time (a.u.)')
     ax1.set_ylabel('P(t)')
-    [plt.plot(times,statesArr[:,i],linewidth=3.0,color=colorsA[i],label=statesLab[i]) for i in range(nstates)]
+    for i in range(nstates):
+        plt.plot(times,statesArr[:,i],linewidth=3.0,color=colorsA[i],label=statesLab[i])
     ax2         = ax1.twinx()
     # ax2.set_ylabel('E(t)', color='r')
     ax2.set_ylabel('E(t)')
