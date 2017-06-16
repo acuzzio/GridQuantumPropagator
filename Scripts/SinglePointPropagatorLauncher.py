@@ -2,8 +2,7 @@
 
 from collections import namedtuple
 from argparse import ArgumentParser
-from quantumpropagator import single_point_propagation
-from quantumpropagator import specificPulse
+from quantumpropagator import single_point_propagation, printEvenergy, specificPulse
 
 
 def read_single_arguments(single_inputs):
@@ -27,8 +26,12 @@ def read_single_arguments(single_inputs):
     parser.add_argument("-i", "--h5file",
                         dest="i",
                         type=str,
-                        help="H5 input file",
-                        required=True)
+                        required=True,
+                        help="H5 input file")
+    parser.add_argument("-e", "--energy",
+                        dest="e",
+                        action='store_true',
+                        help="Get Ev energies from H5 file.")
 
     args = parser.parse_args()
 
@@ -40,7 +43,8 @@ def read_single_arguments(single_inputs):
         single_inputs = single_inputs._replace(dt=args.d)
     if args.i != None:
         single_inputs = single_inputs._replace(H5file=args.i)
-
+    if args.e != None:
+        single_inputs = single_inputs._replace(Energies=args.e)
     return single_inputs
 
 single_inputs = namedtuple("single_input",
@@ -48,6 +52,7 @@ single_inputs = namedtuple("single_input",
              "nsteps",
              "dt",
              "H5file",
+             "Energies",
              "graphs",
              "outF"
             )
@@ -61,11 +66,15 @@ def main():
                            5,                # nsteps
                            0.04,             # dt
                            "nothing",        # H5file
-                           False,             # graphs
-                           False              # outF
+                           False,            # Energies
+                           False,            # graphs
+                           True              # outF
                            )
     new_inp = read_single_arguments(inputs)
-    single_point_propagation(new_inp.H5file, new_inp.dt, new_inp.nsteps, specificPulse,
+    if new_inp.Energies == True:
+       printEvenergy(new_inp.H5file)
+    else:
+       single_point_propagation(new_inp.H5file, new_inp.dt, new_inp.nsteps, specificPulse,
             'CisButa', new_inp.graphs, new_inp.outF, new_inp.out_folder)
 
 if __name__ == "__main__":

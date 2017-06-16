@@ -122,14 +122,20 @@ def dipoleMoment(states,matMu):
 
 
 def BohToAng(n):
-    ''' From bohr to Angstrom conversion '''
+    ''' From Bohr to Angstrom conversion '''
     return (n * 0.529177249)
 
+def AngToBoh(n):
+    ''' From Angstrom to Bohr conversion '''
+    return (n * 1.889725988)
 
 def EvtoHar(n):
     ''' From ElectronVolt to Hartree conversion '''
     return (n * 0.0367493)
 
+def HartoEv(n):
+    ''' From Hartree to ElectronVolt conversion '''
+    return (n * 27.211402)
 
 def fromCmMin1toHartree(x):
     ''' from cm-1 to hartree conversion '''

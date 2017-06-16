@@ -14,6 +14,21 @@ import quantumpropagator.graph as gg
 import quantumpropagator.commandlineParser as cmd
 
 
+def printEvenergy(h5fn):
+    '''
+    it displays the difference in energy between states in a h5 file
+    '''
+    ene = hf.retrieve_hdf5_data(h5fn, 'SFS_ENERGIES')
+    enezero = ene - (ene[0])
+    vectorFor = "{:3.7f}"
+    enezero_string = ' '.join(map(vectorFor.format, enezero))
+    enezero_electronvolt_string = ' '.join(map(vectorFor.format,
+        gf.HartoEv(enezero)))
+    output = '\nEnergies requested:\n Hartree  {} \n Ev       {}\n'.format(
+            enezero_string, enezero_electronvolt_string)
+    print(output)
+
+
 def single_point_propagation(h5fn, h, ts, specPulse, systemName, graph, fileO,
         outFolder):
     '''
