@@ -22,7 +22,8 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
-    scripts=['Scripts/SinglePointPropagatorLauncher.py'],
+    scripts=['Scripts/SinglePointPropagatorLauncher.py',
+    'Scripts/OxiallylDensityWriter.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'matplotlib'],
     extras_require={'test': ['nose', 'coverage']}
 )
