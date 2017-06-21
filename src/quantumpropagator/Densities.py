@@ -4,10 +4,11 @@ This module takes care of drawing the electronic densities for the problem.
 
 import numpy as np
 
-def give_me_swap_label_Oxiallyl(label):
+def give_me_swapd_oxiallyl(vector):
     '''
-    this function is problem bound and it returns the correct label to swap the
-    transition density matrix.
+    this function is problem bound and it returns the correct vector where any
+    AO,AO matrix has the columns/rows swapped to take into account different ordering
+    between Gaussian and Molcas.
 
     The specific swapvector has been produced comparing gaussian and molcas label
     for the AUG-CC-PVDZ basis set of a specific molecule in a specific sequence.
@@ -24,7 +25,9 @@ def give_me_swap_label_Oxiallyl(label):
                  100, 98, 101, 102, 103, 104, 105, 108, 106, 109, 107, 110, 111,
                  112, 113, 114, 117, 115, 118, 116, 119, 120, 121, 122, 123, 126,
                  124, 127, 125, 128]
-    numpy_array = np.array(swapvector) - 1
-    return numpy_array[label]
+    swap_indexes = np.array(swapvector) - 1
+    num = 128 # I use this fixed numer to underline the problem/bound function
+    swap_vector = vector[:, swap_indexes][swap_indexes]
+    return swap_vector
 
 

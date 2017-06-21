@@ -35,4 +35,4 @@ from .Propagator import (rk4Ene1dSLOW, derivative1d, HamiltonianEle1d,
 from .EMPulse import (specificPulse, varPulseZ, specificPulseZero, component,
                       envel, pulse)
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
-from .Densities import (give_me_swap_label_Oxiallyl)
+from .Densities import (give_me_swapd_oxiallyl)

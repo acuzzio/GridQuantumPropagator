@@ -5,7 +5,7 @@ import numpy as np
 from collections import namedtuple
 from argparse import ArgumentParser
 from quantumpropagator import (single_point_propagation, printEvenergy,
-                              specificPulse, give_me_swap_label_Oxiallyl)
+                              specificPulse, give_me_swapd_oxiallyl)
 
 
 def read_this_arguments(single_inputs):
@@ -41,7 +41,8 @@ single_inputs = namedtuple("single_input",
              "molcas_file",
              "TDMZ",
              "out_file"
-            ))
+            )
+            )
 
 def main():
     '''
@@ -58,8 +59,11 @@ def main():
 
     fGauDou = '{:15.8E}'
     a = np.loadtxt(new_inp.TDMZ).reshape(128,128)
-
-    print(a)
+    b = give_me_swapd_oxiallyl(a)
+   # v = np.array([1,0,2,3,4])
+   # g[:,v][v]   swap indexes according to v
+    print(b)
+    print(b.shape)
 
 
 if __name__ == "__main__":
