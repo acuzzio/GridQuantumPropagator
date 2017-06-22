@@ -5,7 +5,8 @@ import numpy as np
 from collections import namedtuple
 from argparse import ArgumentParser
 from quantumpropagator import (single_point_propagation, printEvenergy,
-                              specificPulse, give_me_swapd_oxiallyl)
+                              specificPulse, give_me_swapd_oxiallyl,
+                              chunksOfList)
 
 
 def read_this_arguments(single_inputs):
@@ -58,12 +59,17 @@ def main():
     new_inp = read_this_arguments(inputs)
 
     fGauDou = '{:15.8E}'
-    a = np.loadtxt(new_inp.TDMZ).reshape(128,128)
+    aon = 128
+    a = np.loadtxt(new_inp.TDMZ).reshape(aon,aon)
     b = give_me_swapd_oxiallyl(a)
-   # v = np.array([1,0,2,3,4])
-   # g[:,v][v]   swap indexes according to v
-    print(b)
-    print(b.shape)
+    c = np.tril_indices(aon)
+    d = b[c]
+    unlines = lambda ys: '\n'.join(ys)
+    unwords = lambda ys: ' '.join(ys)
+    dd = ['{:15.8E}'.format(i) for i in d]
+    ddd =list(chunksOfList(dd,5))
+    dddd = unlines([unwords(x) for x in ddd])
+    print(dddd)
 
 
 if __name__ == "__main__":

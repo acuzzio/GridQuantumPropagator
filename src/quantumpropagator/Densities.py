@@ -26,7 +26,7 @@ def give_me_swapd_oxiallyl(vector):
                  112, 113, 114, 117, 115, 118, 116, 119, 120, 121, 122, 123, 126,
                  124, 127, 125, 128]
     swap_indexes = np.array(swapvector) - 1
-    num = 128 # I use this fixed numer to underline the problem/bound function
+    #num = 128 # I use this fixed numer to underline the problem/bound function
     swap_vector = vector[:, swap_indexes][swap_indexes]
     return swap_vector
 

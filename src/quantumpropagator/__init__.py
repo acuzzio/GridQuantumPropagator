@@ -9,7 +9,8 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                groundState, gaussian, saveComplex,
                                loadComplex, print2ArrayInColumns, dipoleMoment,
                                BohToAng, AngToBoh, EvtoHar, HartoEv, DFT_slow,
-                               fromCmMin1toHartree, calculateGradientOnMatrix0)
+                               fromCmMin1toHartree, calculateGradientOnMatrix0,
+                               chunksOf, chunksOfList)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,

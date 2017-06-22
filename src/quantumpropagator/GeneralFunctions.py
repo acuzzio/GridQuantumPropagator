@@ -37,6 +37,18 @@ def abs2(x):
     return x.real**2 + x.imag**2
 
 
+def chunksOf(xs, n):
+    """Yield successive n-sized chunks from xs"""
+    for i in range(0, xs.size, n):
+        yield xs[i:i + n]
+
+
+def chunksOfList(xs, n):          
+    """Yield successive n-sized chunks from xs"""
+    for i in range(0, len(xs), n):
+        yield xs[i:i + n]
+
+
 def population(grid):
     '''
     grid :: np.array[Complex]
