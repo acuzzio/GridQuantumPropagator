@@ -23,7 +23,7 @@ setup(
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
     scripts=['Scripts/SinglePointPropagatorLauncher.py',
-    'Scripts/OxiallylDensityWriter.py'],
-    install_requires=['h5py', 'numpy', 'scipy', 'matplotlib'],
+     'Scripts/OxiallylDensityWriter.py', 'Scripts/ReadCube.py'],
+    install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib'],
     extras_require={'test': ['nose', 'coverage']}
 )

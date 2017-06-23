@@ -3,6 +3,7 @@ This module takes care of drawing the electronic densities for the problem.
 '''
 
 import numpy as np
+from quantumpropagator import chunksOfList
 
 def give_me_swapd_oxiallyl(vector):
     '''
@@ -30,4 +31,13 @@ def give_me_swapd_oxiallyl(vector):
     swap_vector = vector[:, swap_indexes][swap_indexes]
     return swap_vector
 
+def transform_numpy_into_format(array):
+    '''
+    Format a Nupy array into the Gaussian fchk format.
+    '''
+    unlines = lambda ys: '\n'.join(ys)
+    unwords = lambda ys: ' '.join(ys)
+    strings = ['{:15.8E}'.format(i) for i in array]
+    columns = list(chunksOfList(strings, 5))
+    return unlines([unwords(x) for x in columns])
 
