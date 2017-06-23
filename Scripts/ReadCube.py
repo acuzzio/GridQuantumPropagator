@@ -37,8 +37,9 @@ def main():
     new_inp = read_this_arguments(inputs)
     fn = new_inp.cube
     lol = pd.read_table(fn, delim_whitespace=True,
-            skiprows=14).dropna().as_matrix()
-    print(lol[9:17])
+            skiprows=14).as_matrix().flatten()
+    lol = lol[~np.isnan(lol)]  # take out nan values
+    print(lol)
     print(lol.shape)
 
 if __name__ == "__main__":
