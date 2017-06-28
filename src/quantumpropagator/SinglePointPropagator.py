@@ -3,6 +3,7 @@ This module launches single point propagations...
 '''
 
 import numpy as np
+import pandas as pd
 import itertools as it
 from collections import namedtuple
 
@@ -16,17 +17,24 @@ import quantumpropagator.commandlineParser as cmd
 
 def printEvenergy(h5fn):
     '''
-    it displays the difference in energy between states in a h5 file
+    it displays the difference in energy between states in a h5 file and the
+    transition dipole matrices
     '''
-    ene = hf.retrieve_hdf5_data(h5fn, 'SFS_ENERGIES')
+    [tdp, ene] = hf.retrieve_hdf5_data(h5fn, ['PROPERTIES', 'SFS_ENERGIES'])
+    nstates = ene.size
     enezero = ene - (ene[0])
-    vectorFor = "{:3.7f}"
-    enezero_string = ' '.join(map(vectorFor.format, enezero))
-    enezero_electronvolt_string = ' '.join(map(vectorFor.format,
-        gf.HartoEv(enezero)))
-    output = '\nEnergies requested:\n Hartree  {} \n Ev       {}\n'.format(
-            enezero_string, enezero_electronvolt_string)
+    indexes = np.arange(nstates)+1
+    ener = pd.DataFrame([enezero,gf.HartoEv(enezero)],index=['Energies','Hartree'],
+            columns=indexes)
+    output = '\n --- Energies ---\n\n {}\n'.format(ener)
     print(output)
+    matMu = tdp[0:3]
+    x_mu = pd.DataFrame(matMu[0], index=indexes, columns=indexes)
+    y_mu = pd.DataFrame(matMu[1], index=indexes, columns=indexes)
+    z_mu = pd.DataFrame(matMu[2], index=indexes, columns=indexes)
+    output2 = '\n --- Transition Dipole Elements --- \n\n Along X:\n{}\n\n Along Y:\n{}\n\n Along Z:\n{}\n'.format(x_mu,y_mu,z_mu)
+    print(output2)
+
 
 
 def single_point_propagation(h5fn, h, ts, specPulse, systemName, graph, fileO,
