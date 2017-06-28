@@ -8,6 +8,9 @@ import pandas as pd
 import os
 
 def vmd_watch_cube(fn):
+    '''
+    This function will launch VMD to display a cube.
+    '''
     cwd = os.getcwd()
     vmd_script = fn + "vmdscript"
     vmd_content = '''
@@ -51,7 +54,7 @@ def read_this_arguments(single_inputs):
     args = parser.parse_args()
 
     if args.c != None:
-        single_inputs = single_inputs._replace(cube=args.g)
+        single_inputs = single_inputs._replace(cube=args.c)
     if args.v != None:
         single_inputs = single_inputs._replace(vmd=args.v)
 
@@ -79,8 +82,12 @@ def main():
         lol = pd.read_table(fn, delim_whitespace=True,
                  skiprows=14).as_matrix().flatten()
         lol = lol[~np.isnan(lol)]  # take out nan values
-        print(np.sum(lol))
-        print(lol.shape)
+        cell_dimension = 0.0005786967592870371 # PROBLEM BOUND I need to take
+                                               # this number from the cube file !
+        integral = np.sum(lol*cell_dimension)
+        dimension = lol.shape[0]
+        print('\nFile {}:\nGrid points: {}\nIntegral: {}'.format(new_inp.cube,
+                                           dimension, integral))
 
 if __name__ == "__main__":
     main()
