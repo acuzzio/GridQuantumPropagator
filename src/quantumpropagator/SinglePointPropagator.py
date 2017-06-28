@@ -24,15 +24,29 @@ def printEvenergy(h5fn):
     nstates = ene.size
     enezero = ene - (ene[0])
     indexes = np.arange(nstates)+1
-    ener = pd.DataFrame([enezero,gf.HartoEv(enezero)],index=['Energies','Hartree'],
+    ener = pd.DataFrame([enezero,gf.HartoEv(enezero)],index=['Hartree','Ev'],
             columns=indexes)
-    output = '\n --- Energies ---\n\n {}\n'.format(ener)
+    output = '''
+ --- Energies ---
+
+ {}
+ '''.format(ener)
     print(output)
     matMu = tdp[0:3]
     x_mu = pd.DataFrame(matMu[0], index=indexes, columns=indexes)
     y_mu = pd.DataFrame(matMu[1], index=indexes, columns=indexes)
     z_mu = pd.DataFrame(matMu[2], index=indexes, columns=indexes)
-    output2 = '\n --- Transition Dipole Elements --- \n\n Along X:\n{}\n\n Along Y:\n{}\n\n Along Z:\n{}\n'.format(x_mu,y_mu,z_mu)
+    output2 = '''
+ --- Transition Dipole Elements ---
+
+ Along X:
+ {}
+
+ Along Y:
+ {}
+
+ Along Z:
+ {}'''.format(x_mu,y_mu,z_mu)
     print(output2)
 
 

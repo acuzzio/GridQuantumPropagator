@@ -31,7 +31,7 @@ def read_single_arguments(single_inputs):
     parser.add_argument("-e", "--energy",
                         dest="e",
                         action='store_true',
-                        help="Get Ev energies from H5 file.")
+                        help="Get Ev energies and TDM from H5 file.")
 
     args = parser.parse_args()
 
@@ -67,7 +67,7 @@ def main():
                            0.04,             # dt
                            "nothing",        # H5file
                            False,            # Energies
-                           False,            # graphs
+                           True,            # graphs
                            True              # outF
                            )
     new_inp = read_single_arguments(inputs)
