@@ -43,7 +43,7 @@ def chunksOf(xs, n):
         yield xs[i:i + n]
 
 
-def chunksOfList(xs, n):          
+def chunksOfList(xs, n):
     """Yield successive n-sized chunks from xs"""
     for i in range(0, len(xs), n):
         yield xs[i:i + n]
