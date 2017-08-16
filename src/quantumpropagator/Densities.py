@@ -35,8 +35,6 @@ def transform_numpy_into_format(array):
     '''
     Format a Nupy array into the Gaussian fchk format.
     '''
-    #unlines = lambda ys: '\n'.join(ys)
-    #unwords = lambda ys: ' '.join(ys)
     strings = ['{:15.8E}'.format(i) for i in array]
     columns = list(chunksOfList(strings, 5))
     return '\n'.join([' '.join(x) for x in columns])
