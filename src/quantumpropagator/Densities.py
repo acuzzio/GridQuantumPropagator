@@ -14,7 +14,7 @@ def give_me_swapd_oxiallyl(vector):
     The specific swapvector has been produced comparing gaussian and molcas label
     for the AUG-CC-PVDZ basis set of a specific molecule in a specific sequence.
 
-    This can be easily generalized but for the moment, let it be.
+    This can be "easily" generalized but for the moment, let it be...
     '''
 
     swapvector = [1, 2, 3, 4, 5, 8, 11, 6, 9, 12, 7, 10, 13, 18, 23, 16, 21, 14,
@@ -33,7 +33,7 @@ def give_me_swapd_oxiallyl(vector):
 
 def transform_numpy_into_format(array):
     '''
-    Format a Nupy array into the Gaussian fchk format.
+    Format a Numpy array into the Gaussian fchk format.
     '''
     strings = ['{:15.8E}'.format(i) for i in array]
     columns = list(chunksOfList(strings, 5))

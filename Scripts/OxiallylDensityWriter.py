@@ -1,4 +1,14 @@
-''' This script launches a single Point propagation from a h5 file. '''
+'''
+
+This script handles a special case (oxiallyl) and transforms the transition
+density matrix into cubes to be visualized.
+
+It is not that hard to generalize, but this workflow is still changing a lot.
+
+For the moment, Gaussian will be used to convert into cube file, using a
+template fchk.
+
+'''
 
 import numpy as np
 
@@ -14,6 +24,9 @@ def spawn_grepper(fn):
     '''
     This is a bash script that is needed to extract -> python parsers are slow
       : D
+
+    The new way to do it would be H5.
+
     '''
     name = "grepper.sh"
     content = '''#!/bin/bash

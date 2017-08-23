@@ -1,3 +1,10 @@
+'''
+This module is taking care to read, write, correct and handle H5 files.
+
+The main functions are:
+retrieve_hdf5_keys(path_hdf5)
+retrieve_hdf5_data(path_hdf5, paths_to_prop)
+'''
 
 import numpy as np
 import h5py
@@ -21,8 +28,7 @@ def retrieve_hdf5_data(path_hdf5, paths_to_prop):
     '''
     Read Numerical properties from ``paths_hdf5``.
     :params path_hdf5: Path to the hdf5 file
-    :type path_hdf5: string
-    :returns: numerical array
+    :type path_hdf5: string or list of strings
     '''
     try:
         with h5py.File(path_hdf5, 'r') as f5:
