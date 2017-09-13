@@ -60,7 +60,7 @@ single_inputs = namedtuple("single_input",
 
 def main():
     '''
-    Launches a single Point propagation from a h5 file.
+    Launches a single Point propagation from a rassi h5 file.
     '''
     inputs = single_inputs(".",              # out_folder
                            5,                # nsteps

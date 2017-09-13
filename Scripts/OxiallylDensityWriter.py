@@ -119,7 +119,7 @@ def main():
     new_inp = read_this_arguments(inputs)
     if new_inp.grep != "grepper":
         spawn_grepper(new_inp.grep)
-    else:
+   else:
         aon = 128 # problem bound
         initial = np.loadtxt(new_inp.TDMZ).reshape(aon,aon)
         swapped = give_me_swapd_oxiallyl(initial)
