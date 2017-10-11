@@ -51,13 +51,13 @@ def printEvenergy(h5fn):
 
 
 
-def single_point_propagation(h5fn, h, ts, specPulse, systemName, graph, fileO,
+def single_point_propagation(h5fn, h, ts, argsPulse, systemName, graph, fileO,
         outFolder):
     '''
     h5fn :: FilePath - path of h5 file
     h :: Double - time step
     ts :: Int - Number of steps
-    specPulse :: function - pulse function
+    argsPulse :: LIST OF PARAMETERS OF THE PULSE Ed,omega,sigma,phi,t0
     systemName :: String - name of the system (for graph label)
     graph :: Bool - turn off/on graph generation
     fileO :: Bool - turn off/on file output generation
@@ -97,13 +97,13 @@ def single_point_propagation(h5fn, h, ts, specPulse, systemName, graph, fileO,
     print('\n')
 
     for ii in range(ts):
-        states = Pr.rk4Ene(Pr.derivativeC, t, states, h, specPulse, mat_v, matMu) # Amplitudes
+        states = Pr.rk4Ene(Pr.derivativeC, t, states, h, argsPulse, mat_v, matMu) # Amplitudes
         muOft = np.real(gf.dipoleMoment(states,matMu)) # Dipole moments
         norm = np.linalg.norm(states) # Norms
     #    norms     = norms+[norm]
         times = times+[t]
         t = t + h
-        pulseV = pp.specificPulse(t)
+        pulseV = pp.userPulse(t,argsPulse)
         statesA = gf.abs2(states)
         tStr = '{:3.2f}'.format(t)
         vectorFor = "{:.7f}"
@@ -125,6 +125,8 @@ def single_point_propagation(h5fn, h, ts, specPulse, systemName, graph, fileO,
 
     if fileO:
        print('File mode ON. A new file: ' + ffname + ' has been written')
+       print('The fields in the file are:\nTime Ex Ey Ez Populations Mux Muy \
+               Muz NormDeviation')
 
     print('\nFinal norm deviation from 1: ', '{:1.2e}'.format(1-(np.linalg.norm(states))),"\n")
 
@@ -155,7 +157,7 @@ if __name__ == "__main__":
                            5,
                            0.04,
                            "cisbutadieneOUT.0.rassi.h5",
-                           True,
+                           False,
                            True
                            )
     new_inp = cmd.read_single_arguments(inputs)

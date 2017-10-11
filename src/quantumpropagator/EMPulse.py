@@ -14,10 +14,21 @@ def specificPulse(t):
     A defined pulse with the three components x, y and z
     $\color{violet}\vec{E}(t) = \sum_d E_d cos(\omega t + \phi) \cdot e^{-\dfrac{(t-t_0)^2}{2\sigma^2}} \ \ \ \ \ \   d={x,y,z}$
     '''
-    pulseX=pulse(t,0.017,0.17,30,0,100)
-    pulseY=pulse(t,0.017,0.17,30,0,100)
-    pulseZ=pulse(t,0.017,0.17,30,0,100)
+    pulseX=pulse(t,0.024,0.24,30,0,100)
+    pulseY=pulse(t,0.024,0.24,30,0,100)
+    pulseZ=pulse(t,0.024,0.24,30,0,100)
     return np.array([pulseX,pulseY,pulseZ],dtype=float) ## AU
+
+def userPulse(t,args):
+    '''
+    Same pulses as function specificPulse, but not harcoded
+    '''
+    [Ed,omega,sigma,phi,t0]=args
+    pulseX=pulse(t,Ed,omega,sigma,phi,t0)
+    pulseY=pulse(t,Ed,omega,sigma,phi,t0)
+    pulseZ=pulse(t,Ed,omega,sigma,phi,t0)
+    return np.array([pulseX,pulseY,0],dtype=float) ## AU
+    #return np.array([pulseX,pulseY,pulseZ],dtype=float) ## AU
 
 def varPulseZ(t,Ed,omega,sigma,phi,t0):
     return np.array([0,0,pulse(t,Ed,omega,sigma,phi,t0)],dtype=float) ## AU
@@ -51,4 +62,9 @@ def pulse(t,Ed,omega,sigma,phi,t0):
 #                                                #
 #                                                #
 ##################################################
+
+if __name__ == "__main__":
+    a = userPulse(93,[0.024,0.24,30,0,100])
+    print(a)
+
 

@@ -1,4 +1,5 @@
 import numpy as np
+import quantumpropagator.EMPulse as pp
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):
     k1 = h * f(t, y, pulse[0], ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot)
@@ -150,6 +151,7 @@ def rk4Ene(f, t, y, h, pulse, matV, matMu):
     f = the derivativeC function :: Double,[Complex],[[Double]],[3[[Double]]] -> [Complex]
     t = time :: Double
     y = coefficients vector :: [Complex]
+    pulse = list of pulse arguments
     matV = energies diagonal matrix :: [[Double]]
     matMu = transition dipole matrix :: [3[[Double]]]
     '''
@@ -167,7 +169,7 @@ def derivativeC(t,states,pulse,matV,matMu):
     $\color{violet}\dot{c_i}=\dfrac{\partial c_i(t)}{\partial t} = \dfrac{1}{i\hbar} \sum_j \hat{H}_{ij} c_j(t)$
     '''
     con     = -1j
-    pulseV  = pulse(t)
+    pulseV  = pp.userPulse(t,pulse)
     nstates = states.size
     summa   = np.zeros(nstates, dtype = complex)
     for Ici in range(nstates):
