@@ -88,7 +88,8 @@ def single_point_propagation(h5fn, h, ts, argsPulse, systemName, graph, fileO,
 
     #projectname
     longfilename = ''.join(it.takewhile(lambda x: x != '.',h5fn))
-    finalName = 'Results' + longfilename + "-Ts" + str(h)
+    pulseString = '_'.join([str(x) for x in argsPulse])
+    finalName = 'Results' + longfilename + "-Ts_" + str(h) + '_Pulse_' + pulseString
     if graph:                     # initialize repa arrays for graphics
         print("graph ON")
         statesArr = np.empty((0,nstates))
@@ -125,8 +126,8 @@ def single_point_propagation(h5fn, h, ts, argsPulse, systemName, graph, fileO,
 
     if fileO:
        print('File mode ON. A new file: ' + ffname + ' has been written')
-       print('The fields in the file are:\nTime Ex Ey Ez Populations Mux Muy \
-               Muz NormDeviation')
+       print('''The fields in the file are:\nTime Ex Ey Ez Populations Mux Muy
+                Muz NormDeviation''')
 
     print('\nFinal norm deviation from 1: ', '{:1.2e}'.format(1-(np.linalg.norm(states))),"\n")
 
