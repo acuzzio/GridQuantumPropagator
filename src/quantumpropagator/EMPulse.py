@@ -56,7 +56,11 @@ def pulse(t,Ed,omega,sigma,phi,t0):
     '''
     num = (t-t0)**2
     den = 2*(sigma**2)
-    return Ed * (np.cos(omega*t+phi)) * np.exp(-num/den)
+    if (den == 0):
+        result = 0.0
+    else:
+        result = Ed * (np.cos(omega*t+phi)) * np.exp(-num/den)
+    return result
 
 
 #                                                #

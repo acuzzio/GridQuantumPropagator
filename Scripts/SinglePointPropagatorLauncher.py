@@ -94,9 +94,9 @@ def main():
                            False,            # Energies
                            False,                 # graphs
                            True,                  # outF
-                           [0.0,0.24,30,0,100], # default pulseX
-                           [0.0,0.24,30,0,100], # default pulseX
-                           [0.0,0.24,30,0,100]  # default pulseX
+                           [0,0,0,0,0], # default pulseX
+                           [0,0,0,0,0], # default pulseX
+                           [0,0,0,0,0]  # default pulseX
                            )
     new_inp = read_single_arguments(inputs)
     print(new_inp)
