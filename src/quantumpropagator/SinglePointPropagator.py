@@ -57,7 +57,7 @@ def single_point_propagation(h5fn, h, ts, argsPulse, systemName, graph, fileO,
     h5fn :: FilePath - path of h5 file
     h :: Double - time step
     ts :: Int - Number of steps
-    argsPulse :: LIST OF PARAMETERS OF THE PULSE Ed,omega,sigma,phi,t0
+    argsPulse :: LIST OF PARAMETERS OF THE PULSE [[Ed,omega,sigma,phi,t0]]
     systemName :: String - name of the system (for graph label)
     graph :: Bool - turn off/on graph generation
     fileO :: Bool - turn off/on file output generation
@@ -88,7 +88,7 @@ def single_point_propagation(h5fn, h, ts, argsPulse, systemName, graph, fileO,
 
     #projectname
     longfilename = ''.join(it.takewhile(lambda x: x != '.',h5fn))
-    pulseString = '_'.join([str(x) for x in argsPulse])
+    pulseString = '_'.join(['-'.join([str(j) for j in x]) for x in argsPulse])
     finalName = 'Results' + longfilename + "-Ts_" + str(h) + '_Pulse_' + pulseString
     if graph:                     # initialize repa arrays for graphics
         print("graph ON")
@@ -126,8 +126,7 @@ def single_point_propagation(h5fn, h, ts, argsPulse, systemName, graph, fileO,
 
     if fileO:
        print('File mode ON. A new file: ' + ffname + ' has been written')
-       print('''The fields in the file are:\nTime Ex Ey Ez Populations Mux Muy
-                Muz NormDeviation''')
+       print('''The fields in the file are:\nTime Pulse Populations Dipole NormDeviation''')
 
     print('\nFinal norm deviation from 1: ', '{:1.2e}'.format(1-(np.linalg.norm(states))),"\n")
 

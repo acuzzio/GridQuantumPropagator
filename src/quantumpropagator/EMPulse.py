@@ -23,11 +23,11 @@ def userPulse(t,args):
     '''
     Same pulses as function specificPulse, but not harcoded
     '''
-    [Ed,omega,sigma,phi,t0]=args
-    pulseX=pulse(t,Ed,omega,sigma,phi,t0)
-    pulseY=pulse(t,Ed,omega,sigma,phi,t0)
-    pulseZ=pulse(t,Ed,omega,sigma,phi,t0)
-    return np.array([pulseX,pulseY,0],dtype=float) ## AU
+    [[Edx,omegax,sigmax,phix,t0x],[Edy,omegay,sigmay,phiy,t0y],[Edz,omegaz,sigmaz,phiz,t0z]]=args
+    pulseX=pulse(t,Edx,omegax,sigmax,phix,t0x)
+    pulseY=pulse(t,Edy,omegay,sigmay,phiy,t0y)
+    pulseZ=pulse(t,Edz,omegaz,sigmaz,phiz,t0z)
+    return np.array([pulseX,pulseY,pulseZ],dtype=float) ## AU
     #return np.array([pulseX,pulseY,pulseZ],dtype=float) ## AU
 
 def varPulseZ(t,Ed,omega,sigma,phi,t0):
