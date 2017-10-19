@@ -341,9 +341,9 @@ def createHistogram(array, fn, binNum=20, rang=None):
     binNum :: Integer or Sequence of integers -> number of bins
     rang :: (downlimit,uplimit) -> the limits of the histogram
     '''
-    transp      = False
     my_dpi      = 250
     ratio       = (16, 9)
+    fig, ax1 = plt.subplots(figsize=ratio)
     plt.hist(array,bins=binNum, range=rang)
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi)
     plt.close('all')
