@@ -333,3 +333,20 @@ if __name__ == "__main__":
     #createHeatMapfromH5(fol,fn)
     createCoherenceHeatMapfromH5(fol,fn,[(0,1),(0,2)])
 
+def createHistogram(array, fn, binNum=20, rang=None):
+    '''
+    A general function to quickly plot an Histogram on an array
+    array :: np.array rank 1
+    fn :: String -> Output filepath
+    binNum :: Integer or Sequence of integers -> number of bins
+    rang :: (downlimit,uplimit) -> the limits of the histogram
+    '''
+    transp      = False
+    my_dpi      = 250
+    ratio       = (16, 9)
+    plt.hist(array,bins=binNum, range=rang)
+    plt.savefig(fn, bbox_inches='tight', dpi=my_dpi)
+    plt.close('all')
+
+
+
