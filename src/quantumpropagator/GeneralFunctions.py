@@ -134,24 +134,24 @@ def dipoleMoment(states,matMu):
 
 
 def BohToAng(n):
-    ''' From Bohr to Angstrom conversion '''
+    ''' From Bohr to Angstrom conversion - n :: Double '''
     return (n * 0.529177249)
 
 def AngToBoh(n):
-    ''' From Angstrom to Bohr conversion '''
+    ''' From Angstrom to Bohr conversion - n :: Double '''
     return (n * 1.889725988)
 
 def EvtoHar(n):
-    ''' From ElectronVolt to Hartree conversion '''
+    ''' From ElectronVolt to Hartree conversion - n :: Double '''
     return (n * 0.0367493)
 
 def HartoEv(n):
-    ''' From Hartree to ElectronVolt conversion '''
+    ''' From Hartree to ElectronVolt conversion - n :: Double '''
     return (n * 27.211402)
 
-def fromCmMin1toHartree(x):
-    ''' from cm-1 to hartree conversion '''
-    return (x*4.5563e-06)
+def fromCmMin1toHartree(n):
+    ''' from cm-1 to hartree conversion - n :: Double '''
+    return (n*4.5563e-06)
 
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
