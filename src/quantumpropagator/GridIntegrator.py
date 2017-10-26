@@ -40,7 +40,7 @@ def grid1DIntegrationAstrid(inputs):
     h = inputs.timeStep
     minGround = np.min(eneSmall)            # minimium on the ground state
     eneZero = eneSmall - minGround
-    energyHar = gf.EvtoHar(eneZero)
+    energyHar = gf.fromEvtoHar(eneZero)
     deltaX = distSmall[1] - distSmall[0]
 
     # Initial Gaussian
