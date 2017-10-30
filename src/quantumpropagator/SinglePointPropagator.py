@@ -24,7 +24,7 @@ def printEvenergy(h5fn):
     nstates = ene.size
     enezero = ene - (ene[0])
     indexes = np.arange(nstates)+1
-    ener = pd.DataFrame([enezero,gf.HartoEv(enezero)],index=['Hartree','Ev'],
+    ener = pd.DataFrame([enezero,gf.fromHartoEv(enezero)],index=['Hartree','Ev'],
             columns=indexes)
     output = '''
  --- Energies ---
