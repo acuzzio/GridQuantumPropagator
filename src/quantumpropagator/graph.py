@@ -327,12 +327,6 @@ def ccmu(a,b):
     return ((np.conjugate(a))*b).real * 2
 
 
-if __name__ == "__main__":
-    fol = 'output-graphics/ConcerningOne_Interpolated_longData_losenormAfterPulse'
-    fn  = 'FirstWithInterpolation_withoutNAC_allThePointsWaveFun'
-    #createHeatMapfromH5(fol,fn)
-    createCoherenceHeatMapfromH5(fol,fn,[(0,1),(0,2)])
-
 def createHistogram(array, fn, binNum=20, rang=None):
     '''
     A general function to quickly plot an Histogram on an array
@@ -348,5 +342,28 @@ def createHistogram(array, fn, binNum=20, rang=None):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi)
     plt.close('all')
 
+def makJusAno2DgrMultiline(xs, yss, label, state):
+    ''' now I am tired, but this function should be commented and change
+    name '''
+    my_dpi      = 250
+    ratio       = (16, 9)
+    (length, nplots) = yss.shape
+    fig, ax1 = plt.subplots(figsize=ratio)
+
+    for i in range(nplots):
+        lbl = str(i+1)
+        if state != i :
+            plt.plot(xs,yss[:,i], label=lbl)
+    colormap = plt.cm.gist_ncar
+    colors = [colormap(i) for i in np.linspace(0.1, 0.9,len(ax1.lines))]
+    for i,j in enumerate(ax1.lines):
+        j.set_color(colors[i])
+    ax1.legend(loc='upper right')
+    plt.savefig(label, bbox_inches='tight', dpi=my_dpi)
+
+if __name__ == "__main__":
+    a = np.arange(11)
+    b = np.random.rand(11,9)
+    makJusAno2DgrMultiline(a,b,'porchii')
 
 
