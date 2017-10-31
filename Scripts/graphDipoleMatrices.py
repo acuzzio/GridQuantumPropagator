@@ -7,7 +7,7 @@ import glob
 import multiprocessing as mp
 import numpy as np
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
-                              createHistogram, makJusAno2DgrMultiline)
+                              createHistogram, makeMultiLineDipoleGraph)
 import matplotlib.pyplot as plt
 
 def read_single_arguments(single_inputs):
@@ -34,9 +34,8 @@ def read_single_arguments(single_inputs):
 single_inputs = namedtuple("single_input", ("glob","proc"))
 
 def graphMultiRassi(globalExp,poolSize):
-    ''' collects rassi data and create a elementwise graph '''
+    ''' collects rassi data and create the elementwise graphs '''
     allH5 = sorted(glob.glob(globalExp))
-    print(allH5)
     dime = len(allH5)
     nstates = 14
     bigArray = np.empty((dime,3,nstates,nstates))
@@ -85,6 +84,7 @@ def graphMultiRassi(globalExp,poolSize):
 
     for row in rows:
         doThisToEachRow(row, dime, bigArray)
+    # For some reason the perallel version of this does not work properly.
     #with mp.Pool(processes=poolSize) as p:
     #    promises = [ p.apply_async(doThisToEachRow, args=(row, dime, bigArray))
     #               for row in rows ]
@@ -94,7 +94,7 @@ def graphMultiRassi(globalExp,poolSize):
 def doThisToEachRow(row, dime, bigArray):
     [a,b] = row
     label = str(a+1) + '_' + str(b+1)
-    makJusAno2DgrMultiline(np.arange(dime),abs(bigArray[:,a,b]), 'All_from_' +
+    makeMultiLineDipoleGraph(np.arange(dime),abs(bigArray[:,a,b]), 'All_from_' +
             label, b)
 
 def doThisToEachElement(elem, dime, bigArray):

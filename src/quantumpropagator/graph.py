@@ -342,12 +342,12 @@ def createHistogram(array, fn, binNum=20, rang=None):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi)
     plt.close('all')
 
-def makJusAno2DgrMultiline(xs, yss, label, state):
+def makeMultiLineDipoleGraph(xs, yss, label, state):
     ''' now I am tired, but this function should be commented and change
     name '''
     my_dpi      = 250
     ratio       = (16, 9)
-    (length, nplots) = yss.shape
+    ( _ , nplots) = yss.shape
     fig, ax1 = plt.subplots(figsize=ratio)
 
     for i in range(nplots):
@@ -364,6 +364,6 @@ def makJusAno2DgrMultiline(xs, yss, label, state):
 if __name__ == "__main__":
     a = np.arange(11)
     b = np.random.rand(11,9)
-    makJusAno2DgrMultiline(a,b,'porchii')
+    makJusAno2DgrMultiline(a,b,'porchii', 3)
 
 

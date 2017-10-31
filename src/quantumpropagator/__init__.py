@@ -18,7 +18,7 @@ from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     dipoleMatrixGraph1d, makeMultiPlotMatrix, make2DgraphTranspose,
                     makePulseSinglePointGraph, createHeatMapfromH5, createSingleHeatmap,
                     createCoherenceHeatMapfromH5, ccmu, createHistogram,
-                    makJusAno2DgrMultiline)
+                    makeMultiLineDipoleGraph)
 from .GridIntegrator import (grid1DIntegrationAstrid)
 from .h5Reader import (retrieve_hdf5_keys, retrieve_hdf5_data, readAllhdf51D,
                        writeH5file, correctSignThem, correctSignFromRelativeToAbsolute,
