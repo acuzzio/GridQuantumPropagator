@@ -24,7 +24,7 @@ setup(
     ],
     scripts=['Scripts/SinglePointPropagatorLauncher.py',
      'Scripts/OxiallylDensityWriter.py', 'Scripts/ReadCube.py',
-     'Scripts/graphDipoleMatrices.py'],
+     'Scripts/multiGraphEneDipole.py', 'Scripts/2dmultiGraphEneDipole.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib'],
     extras_require={'test': ['nose', 'coverage']}
 )

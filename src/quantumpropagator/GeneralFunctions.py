@@ -165,3 +165,16 @@ def DFT_slow(x):
     M = np.exp(-2j * np.pi * k * n / N)
     return np.dot(M, x)
 
+def calcBond(geom,atom1,atom2):
+    '''
+    returns the bond length between atom1 and atom2
+    geom :: np.array(natoms,3)
+    atom1 = integer
+    atom2 = integer
+    '''
+    a = geom[atom1-1]
+    b = geom[atom2-1]
+    bond = np.linalg.norm(a-b)
+    return bond
+
+

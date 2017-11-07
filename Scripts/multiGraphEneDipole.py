@@ -1,5 +1,7 @@
-''' This scripts collects transition dipole matrices from several h5 files and
-makes graphs '''
+'''
+This scripts collects energies and transition dipole matrices from several h5 files and
+makes graphs.
+'''
 
 from collections import namedtuple
 from argparse import ArgumentParser
@@ -80,6 +82,7 @@ def graphMultiRassi(globalExp,poolSize):
         for (p, i) in zip(promises, elems):
             p.get()
 
+    # warning... range(2) excludes Z values
     rows = [[x,y] for x in range(2) for y in range(nstates)]
 
     for row in rows:
@@ -104,7 +107,6 @@ def doThisToEachElement(elem, dime, bigArray):
     makeJustAnother2Dgraph(np.arange(dime), abs(bigArray[:,a,b,c]), 'Lin_' + label, label)
     createHistogram(np.abs(bigArray[:,a,b,c]), 'His_' + label, binNum=20)
 
-
 def main():
     ''' Takes a list of rassi files and create graphs on Dipole transition
     elements '''
@@ -112,8 +114,6 @@ def main():
     new_inp = read_single_arguments(inputs)
     graphMultiRassi(new_inp.glob, new_inp.proc)
 
-
 if __name__ == "__main__":
         main()
-
 
