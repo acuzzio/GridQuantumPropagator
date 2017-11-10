@@ -73,12 +73,37 @@ def twoDGraph(globalExp, proc):
         bigArrayB2[ind] = bond2
         ind += 1
 
-    #[a,b,c] = [bigArrayB1[0:3], bigArrayB2[0:3], bigArrayE[0:3]]
+    #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
     #print(a,b,c)
-    #[a,b,c] = [bigArrayB1, bigArrayB2, bigArrayE]
     [a,b,c] = [bigArrayB1, bigArrayB2, bigArrayE]
+    # (313,) (313,) (313, 14)
+    #print(a.shape, b.shape, c.shape)
     #splot(a,b,c)
-    plotlyZ(a,b,c)
+    #plotlyZ(a,b,c)
+    mathematicaListGenerator(a,b,c)
+
+def mathematicaListGenerator(a,b,c):
+    import string
+    letter = list(string.ascii_lowercase)
+    (length, surfaces) = c.shape
+    finalString = 'ListPlot3D[{'
+    for sur in np.arange(surfaces):
+        fName = letter[sur]
+        if ((sur != surfaces-1)):
+            finalString = finalString + fName + ','
+        else:
+            finalString = finalString + fName + '}]'
+        stringF = fName + ' = {'
+        for ind in np.arange(length):
+            first = str(a[ind]) + ','
+            second = str(b[ind]) + ','
+            third = str(c[ind,sur])
+            if (ind != length-1):
+                stringF = stringF+"{"+first+second+third+'},'
+            else:
+                stringF = stringF+"{"+first+second+third+'}}'
+        print(stringF)
+    print('\n'+finalString+'\n')
 
 def plotlyZ(a,b,c):
     '''
