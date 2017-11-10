@@ -4,7 +4,7 @@ This is the module where the program generates graphics
 
 import numpy as np
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 import quantumpropagator.h5Reader as h5

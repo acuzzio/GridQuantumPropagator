@@ -5,6 +5,8 @@ makes graphs.
 
 from collections import namedtuple
 from argparse import ArgumentParser
+import matplotlib
+matplotlib.use('TkAgg')
 import glob
 import multiprocessing as mp
 import numpy as np
@@ -12,8 +14,8 @@ from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
                               createHistogram, makeMultiLineDipoleGraph,
                               calcBond, fromBohToAng)
 import matplotlib.pyplot as plt
-import matplotlib
 from mpl_toolkits.mplot3d import axes3d
+import plotly
 
 def read_single_arguments(single_inputs):
     '''
@@ -39,6 +41,10 @@ def read_single_arguments(single_inputs):
 single_inputs = namedtuple("single_input", ("glob","proc"))
 
 def twoDGraph(globalExp, proc):
+    '''
+    This function expects a global expression of multiple rassi files
+    it will organize them to call a 3d plotting function
+    '''
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
     allH5First = allH5[0]
@@ -67,16 +73,61 @@ def twoDGraph(globalExp, proc):
         bigArrayB2[ind] = bond2
         ind += 1
 
-    [a,b,c] = [bigArrayB1[0:3], bigArrayB2[0:3], bigArrayE[0:3]]
-    splot(a,b,c)
+    #[a,b,c] = [bigArrayB1[0:3], bigArrayB2[0:3], bigArrayE[0:3]]
+    #print(a,b,c)
+    #[a,b,c] = [bigArrayB1, bigArrayB2, bigArrayE]
+    [a,b,c] = [bigArrayB1, bigArrayB2, bigArrayE]
+    #splot(a,b,c)
+    plotlyZ(a,b,c)
+
+def plotlyZ(a,b,c):
+    '''
+    trying to use pltly offline (not easy... also... plotly is not installed by
+    the setup)
+    '''
+    import plotly.plotly as py
+    from plotly.graph_objs import Surface
+    (length, surfaces) = c.shape
+    plotly.offline.plot([
+       dict(x=[1,2,3],y=[1,2],z=[[1,2,3],[4,5,6]],type='surface'),
+       dict(x=[1,2,3],y=[1,2],z=[[3,5,6],[7,4,6]],type='surface')])
 
 def splot(a,b,c):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    X, Y, Z = axes3d.get_test_data(0.05)
-    ax.plot_wireframe(X, Y, Z, rstride=10, cstride=10)
-    print(matplotlib.rcParams['backend'])
-    plt.show()
+    '''
+    to generate data and script for gnuplot to generate
+    3d plot function.
+    '''
+    (length, surfaces) = c.shape
+    fn = 'dataFile'
+    fnS = 'GnuplotScript'
+    with open(fn, 'w') as outF:
+        for i in range(length):
+            strC = ' '.join(map(str, c[i]))
+            fullString = "{:3.4f} {:3.4f} {} 1\n".format(a[i],b[i],strC)
+            if (a[i]-a[i-1] > 0.001):
+                outF.write('\n')
+            outF.write(fullString)
+    with open(fnS, 'w') as scri:
+        header = '''#set dgrid3d
+#set pm3d
+#set style data lines
+set xlabel "C1-C5"
+set ylabel "C2-C5"
+set ticslevel 0
+splot '''
+        scri.write(header)
+        for i in range(surfaces):
+            iS = str(i)
+            i1 = str(i + 1)
+            i3 = str(i + 3)
+            cc3 = str(surfaces+3)
+            string = '"'+fn+'" u 1:2:'+i3+':($'+cc3+'+'+iS+') t "S_{'+iS+'} '+i1+'"'
+            if (i != surfaces-1):
+                string = string + ', '
+            scri.write(string)
+
+
+
 
 def main():
     ''' Takes a list of rassi files and create graphs on energies and on
