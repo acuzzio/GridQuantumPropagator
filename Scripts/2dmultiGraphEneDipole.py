@@ -152,8 +152,6 @@ splot '''
             scri.write(string)
 
 
-
-
 def main():
     ''' Takes a list of rassi files and create graphs on energies and on
     Dipole transition elements '''
