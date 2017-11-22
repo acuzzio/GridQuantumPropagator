@@ -182,3 +182,4 @@ def npArrayOfFiles(globalE):
 if __name__ == "__main__":
         folder = 'Scanh5Files/'
         correctSignThem(folder,9,6)
+

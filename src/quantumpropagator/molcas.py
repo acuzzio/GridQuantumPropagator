@@ -86,9 +86,32 @@ def generateWater(outfolder, rangearg):
         label3 = '%03i' % label
         WaterXyz(outfolder, dist, label3)
 
+def compressColumnOverlap(mat):
+    '''
+    mat :: np.array(X,Y) <- an overlap matrix
+    given a matrix with overlaps this will return an array of +1 or -1.
+    This will determine sign changes for this step.
+    '''
+    axis = 0
+    amax = mat.max(axis)
+    amin = mat.min(axis)
+    return np.where(-amin > amax, -1, 1)
+
+
 if __name__ == "__main__":
-   generateLiHxyz('XyzS/', (0.7,4.0,0.1))
-   fns = sorted(glob.glob('XyzS/*'))
-   for fileN in fns:
-       launchSPfromGeom(fileN)
+    import quantumpropagator.h5Reader as hf
+    import quantumpropagator.GeneralFunctions as gf
+    fn = 'Grid_119.648_000.000.rassi.h5'
+    a = hf.retrieve_hdf5_data(fn, 'ORIGINAL_OVERLAPS')
+    (dim, _ ) = a.shape
+    nstates = dim // 2
+    b = a[nstates:,:nstates]
+    #gf.printMatrix2D(b,2,0.5)
+    c = compressColumnOverlap(b)
+    print(c)
+
+    #generateLiHxyz('XyzS/', (0.7,4.0,0.1))
+    #fns = sorted(glob.glob('XyzS/*'))
+    #for fileN in fns:
+    #    launchSPfromGeom(fileN)
 

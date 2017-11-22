@@ -4,6 +4,7 @@ This is the module for general purposes functions
 
 import multiprocessing as mp
 import numpy as np
+import pandas as pd
 
 #Debug time
 #import pdb
@@ -239,4 +240,24 @@ def scanvalues(first,second,resolution):
     oneline = " ".join(['{:7.3f}'.format(b) for b in vec])
     return oneline
 
+def printMatrix2D(mat, pre=None, thr=None):
+    '''
+    mat :: np.array(X,Y) <- I use this for overlap matrix
+    pre :: Int  <- the precision for the output
+    thr :: Float <- value smaller than this are set to 0
+    given a 2d array in numpy, it prints the matrix on the screen
+    '''
+    pre = pre or 6
+    thr = thr or 0.0
+    pd.set_option('precision', pre)
+    pd.set_option('chop_threshold', thr)
+    (siza,_) = mat.shape
+    indexes = np.arange(siza)+1
+    out = pd.DataFrame(mat, index=indexes, columns=indexes)
+    print(out)
+
+if __name__ == "__main__":
+    a = np.arange(36).reshape(6,6)
+    print(a)
+    printMatrix2D(a)
 
