@@ -228,4 +228,15 @@ def saveTraj(arrayTraj, labels, filename):
         myfile.write(string)
     print('\nfile {0} written:\n\nvmd {0}'.format(fn))
 
+def scanvalues(first,second,resolution):
+    '''
+    This uses numpy to get the values printed out in a single line.
+    first  :: Float <- start of the interval
+    second :: Float <- end of the interval
+    resolution :: Int <- resolution (how many points in the interval
+    '''
+    vec = np.linspace(first,second,resolution)
+    oneline = " ".join(['{:7.3f}'.format(b) for b in vec])
+    return oneline
+
 

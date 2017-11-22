@@ -89,5 +89,6 @@ def generateWater(outfolder, rangearg):
 if __name__ == "__main__":
    generateLiHxyz('XyzS/', (0.7,4.0,0.1))
    fns = sorted(glob.glob('XyzS/*'))
-   [ launchSPfromGeom(fileN) for fileN in fns ]
+   for fileN in fns:
+       launchSPfromGeom(fileN)
 

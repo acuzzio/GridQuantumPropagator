@@ -3,7 +3,7 @@ This is the module where the program generates graphics
 '''
 
 import numpy as np
-import matplotlib as mpl
+#import matplotlib as mpl
 #mpl.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -67,7 +67,7 @@ def makeJustAnother2Dgraph(xs,ys,fn,labl):
     transp    = False
     my_dpi    = 150
     ratio     = (16, 9)
-    fig, ax1  = plt.subplots(figsize=ratio)
+    _, ax1  = plt.subplots(figsize=ratio)
     plt.plot(xs, ys,linewidth=3.0,label=labl)
     ax1.legend(loc='upper right')
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
@@ -109,7 +109,8 @@ def makeJustAnother2DgraphComplex(xs,ys,fn,labl):
     plt.close('all')
 
 
-def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=[1,14]):
+def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=None):
+    xaxisL = xaxisL or [1,14] # better way to give default values
     nstates = yss.shape[0]
     transp = False
     my_dpi = 150
@@ -221,7 +222,8 @@ def make2DgraphTranspose(xs, ys, fn, systemName, nstates):
     ax1.set_xlabel('R')
     ax1.set_ylabel('V(R)')
     #ax1.set_xlim([2,5])
-    [plt.plot(xs, ys[:,i], linewidth=3.0,color=colorsA[i],label=statesLab[i]) for i in range(nstates)]
+    for i in range(nstates):
+        plt.plot(xs, ys[:,i], linewidth=3.0,color=colorsA[i],label=statesLab[i])
     ax1.legend(loc='upper right')
     plt.rcParams.update({'font.size': fontsize})
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
@@ -252,7 +254,8 @@ def makePulseSinglePointGraph(times, statesArr, pulseArr, imagefn, systemName, n
     labelsPulse = ['Pulse X','Pulse Y','Pulse Z']
     stylesPulse = ['--',':','-.']
     ax2.set_ylim([-0.05,0.05])
-    [plt.plot(times,pulseArr[:,i],linewidth=1.0, linestyle=stylesPulse[i],label=labelsPulse[i]) for i in range(3)]
+    for i in range(3):
+        plt.plot(times,pulseArr[:,i],linewidth=1.0, linestyle=stylesPulse[i],label=labelsPulse[i])
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
     plt.rcParams.update({'font.size': fontsize})
