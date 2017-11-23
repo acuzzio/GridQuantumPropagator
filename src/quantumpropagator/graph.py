@@ -56,6 +56,26 @@ def createStatesLab(statesSym):
         correctlabel.append(r'$' + labels[lab] + '_' + str(counter_d[lab]) + '$')
     return(correctlabel)
 
+def makeJustAnother2DgraphMULTI(xs,yss,fn,labl,lw=None):
+    '''
+    xs   :: np.array[Double]         <- domain
+    yss  :: np.array[Double,Double]  <- 2d Array (multiple value at each X)
+    fn   :: FilePath                 <- output name
+    labl :: String - the name on the key, that will be incremented
+    '''
+    lw = lw or 2.0
+    transp    = False
+    my_dpi    = 150
+    ratio     = (16, 9)
+    _, ax1  = plt.subplots(figsize=ratio)
+    (dime,nstates) = yss.shape
+    for ind in np.arange(nstates):
+        labThis = labl + " " + str(ind)
+        plt.plot(xs, yss[:,ind],linewidth=lw,label=labThis)
+    ax1.legend(loc='upper right')
+    plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
+    plt.close('all')
+
 
 def makeJustAnother2Dgraph(xs,ys,fn,labl):
     '''

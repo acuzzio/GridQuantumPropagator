@@ -178,6 +178,39 @@ def calcBond(geom,atom1,atom2):
     bond = np.linalg.norm(a-b)
     return bond
 
+def calcAngle(geom,atom1,atom2,atom3):
+    '''
+    returns the bond length between atom1 and atom2
+    geom :: np.array(natoms,3)
+    atom1 = integer
+    atom2 = integer
+    atom3 = integer
+    '''
+    a = geom[atom1-1]
+    b = geom[atom2-1]
+    c = geom[atom3-1]
+    ba = a - b
+    bc = c - b
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+    return(np.degrees(angle))
+
+def calcDihedral(geom,atom1,atom2,atom3,atom4):
+    '''
+    returns the bond length between atom1 and atom2
+    geom :: np.array(natoms,3)
+    atom1 = integer
+    atom2 = integer
+    atom3 = integer
+    atom4 = integer
+    '''
+    a = geom[atom1-1]
+    b = geom[atom2-1]
+    c = geom[atom3-1]
+    d = geom[atom4-1]
+    print('still have to do it')
+    print(a,b,c,d)
+
 def massOf(elem):
     '''
     You get the mass of an element from the label string
@@ -232,8 +265,8 @@ def saveTraj(arrayTraj, labels, filename):
 def scanvalues(first,second,resolution):
     '''
     This uses numpy to get the values printed out in a single line.
-    first  :: Float <- start of the interval
-    second :: Float <- end of the interval
+    first  :: Double <- start of the interval
+    second :: Double <- end of the interval
     resolution :: Int <- resolution (how many points in the interval
     '''
     vec = np.linspace(first,second,resolution)
@@ -244,7 +277,7 @@ def printMatrix2D(mat, pre=None, thr=None):
     '''
     mat :: np.array(X,Y) <- I use this for overlap matrix
     pre :: Int  <- the precision for the output
-    thr :: Float <- value smaller than this are set to 0
+    thr :: Double <- value smaller than this are set to 0
     given a 2d array in numpy, it prints the matrix on the screen
     '''
     pre = pre or 6
@@ -252,9 +285,22 @@ def printMatrix2D(mat, pre=None, thr=None):
     pd.set_option('precision', pre)
     pd.set_option('chop_threshold', thr)
     (siza,_) = mat.shape
-    indexes = np.arange(siza)+1
+    indexes = np.arange(siza) + 1
     out = pd.DataFrame(mat, index=indexes, columns=indexes)
     print(out)
+
+def createTabellineFromArray(arr):
+    '''
+    arr :: np.array(Double)
+    This function will take a 1D numpy array and create a matrix with
+    the element multiplications (the product between the cartesian product)
+    '''
+    length = arr.size
+    mat = np.empty((length,length))
+    for ii in np.arange(length):
+        for kk in np.arange(length):
+            mat[ii,kk]=arr[ii]*arr[kk]
+    return(mat)
 
 if __name__ == "__main__":
     a = np.arange(36).reshape(6,6)

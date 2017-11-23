@@ -1,6 +1,8 @@
 '''
 This scripts collects energies and transition dipole matrices from several h5 files and
 makes graphs.
+
+It is a 1D module
 '''
 
 from collections import namedtuple
@@ -10,7 +12,8 @@ import multiprocessing as mp
 import numpy as np
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
                               createHistogram, makeMultiLineDipoleGraph,
-                              massOf, saveTraj)
+                              massOf, saveTraj, makeJustAnother2DgraphMULTI,
+                              calcAngle)
 import matplotlib.pyplot as plt
 
 def read_single_arguments(single_inputs):
@@ -136,19 +139,27 @@ def kinAnalysis(globalExp, coorGraphs):
     labels = retrieve_hdf5_data(allH5First,'CENTER_LABELS')
     stringLabels = [ b[:1].decode("utf-8") for b in labels ]
     print('\nnstates: {} \ndimension: {}'.format(nstates,dime))
-    print(dime,nstates)
 
     bigArrayC = np.empty((dime,natoms,3))
+    bigArrayE = np.empty((dime,nstates))
+    bigArrayA1 = np.empty((dime))
 
     # fill bigArrayC array
     ind=0
     for fileN in allH5:
         singleCoord = retrieve_hdf5_data(fileN,'CENTER_COORDINATES')
+        energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
         coords = translateInCM(singleCoord, labels)
         bigArrayC[ind] = coords
+        bigArrayE[ind] = energies
+        bigArrayA1[ind] = calcAngle(coords,2,3,4)
         ind += 1
 
     saveTraj(bigArrayC, stringLabels, 'scanGeometriesCMfixed')
+    fileNameGraph = 'EnergiesAlongScan'
+    makeJustAnother2DgraphMULTI(bigArrayA1, bigArrayE,
+            fileNameGraph,'State', 1.0)
+    print('\nEnergy graph created:\n\neog ' + fileNameGraph + '.png\n')
 
     # make graphs
     if coorGraphs:
