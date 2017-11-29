@@ -11,11 +11,11 @@ import glob
 import multiprocessing as mp
 import numpy as np
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
-                              createHistogram, makeMultiLineDipoleGraph,
-                              calcBond, fromBohToAng)
+                              createHistogram, makeMultiLineDipoleGraph)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import plotly
+import re
 
 def read_single_arguments(single_inputs):
     '''
@@ -55,8 +55,8 @@ def twoDGraph(globalExp, proc):
     bigArrayD = np.empty((dime,3,nstates,nstates))
     bigArrayE = np.empty((dime,nstates))
     bigArrayC = np.empty((dime,natoms,3))
-    bigArrayB1 = np.empty((dime))
-    bigArrayB2 = np.empty((dime))
+    bigArrayLab1 =  np.empty((dime))
+    bigArrayLab2 =  np.empty((dime))
 
     ind=0
     for fileN in allH5:
@@ -64,23 +64,33 @@ def twoDGraph(globalExp, proc):
         energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
         coords = retrieve_hdf5_data(fileN,'CENTER_COORDINATES')
         dmMat = properties[0:3]
-        bond1 = fromBohToAng(calcBond(coords,1,5))
-        bond2 = fromBohToAng(calcBond(coords,2,5))
+        lab1 = stringTransformation(fileN,0,1)
+        lab2 = stringTransformation(fileN,2,3)
         bigArrayD[ind] = dmMat
         bigArrayE[ind] = energies
         bigArrayC[ind] = coords
-        bigArrayB1[ind] = bond1
-        bigArrayB2[ind] = bond2
+        bigArrayLab1[ind] = lab1
+        bigArrayLab2[ind] = lab2
         ind += 1
-
-    #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
-    #print(a,b,c)
-    [a,b,c] = [bigArrayB1, bigArrayB2, bigArrayE]
-    # (313,) (313,) (313, 14)
-    #print(a.shape, b.shape, c.shape)
-    #splot(a,b,c)
+#    #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
+#    #print(a,b,c)
+    [a,b,c] = [bigArrayLab1, bigArrayLab2, bigArrayE]
+#    # (313,) (313,) (313, 14)
+#    #print(a.shape, b.shape, c.shape)
+#    #splot(a,b,c)
     #plotlyZ(a,b,c)
     mathematicaListGenerator(a,b,c)
+
+def stringTransformation(string,firstInd,secondInd):
+    '''
+    This string Transform is peculiar and problem bound.
+    The grid matrix is of the form folder/Grid_120.000_013.966.h5 and
+    I need to parse out those 120.000 and 013.966 as Double
+    string :: String
+    '''
+    foundAll = re.findall(r'\d+',string)
+    number = float(foundAll[firstInd])+(float(foundAll[secondInd])/1000)
+    return(number)
 
 def mathematicaListGenerator(a,b,c):
     import string
@@ -114,8 +124,9 @@ def plotlyZ(a,b,c):
     from plotly.graph_objs import Surface
     (length, surfaces) = c.shape
     plotly.offline.plot([
-       dict(x=[1,2,3],y=[1,2],z=[[1,2,3],[4,5,6]],type='surface'),
-       dict(x=[1,2,3],y=[1,2],z=[[3,5,6],[7,4,6]],type='surface')])
+       #dict(x=[1,2,3],y=[1,2],z=[[1,2,3],[4,5,6]],type='surface'),
+       dict(x=a,y=b,z=c[0],type='surface')])
+    print(a.shape,b.shape,c.shape)
 
 def splot(a,b,c):
     '''
