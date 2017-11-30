@@ -55,31 +55,65 @@ def twoDGraph(globalExp, proc):
     bigArrayD = np.empty((dime,3,nstates,nstates))
     bigArrayE = np.empty((dime,nstates))
     bigArrayC = np.empty((dime,natoms,3))
-    bigArrayLab1 =  np.empty((dime))
-    bigArrayLab2 =  np.empty((dime))
-
+    bigArrayLab1 =  np.empty((dime), dtype=object)
+    bigArrayLab2 =  np.empty((dime), dtype=object)
+    bigArrayAxis1 =  np.empty((dime))
+    bigArrayAxis2 =  np.empty((dime))
+    newdime = (dime * 2)-1
+    bigArrayE2 = np.empty((newdime,nstates))
+    bigArrayAxis1_2 = np.empty((newdime))
+    bigArrayAxis2_2 = np.empty((newdime))
     ind=0
     for fileN in allH5:
         properties = retrieve_hdf5_data(fileN,'PROPERTIES')
         energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
         coords = retrieve_hdf5_data(fileN,'CENTER_COORDINATES')
         dmMat = properties[0:3]
-        lab1 = stringTransformation(fileN,0,1)
-        lab2 = stringTransformation(fileN,2,3)
+        (axis1,str1) = stringTransformation(fileN,0,1)
+        (axis2,str2) = stringTransformation(fileN,2,3)
         bigArrayD[ind] = dmMat
         bigArrayE[ind] = energies
+        bigArrayE2[ind] = energies
+        bigArrayAxis1_2[ind] = axis1
+        bigArrayAxis2_2[ind] = axis2
+        bigArrayLab1[ind] = str1
+        bigArrayLab2[ind] = str2
+        if axis2 != 0.0:
+           bigArrayE2[ind+(dime-1)] = energies
+           bigArrayAxis1_2[ind+(dime-1)] = axis1
+           bigArrayAxis2_2[ind+(dime-1)] = -axis2
+        else:
+           bigArrayE2[ind+(dime-1)] = energies
+           bigArrayAxis1_2[ind+(dime-1)] = axis1
+           bigArrayAxis2_2[ind+(dime-1)] = axis2
         bigArrayC[ind] = coords
-        bigArrayLab1[ind] = lab1
-        bigArrayLab2[ind] = lab2
+        bigArrayAxis1[ind] = axis1
+        bigArrayAxis2[ind] = axis2
         ind += 1
-#    #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
-#    #print(a,b,c)
-    [a,b,c] = [bigArrayLab1, bigArrayLab2, bigArrayE]
-#    # (313,) (313,) (313, 14)
-#    #print(a.shape, b.shape, c.shape)
-#    #splot(a,b,c)
+    eneMin = np.min(bigArrayE)
+    bigArrayEZero = bigArrayE - eneMin
+    bigArrayE2Zero = bigArrayE2 - eneMin
+    labelsAxis1 = np.unique(bigArrayLab1)
+    labelsAxis2 = np.unique(bigArrayLab2)
+    print(labelsAxis1,labelsAxis2)
+    #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
+    #print(a,b,c)
+    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
+    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,2,:]]
+    [a,b,c] = [bigArrayAxis1_2, bigArrayAxis2_2, bigArrayE2Zero]
+    np.savetxt('1.txt', a)
+    np.savetxt('2.txt', b)
+    np.savetxt('3.txt', c)
+    # (313,) (313,) (313, 14)
+    #splot(a,b,c)
     #plotlyZ(a,b,c)
-    mathematicaListGenerator(a,b,c)
+    #print(a.shape, b.shape, c.shape)
+    #mathematicaListGenerator(a,b,c)
+    #print(a.shape, b.shape, c.shape)
+
+def flipAndDouble(arr):
+    flip = np.concatenate((np.flip(-np.delete(arr,0,0),0),arr),0)
+    return(flip)
 
 def stringTransformation(string,firstInd,secondInd):
     '''
@@ -90,13 +124,29 @@ def stringTransformation(string,firstInd,secondInd):
     '''
     foundAll = re.findall(r'\d+',string)
     number = float(foundAll[firstInd])+(float(foundAll[secondInd])/1000)
-    return(number)
+    string = foundAll[firstInd] + '.' + foundAll[secondInd]
+    return(number,string)
 
 def mathematicaListGenerator(a,b,c):
+    '''
+    This function takes a,b,c and printout a file that should be copied/pasted
+    into Mathematica 11.00
+    a :: np.array(ngrid) <- first axis
+    b :: np.array(ngrid) <- second axis
+    c :: np.array(ngrid,second) <- actual values
+    second should be nstates or whatever dimension the data in packed.
+    to print vectors like this, every single point needs its coordinates, so we
+    have to supply every point like (x,y,z) triplet.
+    xclip is the best
+    '''
     import string
+    import os
     letter = list(string.ascii_lowercase)
+    #(length, ) = c.shape
+    #surfaces = 1
     (length, surfaces) = c.shape
     finalString = 'ListPlot3D[{'
+    matheString = ''
     for sur in np.arange(surfaces):
         fName = letter[sur]
         if ((sur != surfaces-1)):
@@ -107,18 +157,23 @@ def mathematicaListGenerator(a,b,c):
         for ind in np.arange(length):
             first = str(a[ind]) + ','
             second = str(b[ind]) + ','
-            third = str(c[ind,sur])
+            third = '{:16.14f}'.format(c[ind,sur])
             if (ind != length-1):
                 stringF = stringF+"{"+first+second+third+'},'
             else:
                 stringF = stringF+"{"+first+second+third+'}}'
-        print(stringF)
+        matheString = matheString + "\n" + stringF
+    #print(matheString)
+    fn = 'hugeVector'
+    with open(fn, "w") as myfile:
+        myfile.write(matheString)
+    print('\ncat ' + fn + ' | xclip -selection clipboard')
     print('\n'+finalString+'\n')
 
 def plotlyZ(a,b,c):
     '''
     trying to use pltly offline (not easy... also... plotly is not installed by
-    the setup)
+    the setup), also plotly kind of sucks. Better explore Blender?
     '''
     import plotly.plotly as py
     from plotly.graph_objs import Surface
@@ -132,6 +187,9 @@ def splot(a,b,c):
     '''
     to generate data and script for gnuplot to generate
     3d plot function.
+    a :: np.array(ngrid) <- first axis
+    b :: np.array(ngrid) <- second axis
+    c :: np.array(ngrid,second) <- actual values
     '''
     (length, surfaces) = c.shape
     fn = 'dataFile'
