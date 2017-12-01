@@ -14,6 +14,7 @@ from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
                               createHistogram, makeMultiLineDipoleGraph)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
+import os.path
 import plotly
 import re
 
@@ -40,10 +41,72 @@ def read_single_arguments(single_inputs):
 
 single_inputs = namedtuple("single_input", ("glob","proc"))
 
+def matrixApproach(globalExp, proc):
+    '''
+
+    Shitty shitty function, but I need to see if Blender is working
+
+    I try this new way of taking the data. First I watch in the folder, then I
+    create a square grid, then I see who is present who is not. This can be
+    better to import data in blender and draw surfaces
+
+    globalExp :: String <- with the global expression of the h5 files
+    proc :: Int number of processors in case this become heavy and I need to
+    parallelize
+    '''
+    allH5 = sorted(glob.glob(globalExp))
+    dime = len(allH5)
+    allH5First = allH5[0]
+    nstates = len(retrieve_hdf5_data(allH5First,'SFS_ENERGIES'))
+    natoms = len(retrieve_hdf5_data(allH5First,'CENTER_COORDINATES'))
+    print('\nnstates: {} \ndimension: {}'.format(nstates,dime))
+    newdime = (dime * 2)-1
+    bigArrayLab1 =  np.empty((dime), dtype=object)
+    bigArrayLab2 =  np.empty((dime), dtype=object)
+    ind = 0
+    for fileN in allH5:
+        (axis1,str1) = stringTransformation(fileN,0,1)
+        (axis2,str2) = stringTransformation(fileN,2,3)
+        bigArrayLab1[ind] = str1
+        bigArrayLab2[ind] = str2
+        ind += 1
+    labelsAxis1 = np.unique(bigArrayLab1)
+    labelsAxis2 = np.unique(bigArrayLab2)
+    #allLabels = [ ax1 + '_' + ax2 for ax1 in labelsAxis1 for ax2 in labelsAxis2 ]
+    blenderArray = np.empty((labelsAxis1.size,labelsAxis2.size,nstates))
+    ind = 0
+    for Iax1 in range(labelsAxis1.size):
+        ax1 = labelsAxis1[Iax1]
+        for Iax2 in range(labelsAxis2.size):
+            ax2 = labelsAxis2[Iax2]
+            singleLabel = ax1 + '_' + ax2
+            fileN = re.sub('\*\.', 'Grid_' + singleLabel + '.', globalExp)
+            exisT = os.path.exists(fileN)
+            if exisT:
+               energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
+            else:
+               energies = np.repeat(-271.0,nstates)
+            blenderArray[Iax1,Iax2] = energies
+    axFloat1 = np.array([ float(a) for a in labelsAxis1 ])
+    axFloat2 = np.array([ float(b) for b in labelsAxis2 ])
+
+    print(axFloat1.shape, axFloat2.shape, blenderArray.shape)
+    axFloat1.tofile('fullA.txt')
+    axFloat2.tofile('fullB.txt')
+    blenderArray.tofile('fullC.txt')
+
+
+
+
 def twoDGraph(globalExp, proc):
     '''
     This function expects a global expression of multiple rassi files
     it will organize them to call a 3d plotting function
+
+    globalExp :: String <- with the global expression of the h5 files
+    proc :: Int number of processors in case this become heavy and I need to
+    parallelize
+
     '''
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
@@ -93,6 +156,8 @@ def twoDGraph(globalExp, proc):
     eneMin = np.min(bigArrayE)
     bigArrayEZero = bigArrayE - eneMin
     bigArrayE2Zero = bigArrayE2 - eneMin
+    angleMin = np.min(bigArrayAxis1)
+    bigArrayAxis1_2Zero = bigArrayAxis1_2 - angleMin
     labelsAxis1 = np.unique(bigArrayLab1)
     labelsAxis2 = np.unique(bigArrayLab2)
     print(labelsAxis1,labelsAxis2)
@@ -100,7 +165,7 @@ def twoDGraph(globalExp, proc):
     #print(a,b,c)
     #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
     #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,2,:]]
-    [a,b,c] = [bigArrayAxis1_2, bigArrayAxis2_2, bigArrayE2Zero]
+    [a,b,c] = [bigArrayAxis1_2Zero, bigArrayAxis2_2, bigArrayE2Zero]
     np.savetxt('1.txt', a)
     np.savetxt('2.txt', b)
     np.savetxt('3.txt', c)
@@ -226,7 +291,8 @@ def main():
     Dipole transition elements '''
     o_inputs = single_inputs("*.rassi.h5", 1)
     inp = read_single_arguments(o_inputs)
-    twoDGraph(inp.glob, inp.proc)
+    #twoDGraph(inp.glob, inp.proc)
+    matrixApproach(inp.glob, inp.proc)
 
 
 if __name__ == "__main__":
