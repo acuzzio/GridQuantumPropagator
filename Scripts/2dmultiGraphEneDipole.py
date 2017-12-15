@@ -160,21 +160,21 @@ def twoDGraph(globalExp, proc):
     bigArrayAxis1_2Zero = bigArrayAxis1_2 - angleMin
     labelsAxis1 = np.unique(bigArrayLab1)
     labelsAxis2 = np.unique(bigArrayLab2)
-    print(labelsAxis1,labelsAxis2)
+    #print(labelsAxis1,labelsAxis2)
     #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
     #print(a,b,c)
-    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
+    [a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
     #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,2,:]]
-    [a,b,c] = [bigArrayAxis1_2Zero, bigArrayAxis2_2, bigArrayE2Zero]
-    np.savetxt('1.txt', a)
-    np.savetxt('2.txt', b)
-    np.savetxt('3.txt', c)
+    #[a,b,c] = [bigArrayAxis1_2Zero, bigArrayAxis2_2, bigArrayE2Zero]
+    #np.savetxt('1.txt', a)
+    #np.savetxt('2.txt', b)
+    #np.savetxt('3.txt', c)
     # (313,) (313,) (313, 14)
     #splot(a,b,c)
     #plotlyZ(a,b,c)
     #print(a.shape, b.shape, c.shape)
-    #mathematicaListGenerator(a,b,c)
-    #print(a.shape, b.shape, c.shape)
+    mathematicaListGenerator(a,b,c)
+    print(a.shape, b.shape, c.shape)
 
 def flipAndDouble(arr):
     flip = np.concatenate((np.flip(-np.delete(arr,0,0),0),arr),0)
@@ -291,8 +291,8 @@ def main():
     Dipole transition elements '''
     o_inputs = single_inputs("*.rassi.h5", 1)
     inp = read_single_arguments(o_inputs)
-    #twoDGraph(inp.glob, inp.proc)
-    matrixApproach(inp.glob, inp.proc)
+    twoDGraph(inp.glob, inp.proc)
+    #matrixApproach(inp.glob, inp.proc)
 
 
 if __name__ == "__main__":

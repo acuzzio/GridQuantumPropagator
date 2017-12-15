@@ -241,22 +241,30 @@ def massOf(elem):
             'Yb': 173.04, 'Y': 88.90585, 'Zn': 65.39, 'Zr': 91.224}
     return(dictMass[elem])
 
-def saveTraj(arrayTraj, labels, filename):
+def saveTraj(arrayTraj, labels, filename, convert=None):
     '''
     given a numpy array of multiple coordinates, it prints the concatenated xyz file
     arrayTraj :: np.array(ncoord,natom,3)    <- the coordinates
     labels :: [String] <- ['C', 'H', 'Cl']
     filename :: String <- filepath
+    convert :: Bool <- it tells if you need to convert from Boh to Ang (default True)
     '''
+    convert = convert or False
     (ncoord,natom,_) = arrayTraj.shape
     fn = filename + '.xyz'
     string = ''
     for geo in range(ncoord):
         string += str(natom) + '\n\n'
         for i in range(natom):
-            string += "   ".join([labels[i]] +
-                    ['{:10.6f}'.format(fromBohToAng(num)) for num
-                in arrayTraj[geo,i]]) + '\n'
+            if convert:
+                string += "   ".join([labels[i]] +
+                        ['{:10.6f}'.format(fromBohToAng(num)) for num
+                    in arrayTraj[geo,i]]) + '\n'
+            else:
+                string += "   ".join([labels[i]] +
+                        ['{:10.6f}'.format(num) for num
+                    in arrayTraj[geo,i]]) + '\n'
+
 
     with open(fn, "w") as myfile:
         myfile.write(string)
