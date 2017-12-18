@@ -52,8 +52,12 @@ def generateNorbGeometry(phi,gam,the):
     the2 = np.deg2rad(the/2)
     phi2 = np.deg2rad(phi)
     gam2 = np.deg2rad(gam)
-    alpha = -0.08447
-    beta = -0.38397
+    # this is angle CH on the zx plane, calculated from open optimized geometry
+    # using the coordinate of a C and a H -> np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2)))
+    alpha = -0.913346
+    # same as the other, but projected on plane zy and thus with formula
+    # np.arcsin((y2-y1)/(np.sqrt((x2-x1)**2+(z2-z1)**2)))
+    beta = -0.877383
 
     xC1 = -rBond * np.sin(phi2+the2)
     yC1 = L + rBond * np.cos(phi2+the2) * -np.sin(gam2)
