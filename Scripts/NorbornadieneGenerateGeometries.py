@@ -73,23 +73,41 @@ def generateNorbGeometry(phi,gam,the):
     phi2 = np.deg2rad(phi)
     gam2 = np.deg2rad(gam)
 
-    # This is the code for the ACTUAL angle between the three carbons. I need to modify the
-    # code.
+#    # This is the code for the ACTUAL angle between the three carbons. I need to modify the
+#    # code.
+#
+#    xC1 = -rBond * np.sin(phi2+the2)
+#    yC1 = L + rBond * np.cos(phi2+the2) * -np.sin(gam2)
+#    zC1 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
+#
+#    xC2 = -rBond * np.sin(phi2-the2)
+#    yC2 = L + rBond * np.cos(phi2-the2) * -np.sin(gam2)
+#    zC2 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
+#
+#    xC3 = rBond * np.sin(phi2+the2)
+#    yC3 = -L + rBond * np.cos(phi2+the2) * np.sin(gam2)
+#    zC3 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
+#
+#    xC4 = rBond * np.sin(phi2-the2)
+#    yC4 = -L + rBond * np.cos(phi2-the2) * np.sin(gam2)
+#    zC4 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
 
-    xC1 = -rBond * np.sin(phi2+the2)
-    yC1 = L + rBond * np.cos(phi2+the2) * -np.sin(gam2)
+    # This is the code for the ACTUAL angle between the three carbons. But now theta keeps CC constant
+
+    xC1 = -rBond * np.cos(gam2) * np.sin(phi2+the2)
+    yC1 = L + rBond * - np.sin(gam2)
     zC1 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
 
-    xC2 = -rBond * np.sin(phi2-the2)
-    yC2 = L + rBond * np.cos(phi2-the2) * -np.sin(gam2)
+    xC2 = -rBond * np.cos(gam2) * np.sin(phi2-the2)
+    yC2 = L - rBond * np.sin(gam2)
     zC2 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
 
-    xC3 = rBond * np.sin(phi2+the2)
-    yC3 = -L + rBond * np.cos(phi2+the2) * np.sin(gam2)
+    xC3 = rBond * np.cos(gam2) * np.sin(phi2+the2)
+    yC3 = -L + rBond * np.sin(gam2)
     zC3 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
 
-    xC4 = rBond * np.sin(phi2-the2)
-    yC4 = -L + rBond * np.cos(phi2-the2) * np.sin(gam2)
+    xC4 = rBond * np.cos(gam2) * np.sin(phi2-the2)
+    yC4 = -L + rBond * np.sin(gam2)
     zC4 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
 
 # this attempt is done with mathematica, keeps the angle at the projection
