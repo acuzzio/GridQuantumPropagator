@@ -10,6 +10,25 @@ import pandas as pd
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def readGeometry(fn):
+    '''
+    It gives back the geometry from a file
+    fn :: String <- filepath
+    '''
+    with open(fn,'r') as f:
+        data = f.readlines()
+    natom = int(data[0])
+    title = data[1]
+    geomVector = np.empty((natom,3))
+    atomType = []
+    for i in range(natom):
+        atom = list(filter(None, data[i+2].split(' ')))
+        atomType.append(atom[0])
+        geomVector[i,0] = float(atom[1])
+        geomVector[i,1] = float(atom[2])
+        geomVector[i,2] = float(atom[3])
+    return(natom,title,atomType,geomVector)
+
 
 def calculateGradientOnMatrix0(newNAC,dist):
     '''
