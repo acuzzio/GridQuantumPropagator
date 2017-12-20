@@ -5,7 +5,7 @@ angles
 
 from collections import namedtuple
 from argparse import ArgumentParser
-from quantumpropagator import (saveTraj, readGeometry)
+from quantumpropagator import (saveTraj, readGeometry, calcAngle, err)
 import numpy as np
 
 def read_single_arguments(single_inputs):
@@ -148,7 +148,7 @@ def generateNorbGeometry(phi,gam,the):
 #    zC4 = - (rBond * np.cos(a) * np.cos(b))/deno
 
 
-    # this is angle CH on the zx plane, calculated from open optimized geometry
+    # this is angle CH on the ZX plane, calculated from open optimized geometry
     # using the coordinate of a C and a H -> np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2)))
     alpha = -0.913346
     # same as the other, but projected on plane zy and thus with formula
@@ -189,15 +189,21 @@ def getAnglesFRomGeometry(fn):
     # in my problem this is the Theta angle
     atom1 = 2
     atom2 = 11
-    [[x1,y1,z1],[x2,y2,z2]] = [geom[atom1-1],geom[atom2-1]]
-    theta = np.rad2deg(np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2))))
-    gamma = np.rad2deg(np.arcsin((y2-y1)/(np.sqrt((y2-y1)**2+(z2-z1)**2))))
+    atom3 = 10
+    [[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]] = [geom[atom1-1],geom[atom2-1],geom[atom3-1]]
+    theta11 = np.rad2deg(np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2))))
+    theta12 = np.rad2deg(np.arcsin((x3-x1)/(np.sqrt((x3-x1)**2+(z3-z1)**2))))
+    theta = theta12 - theta11
+    phi = (theta11 + theta12) / 2
+    gamma = 90 - calcAngle(geom,11,2,3)
+    gammaP = np.rad2deg(np.arcsin((y2-y1)/(np.sqrt((y2-y1)**2+(z2-z1)**2))))
     string = '''
     Geomtry file:   {}
 
-    Theta = {:7.3f}  <- this counts phi, also
+    Phi   = {:7.3f}
     Gamma = {:7.3f}
-    '''.format(fn,theta,gamma)
+    Theta = {:7.3f}
+    '''.format(fn,phi,gamma,theta)
     print(string)
 
 def main():
@@ -221,6 +227,7 @@ def main():
             for gamma in np.linspace(inp.gamma0,inp.gammaF,inp.gammaD):
                 for theta in np.linspace(inp.theta0,inp.thetaF,inp.thetaD):
                     generateNorbGeometry(phi,gamma,theta)
+    err('REMEMBER THAT THE HYDROGENS ARE NOT WELL PUT')
 
 if __name__ == "__main__":
         main()
