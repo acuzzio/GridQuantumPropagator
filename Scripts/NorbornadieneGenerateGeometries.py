@@ -73,8 +73,8 @@ def generateNorbGeometry(phi,gam,the):
     phi2 = np.deg2rad(phi)
     gam2 = np.deg2rad(gam)
 
-#    # This is the code for the ACTUAL angle between the three carbons. I need to modify the
-#    # code.
+#    # This is the code for the ACTUAL angle between the three carbons. Theta
+#    will change this angle... and I do not want it 
 #
 #    xC1 = -rBond * np.sin(phi2+the2)
 #    yC1 = L + rBond * np.cos(phi2+the2) * -np.sin(gam2)
