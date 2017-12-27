@@ -41,7 +41,7 @@ def read_single_arguments(single_inputs):
             single_inputs = single_inputs._replace(gamma0=float(args.list[1]))
             single_inputs = single_inputs._replace(theta0=float(args.list[2]))
         else:
-            print("WTF is this? Please give me the nine things, now...")
+            err("WTF? This takes 3 numbers (single point) or 9 (for a line/box)")
     return single_inputs
 
 single_inputs = namedtuple("angles",
