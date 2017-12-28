@@ -154,7 +154,7 @@ def kinAnalysis(globalExp, coorGraphs):
         bigArrayE[ind] = energies
         bigArrayA1[ind] = calcAngle(coords,2,3,4)
         ind += 1
-    # true because we are in bohr
+    # true because we are in bohr and saveTaj is like that
     saveTraj(bigArrayC, stringLabels, 'scanGeometriesCMfixed', True)
     fileNameGraph = 'EnergiesAlongScan'
     makeJustAnother2DgraphMULTI(bigArrayA1, bigArrayE,

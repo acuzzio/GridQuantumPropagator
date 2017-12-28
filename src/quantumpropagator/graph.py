@@ -390,3 +390,100 @@ if __name__ == "__main__":
     makJusAno2DgrMultiline(a,b,'porchii', 3)
 
 
+def mathematicaListGenerator(a,b,c):
+    '''
+    This function takes a,b,c and printout a file that should be copied/pasted
+    into Mathematica 11.00
+    a :: np.array(ngrid) <- first axis
+    b :: np.array(ngrid) <- second axis
+    c :: np.array(ngrid,second) <- actual values
+    second should be nstates or whatever dimension the data in packed.
+    to print vectors like this, every single point needs its coordinates, so we
+    have to supply every point like (x,y,z) triplet.
+    xclip is the best
+    '''
+    import string
+    import os
+    letter = list(string.ascii_lowercase)
+    #(length, ) = c.shape
+    #surfaces = 1
+    (length, surfaces) = c.shape
+    finalString = 'ListPlot3D[{'
+    matheString = ''
+    for sur in np.arange(surfaces):
+        fName = letter[sur]
+        if ((sur != surfaces-1)):
+            finalString = finalString + fName + ','
+        else:
+            finalString = finalString + fName + '}]'
+        stringF = fName + ' = {'
+        for ind in np.arange(length):
+            first = str(a[ind]) + ','
+            second = str(b[ind]) + ','
+            third = '{:16.14f}'.format(c[ind,sur])
+            if (ind != length-1):
+                stringF = stringF+"{"+first+second+third+'},'
+            else:
+                stringF = stringF+"{"+first+second+third+'}}'
+        matheString = matheString + "\n" + stringF
+    #print(matheString)
+    fn = 'hugeVector'
+    with open(fn, "w") as myfile:
+        myfile.write(matheString)
+    print('\ncat ' + fn + ' | xclip -selection clipboard')
+    print('\n'+finalString+'\n')
+
+def gnuSplotCircle(a,b,c):
+    '''
+    to generate data and script for gnuplot to generate
+    3d plot function of circles around conical intersection
+    a :: np.array(ngrid) <- first axis
+    b :: np.array(ngrid) <- second axis
+    c :: np.array(ngrid,second) <- actual values (energies)
+
+    I wanted to do this gnuSplot as a general function, but gnuplot is peculiar and
+    I needed to adjust the datafile with some "case dependent" actions.
+    To paint good circular data, gnuplot needs a SPACE between different
+    circles and THE FIRST LINE OF EACH CIRCLE repeated (to close it).
+    This is done knowing that the first point will always be at 0 degree, thus
+    checking for cosine > 0.0 and sin = 0.0. This is why the madness firstLine
+    fullString, etc. etc.
+    '''
+    (length, surfaces) = c.shape
+    fn = 'dataFile'
+    fnS = 'GnuplotScript'
+    with open(fn, 'w') as outF:
+        firstLine = ''
+        for i in range(length):
+            strC = ' '.join(map(str, c[i]))
+            # I generate a file with last column 1 to... EXAGERATE Z AXIS if
+            # you wish... wow... I should comment more...
+            fullString = "{:3.4f} {:3.4f} {} 1\n".format(a[i],b[i],strC)
+            if a[i] > 0.0 and b[i] == 0.0:
+                if firstLine == '':
+                    firstLine = fullString
+                else:
+                    firstNow = firstLine
+                    firstLine = fullString
+                    fullString = firstNow + '\n' + fullString
+            outF.write(fullString)
+        outF.write(firstLine)
+    with open(fnS, 'w') as scri:
+        header = '''#set dgrid3d
+#set pm3d
+#set style data lines
+set xlabel "C1-C5"
+set ylabel "C2-C5"
+set ticslevel 0
+splot '''
+        scri.write(header)
+        for i in range(surfaces):
+            iS = str(i)
+            i1 = str(i + 1)
+            i3 = str(i + 3)
+            cc3 = str(surfaces+3)
+            string='"'+fn+'" u 1:2:'+i3+':($'+cc3+'+'+iS+') t "S_{'+iS+'}'+i1+'" w l'
+            if (i != surfaces-1):
+                string = string + ', '
+            scri.write(string)
+
