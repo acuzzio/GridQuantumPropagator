@@ -403,7 +403,6 @@ def mathematicaListGenerator(a,b,c):
     xclip is the best
     '''
     import string
-    import os
     letter = list(string.ascii_lowercase)
     #(length, ) = c.shape
     #surfaces = 1
@@ -459,7 +458,7 @@ def gnuSplotCircle(a,b,c):
             # I generate a file with last column 1 to... EXAGERATE Z AXIS if
             # you wish... wow... I should comment more...
             fullString = "{:3.4f} {:3.4f} {} 1\n".format(a[i],b[i],strC)
-            if a[i] > 0.0 and b[i] == 0.0:
+            if a[i] == 0.0 and b[i] > 0.0:
                 if firstLine == '':
                     firstLine = fullString
                 else:

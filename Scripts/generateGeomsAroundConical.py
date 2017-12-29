@@ -128,7 +128,7 @@ def graphScan(globalExp):
         bigArray1[ind] = dim1
         bigArray2[ind] = dim2
         ind += 1
-    print(bigArray1,bigArray2)
+#    print(bigArray1,bigArray2)
 #    mathematicaListGenerator(bigArray1,bigArray2,bigArrayE)
     gnuSplotCircle(bigArray1,bigArray2,bigArrayE)
 
@@ -138,8 +138,8 @@ def transformString(string):
     outputAngle = angle.replace('Angle','').replace('P','+').replace('-','.').replace('N','-')
     ringD = float(outputRing)
     angleD = float(outputAngle)
-    dim1 = ringD * np.cos(np.deg2rad(angleD))
-    dim2 = ringD * np.sin(np.deg2rad(angleD))
+    dim1 = ringD * np.sin(np.deg2rad(angleD))
+    dim2 = ringD * np.cos(np.deg2rad(angleD))
     #print(ringD,angleD,dim1,dim2)
     if abs(dim1) < 0.00000001:
         dim1 = 0
@@ -168,6 +168,8 @@ def main():
     o_inputs = single_inputs("","","",[],[],"") # defaults
     inp = read_single_arguments(o_inputs)
     print(inp)
+    if inp == o_inputs:
+        err("You should use this with some arguments... you know... try -h")
     if inp.graphsGlob == "":
         displaceGeom(inp.fileXYZ,inp.vectorX,inp.vectorY,inp.linearDisplacement,
                      inp.circleScan)
