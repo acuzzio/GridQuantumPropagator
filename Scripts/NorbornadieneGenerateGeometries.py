@@ -92,7 +92,8 @@ def generateNorbGeometry(phi,gam,the):
 #    yC4 = -L + rBond * np.cos(phi2-the2) * np.sin(gam2)
 #    zC4 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
 
-    # This is the code for the ACTUAL angle between the three carbons. But now theta keeps CC constant
+    # This is the code for the ACTUAL angle between the three carbons. 
+    # But now theta keeps CC constant
 
     xC1 = -rBond * np.cos(gam2) * np.sin(phi2+the2)
     yC1 = L + rBond * - np.sin(gam2)
@@ -148,28 +149,49 @@ def generateNorbGeometry(phi,gam,the):
 #    zC4 = - (rBond * np.cos(a) * np.cos(b))/deno
 
 
-    # this is angle CH on the ZX plane, calculated from open optimized geometry
-    # using the coordinate of a C and a H -> np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2)))
-    alpha = -0.913346
-    # same as the other, but projected on plane zy and thus with formula
-    # np.arcsin((y2-y1)/(np.sqrt((y2-y1)**2+(z2-z1)**2)))
-    beta = -0.899358
+#    # this is angle CH on the ZX plane, calculated from open optimized geometry
+#    # using the coordinate of a C and a H -> np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2)))
+#    #alpha = -0.913346
+#    alpha = 0.0
+#    # This time this angle should be in the same plane as the other carbons...
+#    beta = 0.0
+#
+#    xH1 = xC1 + (chBond * np.sin(alpha))
+#    yH1 = yC1 - (chBond * np.cos(alpha) * np.sin(beta))
+#    zH1 = zC1 - (chBond * np.cos(alpha) * np.cos(beta))
+#
+#    xH2 = xC2 - (chBond * np.sin(alpha))
+#    yH2 = yC2 - (chBond * np.cos(alpha) * np.sin(beta))
+#    zH2 = zC2 - (chBond * np.cos(alpha) * np.cos(beta))
+#
+#    xH3 = xC3 - (chBond * np.sin(alpha))
+#    yH3 = yC3 + (chBond * np.cos(alpha) * np.sin(beta))
+#    zH3 = zC3 - (chBond * np.cos(alpha) * np.cos(beta))
+#
+#    xH4 = xC4 + (chBond * np.sin(alpha))
+#    yH4 = yC4 + (chBond * np.cos(alpha) * np.sin(beta))
+#    zH4 = zC4 - (chBond * np.cos(alpha) * np.cos(beta))
+    # in the end we did this with cartesian... interesting workaround...
+    # desperation?
+    dx = +0.694921
+    dy = +0.661700
+    dz = +0.494206
 
-    xH1 = xC1 + (chBond * np.sin(alpha))
-    yH1 = yC1 - (chBond * np.cos(alpha) * np.sin(beta))
-    zH1 = zC1 - (chBond * np.cos(alpha) * np.cos(beta))
+    xH1 = xC1 - dx
+    yH1 = yC1 + dy
+    zH1 = zC1 - dz
 
-    xH2 = xC2 - (chBond * np.sin(alpha))
-    yH2 = yC2 - (chBond * np.cos(alpha) * np.sin(beta))
-    zH2 = zC2 - (chBond * np.cos(alpha) * np.cos(beta))
+    xH2 = xC2 + dx
+    yH2 = yC2 + dy
+    zH2 = zC2 - dz
 
-    xH3 = xC3 - (chBond * np.sin(alpha))
-    yH3 = yC3 + (chBond * np.cos(alpha) * np.sin(beta))
-    zH3 = zC3 - (chBond * np.cos(alpha) * np.cos(beta))
+    xH3 = xC3 + dx
+    yH3 = yC3 - dy
+    zH3 = zC3 - dz
 
-    xH4 = xC4 + (chBond * np.sin(alpha))
-    yH4 = yC4 + (chBond * np.cos(alpha) * np.sin(beta))
-    zH4 = zC4 - (chBond * np.cos(alpha) * np.cos(beta))
+    xH4 = xC4 - dx
+    yH4 = yC4 - dy
+    zH4 = zC4 - dz
 
     newAtoms = [[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
                 [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]]
@@ -227,7 +249,7 @@ def main():
             for gamma in np.linspace(inp.gamma0,inp.gammaF,inp.gammaD):
                 for theta in np.linspace(inp.theta0,inp.thetaF,inp.thetaD):
                     generateNorbGeometry(phi,gamma,theta)
-    err('REMEMBER THAT THE HYDROGENS ARE NOT WELL PUT')
+    err('REMEMBER THAT THE HYDROGENS ARE PUT WITH CARTESIAN')
 
 if __name__ == "__main__":
         main()
