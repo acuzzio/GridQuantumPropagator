@@ -10,6 +10,8 @@ matplotlib.use('TkAgg')
 import glob
 import multiprocessing as mp
 import numpy as np
+import os
+import re
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
                               createHistogram, makeMultiLineDipoleGraph,
                               mathematicaListGenerator, gnuSplotCircle)
@@ -60,7 +62,43 @@ def matrixApproach(globalExp, proc):
     labelsAxis3 = np.unique(bigArrayLab3)
     blenderArray = np.empty((labelsAxis1.size,labelsAxis2.size,
                              labelsAxis3.size,nstates))
-    print(blenderArray.shape)
+    folder = ('/').join(globalExp.split('/')[:-1])
+    if folder == '':
+        folder = '.'
+    ind = 0
+    for Iax1 in range(labelsAxis1.size):
+        ax1 = labelsAxis1[Iax1]
+        for Iax2 in range(labelsAxis2.size):
+            ax2 = labelsAxis2[Iax2]
+            for Iax3 in range(labelsAxis3.size):
+                ax3 = labelsAxis3[Iax3]
+                singleLabel = ax1 + '_' + ax2 + '_' + ax3
+                fileNonly = 'zNorbornadiene_' + singleLabel + '.rassi.h5'
+                fileN = folder + '/' + fileNonly
+                exisT = os.path.exists(fileN)
+                print(exisT)
+                if exisT:
+                    energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
+                else:
+                    energies = np.repeat(-271.0,nstates)
+                    print(fileN + ' does not exist...')
+                blenderArray[Iax1,Iax2,Iax3] = energies
+    axFloat1 = np.array([ labTranform(a) for a in labelsAxis1 ])
+    axFloat2 = np.array([ labTranform(b) for b in labelsAxis2 ])
+    axFloat3 = np.array([ labTranform(c) for c in labelsAxis3 ])
+    axFloat1.tofile('fullA.txt')
+    axFloat2.tofile('fullB.txt')
+    axFloat3.tofile('fullC.txt')
+    blenderArray.tofile('fullD.txt')
+
+def labTranform(string):
+    '''
+    transform the string of the form
+    P014-800
+    into his +14.8 float
+    '''
+    return (float(string.replace('-','.').replace('N','-').replace('P','+')))
+
 
 def stringTransformation3d(fn):
     '''
@@ -72,7 +110,7 @@ def stringTransformation3d(fn):
     # str1 = 'N006-400' ->  axis1 = -6.4
     [str1,str2,str3] = fn1.split('_')[1:]
     [axis1,axis2,axis3] = [
-            float(x.replace('-','.').replace('N','-').replace('P','+')) for x in
+            labTranform(x) for x in
             [str1,str2,str3]]
     return(axis1,str1,axis2,str2,axis3,str3)
 
