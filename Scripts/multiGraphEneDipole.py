@@ -120,7 +120,7 @@ def doThisToEachElement(elem, dime, bigArray):
     ''' It creates two kind of graphs from the bigarray, elementwise'''
     [a,b,c] = elem
     label = str(a+1) + '_' + str(b+1) + '_' + str(c+1)
-    makeJustAnother2Dgraph(np.arange(dime), abs(bigArray[:,a,b,c]), 'Lin_' + label, label)
+    makeJustAnother2Dgraph('Lin_' + label, label, abs(bigArray[:,a,b,c]),np.arange(dime))
     createHistogram(np.abs(bigArray[:,a,b,c]), 'His_' + label, binNum=20)
 
 def kinAnalysis(globalExp, coorGraphs):

@@ -77,13 +77,15 @@ def makeJustAnother2DgraphMULTI(xs,yss,fn,labl,lw=None):
     plt.close('all')
 
 
-def makeJustAnother2Dgraph(xs,ys,fn,labl):
+def makeJustAnother2Dgraph(fn,labl,ys,xs=None):
     '''
     xs :: np.array[Double]
     yx :: np.array[Double]
     fn :: FilePath
     labl :: String - the name on the key
     '''
+    length = ys.size
+    xs = xs or np.arange(length)
     transp    = False
     my_dpi    = 150
     ratio     = (16, 9)
