@@ -1,1 +1,61 @@
-/home/alessio/Desktop/Dropbox/Blender/SurfaceLoader/loadSurface.txt
+
+import numpy as np
+import bpy
+
+winl = 'C:\\Users\\Alessio\\Desktop\\Dropbox\\Blender\\SurfaceLoader\\'
+
+#a = np.loadtxt('1.txt')
+#b = np.loadtxt('2.txt')
+#c = np.loadtxt('3.txt')
+#a = np.fromfile('fullA.txt')
+#b = np.fromfile('fullB.txt')
+#c = np.fromfile('fullC.txt')
+
+a = np.fromfile(winl + 'fullA.txt')
+b = np.fromfile(winl + 'fullB.txt')
+c = np.fromfile(winl + 'fullC.txt')
+
+
+nstates = 14
+
+angleN = a.size
+diheN = b.size
+
+c = c.reshape((angleN,diheN,nstates))
+
+cmin = np.min(c)
+c = c - (cmin)
+amin = np.min(a)
+a = a - amin
+
+#angleN = 3
+#diheN = 4
+
+for state in range(nstates):
+  verts = []
+  edges = []
+  faces = []
+
+  for j in range(angleN): 
+        for k in range(diheN):
+            verts.append((a[j],b[k],(c[j,k,state]*100)))
+            if (j != 0 and k != 0):
+                print(j,k)
+                uno = j*diheN+k
+                due = uno - 1
+                tre = uno - diheN
+                qua = due - diheN
+                print(uno,due,qua,tre)
+                faces.append([uno,due,qua,tre])
+  
+  mesh = bpy.data.meshes.new(name="Surface")
+  mesh.from_pydata(verts, edges, faces)
+  mesh.update()
+
+  profile_object = bpy.data.objects.new("Surface", mesh)
+  profile_object.data = mesh  # this line is redundant .. it simply overwrites .data
+
+  scene = bpy.context.scene
+  scene.objects.link(profile_object)
+  profile_object.select = True
+

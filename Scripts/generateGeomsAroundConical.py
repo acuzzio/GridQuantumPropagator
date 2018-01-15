@@ -10,7 +10,7 @@ import glob
 from collections import namedtuple
 from argparse import (ArgumentParser,RawTextHelpFormatter)
 from quantumpropagator import (readGeometry,saveTraj,err,retrieve_hdf5_data,
-                               mathematicaListGenerator, gnuSplotCircle)
+                               mathematicaListGenerator, gnuSplotCircle, ndprint)
 
 def read_single_arguments(single_inputs):
     '''
@@ -21,6 +21,11 @@ def read_single_arguments(single_inputs):
                         dest="v",
                         nargs='+',
                         help="the 3 files: geometry and branching plane vectors")
+    parser.add_argument("-s", "--scalarProd",
+                        dest="s",
+                        nargs='+',
+                        help="to calculate scalar product between scan \
+geometries (given by globalexpression) and branching plane vectors")
     parser.add_argument("-l", "--linear",
                         dest="l",
                         nargs='+',
@@ -38,6 +43,15 @@ def read_single_arguments(single_inputs):
                         type=str,
                         help="it is the global pattern of rasscf h5 files")
     args = parser.parse_args()
+
+    if args.s != None:
+        if len(args.s) == 3:
+            [globE,grad,der] = args.s
+            single_inputs = single_inputs._replace(globExp=globE)
+            single_inputs = single_inputs._replace(vectorX=grad)
+            single_inputs = single_inputs._replace(vectorY=der)
+        else:
+            err('this takes 3 arguments: the geometry global expression and the two vectors')
     if args.v != None:
         if len(args.v) == 3:
             [geom,grad,der] = args.v
@@ -45,18 +59,57 @@ def read_single_arguments(single_inputs):
             single_inputs = single_inputs._replace(vectorX=grad)
             single_inputs = single_inputs._replace(vectorY=der)
         else:
-            err('this takes 3 arguments: the goemetry and the two vectors')
+            err('this takes 3 arguments: the single geometry and the two vectors')
     if args.l != None:
-        if len(args.v) == 2:
+        if len(args.l) == 2:
             single_inputs = single_inputs._replace(linearDisplacement=args.l)
         else:
-            err('this takes 2 arguments: distance and number of points')
+            err('this takes 2 arguments: number of points and distance')
     if args.c != None:
         # without controls because we feel brave
         single_inputs = single_inputs._replace(circleScan=args.c)
     if args.g != None:
         single_inputs = single_inputs._replace(graphsGlob=args.g)
     return single_inputs
+
+def scalarProds(expression,vec1fn,vec2fn):
+    '''
+    given a scan global expression coordinate and the branching plane vectors,
+    it calculates the scalar products
+    expression :: String <- the global expression of files
+    vec1fn :: String <- filePath
+    vec2fn :: String <- filePath
+    '''
+    GD = np.loadtxt(vec1fn)
+    NA = np.loadtxt(vec2fn)
+    allfn = sorted(glob.glob(expression))
+    (natoms,title,atomTN,_) = readGeometry(allfn[0])
+    fileN = len(allfn)
+    allgeom = np.empty((fileN, natoms, 3))
+    ind = 0
+    for f in allfn:
+        (_,_,_,geom) = readGeometry(f)
+        allgeom[ind] = geom
+        ind += 1
+    difference = np.diff(allgeom,axis=0)
+    GDnorm = np.linalg.norm(GD)
+    NAnorm = np.linalg.norm(NA)
+    norms = np.linalg.norm(difference, axis =(1,2))
+    broadcasted = np.transpose(np.broadcast_to(norms,(3,natoms,fileN-1)))
+    unitary_move = difference/broadcasted
+    ## I need to divide the vector for the norm
+    wow = ndprint(np.tensordot(unitary_move,GD),format_string = '{0:7.4f}')
+    wol = ndprint(np.tensordot(unitary_move,NA),format_string = '{0:7.4f}')
+    output = '''
+    Gd norm -> {}
+    Dc norm -> {}
+
+  Scalar product Gd:
+{}
+  Scalar product Dc:
+{}
+    '''.format(GDnorm, NAnorm, wow, wol)
+    print(output)
 
 def displaceGeom(geom1,xf,yf,linearArgs,circleArgs):
     '''
@@ -153,7 +206,8 @@ single_inputs = namedtuple("single_input",
                             "vectorY",
                             "linearDisplacement",
                             "circleScan",
-                            "graphsGlob"))
+                            "graphsGlob",
+                            "globExp"))
 
 def main():
     #geom1='CI12.xyz'
@@ -165,14 +219,17 @@ def main():
         generateGeomsAroundConical.py -v CI12.xyz  x  y -c   20    0.1 0.2 0.3 0.4
             the command                   geom    v1 v2   howmany    list of Rs
     '''
-    o_inputs = single_inputs("","","",[],[],"") # defaults
+    o_inputs = single_inputs("","","",[],[],"","") # defaults
     inp = read_single_arguments(o_inputs)
-    print(inp)
+    #print(inp)
     if inp == o_inputs:
         err("You should use this with some arguments... you know... try -h")
     if inp.graphsGlob == "":
-        displaceGeom(inp.fileXYZ,inp.vectorX,inp.vectorY,inp.linearDisplacement,
+        if inp.globExp == "":
+            displaceGeom(inp.fileXYZ,inp.vectorX,inp.vectorY,inp.linearDisplacement,
                      inp.circleScan)
+        else:
+            scalarProds(inp.globExp,inp.vectorX,inp.vectorY)
     else:
         graphScan(inp.graphsGlob)
 
