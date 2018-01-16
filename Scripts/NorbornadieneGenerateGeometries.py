@@ -5,7 +5,8 @@ angles
 
 from collections import namedtuple
 from argparse import ArgumentParser
-from quantumpropagator import (saveTraj, readGeometry, calcAngle, err)
+from quantumpropagator import (saveTraj, readGeometry, calcAngle, err, good,
+                               ndprint)
 import numpy as np
 
 def read_single_arguments(single_inputs):
@@ -127,17 +128,20 @@ def generateNorbGeometry(phi,gam,the):
     newAtoms = np.array([[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
                 [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]])
     this = ((phi/torsionalCI) * deltasCI)
-    print(the2,torsionalCI,this)
-    newCorrectedAtoms = newAtoms + this
-    print(deltasCI)
-    print(newAtoms)
-    print(newCorrectedAtoms)
+    #print(the2,torsionalCI,this)
+    if phi > 0.0:
+        newCorrectedAtoms = newAtoms - this
+    else:
+        newCorrectedAtoms = newAtoms + this
+    #print(deltasCI)
+    #print(newAtoms)
+    #print(newCorrectedAtoms)
     new = np.append(fixed,newCorrectedAtoms,0)
     atomTN = atomT + ['C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
-    print(new)
+    #print(new)
     # saveTraj works on LIST of geometries, that is why the double list brackets
     saveTraj(np.array([new]),atomTN,fn)
-    print('LookAtNorbDyn.sh ' + fn + '.xyz')
+    #print('LookAtNorbDyn.sh ' + fn + '.xyz')
 
 def getAnglesFRomGeometry(fn):
     '''
@@ -183,11 +187,29 @@ def main():
     elif (inp.phiD == 0.0) and (inp.phiD == 0.0) and (inp.phiD == 0.0):
         generateNorbGeometry(inp.phi0,inp.gamma0,inp.theta0)
     else:
-        for phi in np.linspace(inp.phi0,inp.phiF,inp.phiD):
-            for gamma in np.linspace(inp.gamma0,inp.gammaF,inp.gammaD):
-                for theta in np.linspace(inp.theta0,inp.thetaF,inp.thetaD):
+        phiRange = np.linspace(inp.phi0,inp.phiF,inp.phiD)
+        gammaRange = np.linspace(inp.gamma0,inp.gammaF,inp.gammaD)
+        thetaRange = np.linspace(inp.theta0,inp.thetaF,inp.thetaD)
+        for phi in phiRange:
+            for gamma in gammaRange:
+                for theta in thetaRange:
                     generateNorbGeometry(phi,gamma,theta)
-    err('REMEMBER THAT THE HYDROGENS ARE PUT WITH CARTESIAN')
+        outStr1 = ndprint(phiRange,format_string='{:+7.3f}')
+        outStr2 = ndprint(gammaRange,format_string='{:+7.3f}')
+        outStr3 = ndprint(thetaRange,format_string='{:+7.3f}')
+        outForBash = '''
+        Phi:
+{}
+
+        Gamma:
+{}
+
+        Theta:
+{}
+
+        '''.format(outStr1,outStr2,outStr3)
+        print(outForBash)
+    good('REMEMBER THAT THE HYDROGENS ARE PUT WITH CARTESIAN')
 
 if __name__ == "__main__":
         main()
