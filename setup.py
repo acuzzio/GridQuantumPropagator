@@ -28,7 +28,8 @@ setup(
      'Scripts/2dmultiGraphEneDipole.py',
      'Scripts/3dmultiGraphEneDipole.py',
      'Scripts/NorbornadieneGenerateGeometries.py',
-     'Scripts/generateGeomsAroundConical.py'],
+     'Scripts/generateGeomsAroundConical.py',
+     'Scripts/PostProcessing3dData.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib'],
     extras_require={'test': ['nose', 'coverage']}
 )

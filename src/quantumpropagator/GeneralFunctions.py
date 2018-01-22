@@ -199,7 +199,7 @@ def calcBond(geom,atom1,atom2):
 
 def calcAngle(geom,atom1,atom2,atom3):
     '''
-    returns the bond length between atom1 and atom2
+    returns the angle between atom1,2 and 3
     geom :: np.array(natoms,3)
     atom1 = integer
     atom2 = integer
@@ -216,7 +216,7 @@ def calcAngle(geom,atom1,atom2,atom3):
 
 def calcDihedral(geom,atom1,atom2,atom3,atom4):
     '''
-    returns the bond length between atom1 and atom2
+    returns the dihedral of atom1,2,3 and 4
     geom :: np.array(natoms,3)
     atom1 = integer
     atom2 = integer
@@ -328,6 +328,29 @@ def createTabellineFromArray(arr):
         for kk in np.arange(length):
             mat[ii,kk]=arr[ii]*arr[kk]
     return(mat)
+
+def labTranform(string):
+    '''
+    transform the string of the form
+    P014-800
+    into his +14.8 float
+    '''
+    return (float(string.replace('-','.').replace('N','-').replace('P','+')))
+
+
+def stringTransformation3d(fn):
+    '''
+    transform the string of the form
+    'h5/zNorbornadiene_N006-400_P014-800_P085-500.rassi.h5'
+    into 3 numbers and 3 labels
+    '''
+    fn1 = fn.split('.')[0]  # h5/zNorbornadiene_N006-400_P014-800_P085-500
+    # str1 = 'N006-400' ->  axis1 = -6.4
+    [str1,str2,str3] = fn1.split('_')[1:]
+    [axis1,axis2,axis3] = [
+            labTranform(x) for x in
+            [str1,str2,str3]]
+    return(axis1,str1,axis2,str2,axis3,str3)
 
 if __name__ == "__main__":
     a = np.arange(36).reshape(6,6)

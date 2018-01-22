@@ -12,7 +12,8 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                fromCmMin1toHartree, calculateGradientOnMatrix0,
                                chunksOf, chunksOfList, calcBond, calcAngle,
                                calcDihedral, massOf, saveTraj, scanvalues,
-                               printMatrix2D, readGeometry)
+                               printMatrix2D, readGeometry, labTranform,
+                               stringTransformation3d)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,

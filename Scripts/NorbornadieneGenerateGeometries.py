@@ -145,7 +145,7 @@ def generateNorbGeometry(phi,gam,the):
 
 def getAnglesFRomGeometry(fn):
     '''
-    given a geometry it gives back the angles theta and gamma
+    given a geometry it gives back the angles phi, theta and gamma
     (to be improved)
     fn :: String <- filePath
     '''
@@ -194,9 +194,12 @@ def main():
             for gamma in gammaRange:
                 for theta in thetaRange:
                     generateNorbGeometry(phi,gamma,theta)
-        outStr1 = ndprint(phiRange,format_string='{:+7.3f}')
-        outStr2 = ndprint(gammaRange,format_string='{:+7.3f}')
-        outStr3 = ndprint(thetaRange,format_string='{:+7.3f}')
+        outStr1 = ndprint(phiRange,format_string='{:+08.3f}')
+        outStr1 = outStr1.replace('-','N').replace('.','-').replace('+','P')
+        outStr2 = ndprint(gammaRange,format_string='{:+08.3f}')
+        outStr2 = outStr2.replace('-','N').replace('.','-').replace('+','P')
+        outStr3 = ndprint(thetaRange,format_string='{:+08.3f}')
+        outStr3 = outStr3.replace('-','N').replace('.','-').replace('+','P')
         outForBash = '''
         Phi:
 {}

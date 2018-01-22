@@ -14,7 +14,8 @@ import os
 import re
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
                               createHistogram, makeMultiLineDipoleGraph,
-                              mathematicaListGenerator, gnuSplotCircle)
+                              mathematicaListGenerator, gnuSplotCircle,
+                              labTranform, stringTransformation3d)
 def read_single_arguments(single_inputs):
     '''
      This funcion reads the command line arguments
@@ -38,7 +39,7 @@ def read_single_arguments(single_inputs):
 
 def matrixApproach(globalExp, proc):
     '''
-
+    Create blender files from 3d data... meraviglia
     '''
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
@@ -90,29 +91,6 @@ def matrixApproach(globalExp, proc):
     axFloat2.tofile('fullB.txt')
     axFloat3.tofile('fullC.txt')
     blenderArray.tofile('fullD.txt')
-
-def labTranform(string):
-    '''
-    transform the string of the form
-    P014-800
-    into his +14.8 float
-    '''
-    return (float(string.replace('-','.').replace('N','-').replace('P','+')))
-
-
-def stringTransformation3d(fn):
-    '''
-    transform the string of the form
-    'h5/zNorbornadiene_N006-400_P014-800_P085-500.rassi.h5'
-    into 3 numbers and 3 labels
-    '''
-    fn1 = fn.split('.')[0]  # h5/zNorbornadiene_N006-400_P014-800_P085-500
-    # str1 = 'N006-400' ->  axis1 = -6.4
-    [str1,str2,str3] = fn1.split('_')[1:]
-    [axis1,axis2,axis3] = [
-            labTranform(x) for x in
-            [str1,str2,str3]]
-    return(axis1,str1,axis2,str2,axis3,str3)
 
 single_inputs = namedtuple("single_input", ("glob","proc"))
 
