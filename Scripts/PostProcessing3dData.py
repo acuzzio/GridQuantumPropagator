@@ -13,7 +13,7 @@ import numpy as np
 import os
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
-                       npArrayOfFiles)
+                       npArrayOfFiles, printMatrix2D, createTabellineFromArray)
 
 
 def read_single_arguments(single_inputs):
@@ -25,7 +25,7 @@ def read_single_arguments(single_inputs):
                         dest="o",
                         type=str,
                         required=True,
-                        help="The location of the Grid folder")
+                        help="The location of the output folder")
     parser.add_argument("-s", "--scanFolder",
                         dest="s",
                         type=str,
@@ -47,10 +47,10 @@ def read_single_arguments(single_inputs):
     return single_inputs
 
 
-#def createOutputFile(fold,outFol):
 def createOutputFile(tupleI):
     '''
     given a projectname, creates single outFile (not yet corrected)
+    tupleI :: (String,String) <- is composed by (fold,outFol)
     fold :: String <- the folder of a single calculation
     outFol :: String <- the folder where the output is collected
     '''
@@ -86,7 +86,7 @@ def createOutputFile(tupleI):
                     ('CI_VECTORS', ciVect),
                     ('ROOT_ENERGIES', ener),
                     ('DIPOLES', dipoles[0:3]),
-#                    ('TRANDENS',transDen),
+                    #('TRANDENS',transDen),
                     ('OVERLAP', overlap),
                     ('NAC', NAC)]
 
@@ -125,6 +125,7 @@ def unpackThingsFromParallel(listOfval):
     trues = [x[1] for x in listOfval].count(True)
     return(log,trues,length-trues)
 
+
 single_inputs = namedtuple("single_input", ("glob","outF","proc"))
 
 
@@ -160,6 +161,59 @@ problems -> {}
     print(results)
 
 
+def compressColumnOverlap(mat):
+    '''
+    mat :: np.array(X,Y) <- an overlap matrix
+    given a matrix with overlaps this will return an array of +1 or -1.
+    This will determine sign changes for this step.
+    '''
+    axis = 0
+    amax = mat.max(axis)
+    amin = mat.min(axis)
+    return np.where(-amin > amax, -1, 1)
+
+
+def correctThisfromThat(file1,file2):
+    '''
+    This is the corrector. Go go go
+    file1,file2 :: String <- the path of the two h5 files
+    '''
+    overlapsM = retrieve_hdf5_data(file2, 'OVERLAP')
+    (dim, _ ) = overlapsM.shape
+    nstates = dim // 2
+    overlaps = overlapsM[nstates:,:nstates]
+    printMatrix2D(overlaps,2)
+    arrayOneD = compressColumnOverlap(overlaps)
+    correctionMatrix = createTabellineFromArray(arrayOneD)
+
+    print(file1,file2)
+
+def directionRead(folder):
+    '''
+    I NEED TO CHECK THAT THESE CALCULATIONS ARE CONSECUTIVE !!!
+    filter is taking aout false, without checking anything !!!
+    '''
+    phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
+      'P005-000', 'P006-000', 'P007-000']
+    gammas = ['P010-000', 'P010-714', 'P011-429', 'P012-143', 'P012-857',
+      'P013-571', 'P014-286', 'P015-000', 'P015-714', 'P016-429', 'P017-143',
+      'P017-857', 'P018-571', 'P019-286', 'P020-000']
+    thetas = ['P120-000', 'P119-184', 'P118-367', 'P117-551', 'P116-735',
+      'P115-918', 'P115-102', 'P114-286', 'P113-469', 'P112-653', 'P111-837',
+      'P111-020', 'P110-204', 'P109-388', 'P108-571', 'P107-755', 'P106-939',
+      'P106-122', 'P105-306', 'P104-490', 'P103-673', 'P102-857', 'P102-041',
+      'P101-224', 'P100-408', 'P099-592', 'P098-776', 'P097-959', 'P097-143',
+      'P096-327', 'P095-510', 'P094-694', 'P093-878', 'P093-061', 'P092-245',
+      'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
+      'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
+      'P081-633', 'P080-816', 'P080-000']
+    rootName = os.path.join(folder,'zNorbornadiene_')
+    mainLine = [ rootName + 'P000-000_P010-000_' + theta + '.all.h5' for theta
+            in thetas ]
+    watchout = list(filter(os.path.isfile,mainLine))
+    correctThisfromThat(watchout[0],watchout[1])
+
 if __name__ == "__main__":
-        main()
+#    main()
+    directionRead('/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs')
 

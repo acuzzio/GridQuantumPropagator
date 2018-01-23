@@ -85,30 +85,20 @@ def generateWater(outfolder, rangearg):
         label3 = '%03i' % label
         WaterXyz(outfolder, dist, label3)
 
-def compressColumnOverlap(mat):
-    '''
-    mat :: np.array(X,Y) <- an overlap matrix
-    given a matrix with overlaps this will return an array of +1 or -1.
-    This will determine sign changes for this step.
-    '''
-    axis = 0
-    amax = mat.max(axis)
-    amin = mat.min(axis)
-    return np.where(-amin > amax, -1, 1)
-
 if __name__ == "__main__":
-    import quantumpropagator.h5Reader as hf
-    import quantumpropagator.GeneralFunctions as gf
-    fn = 'Grid_119.648_000.000.rassi.h5'
-    overlapsM = hf.retrieve_hdf5_data(fn, 'ORIGINAL_OVERLAPS')
-    (dim, _ ) = overlapsM.shape
-    nstates = dim // 2
-    overlaps = overlapsM[nstates:,:nstates]
-    gf.printMatrix2D(overlaps,2)
-    arrayOneD = compressColumnOverlap(overlaps)
-    correctionMatrix = gf.createTabellineFromArray(arrayOneD)
-    print(arrayOneD)
-    print(correctionMatrix)
+    print('lol!!!')
+#    import quantumpropagator.h5Reader as hf
+#    import quantumpropagator.GeneralFunctions as gf
+#    fn = 'Grid_119.648_000.000.rassi.h5'
+#    overlapsM = hf.retrieve_hdf5_data(fn, 'ORIGINAL_OVERLAPS')
+#    (dim, _ ) = overlapsM.shape
+#    nstates = dim // 2
+#    overlaps = overlapsM[nstates:,:nstates]
+#    gf.printMatrix2D(overlaps,2)
+#    arrayOneD = compressColumnOverlap(overlaps)
+#    correctionMatrix = gf.createTabellineFromArray(arrayOneD)
+#    print(arrayOneD)
+#    print(correctionMatrix)
 
     #generateLiHxyz('XyzS/', (0.7,4.0,0.1))
     #fns = sorted(glob.glob('XyzS/*'))
