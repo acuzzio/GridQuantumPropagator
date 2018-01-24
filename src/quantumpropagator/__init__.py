@@ -13,7 +13,8 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                chunksOf, chunksOfList, calcBond, calcAngle,
                                calcDihedral, massOf, saveTraj, scanvalues,
                                printMatrix2D, readGeometry, labTranform,
-                               stringTransformation3d, createTabellineFromArray)
+                               stringTransformation3d,
+                               createTabellineFromArray)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,
@@ -26,7 +27,8 @@ from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
 from .GridIntegrator import (grid1DIntegrationAstrid)
 from .h5Reader import (retrieve_hdf5_keys, retrieve_hdf5_data, readAllhdf51D,
                        writeH5file, correctSignThem, correctSignFromRelativeToAbsolute,
-                       findCorrectionNumber, correctSign, secondCorrection, npArrayOfFiles)
+                       findCorrectionNumber, correctSign, secondCorrection,
+                       npArrayOfFiles, writeH5fileDict, readWholeH5toDict)
 from .initialConditions import (addPhase, createInitialState, reducedMassLiH,
                                 expandDist2, expandDipo2, expandNAC2, expandEne2, extrapolateSx,
                                 extrapolateSxLinear, linebetween2points, morse, expandDist,

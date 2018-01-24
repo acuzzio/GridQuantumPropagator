@@ -13,7 +13,8 @@ import numpy as np
 import os
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
-                       npArrayOfFiles, printMatrix2D, createTabellineFromArray)
+                       npArrayOfFiles, printMatrix2D, createTabellineFromArray,
+                       writeH5fileDict, readWholeH5toDict)
 
 
 def read_single_arguments(single_inputs):
@@ -170,28 +171,62 @@ def compressColumnOverlap(mat):
     axis = 0
     amax = mat.max(axis)
     amin = mat.min(axis)
-    return np.where(-amin > amax, -1, 1)
+    result = np.where(-amin > amax, -1, 1)
+    return result
 
 
-def correctThisfromThat(file1,file2):
+def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
     '''
     This is the corrector. Go go go
-    file1,file2 :: String <- the path of the two h5 files
+    fileN :: String <- the path of the h5 file
+    oneDarray :: np.array(NSTATES) <- this is the 1D vector that tells us how
+                                      sign changed in LAST CALCULATION
+    outputF :: String <- the path of the output folder
     '''
-    overlapsM = retrieve_hdf5_data(file2, 'OVERLAP')
+    dataToGet = ['OVERLAP', 'DIPOLES']
+    [overlapsM, dipolesAll] = retrieve_hdf5_data(fileN, dataToGet)
     (dim, _ ) = overlapsM.shape
     nstates = dim // 2
-    overlaps = overlapsM[nstates:,:nstates]
+    overlapsAll = overlapsM[nstates:,:nstates]
+
+    # let's cut something
+    overlaps = overlapsAll[:cutAt, :cutAt]
+    dipoles = dipolesAll[:, :cutAt, :cutAt]
+
+    correctionArray1D = compressColumnOverlap(overlaps)
+    correctionArray1DABS = correctionArray1D * oneDarray
+    correctionMatrix = createTabellineFromArray(correctionArray1DABS)
+    new_dipoles = dipoles * correctionMatrix
+
+    # file handling
+    corrFN = os.path.basename(os.path.splitext(fileN)[0] + 'corrected.h5')
+    corrFNO = os.path.join(outputF,corrFN)
+    allValues = readWholeH5toDict(fileN)
+    allValues['DIPOLES'] = new_dipoles
+    writeH5fileDict(corrFNO,allValues)
+    #print('file {} written'.format(corrFNO))
+    print('This is overlap:')
     printMatrix2D(overlaps,2)
-    arrayOneD = compressColumnOverlap(overlaps)
-    correctionMatrix = createTabellineFromArray(arrayOneD)
+    print('\n\n')
+    print('this is correction Matrix')
+    printMatrix2D(correctionMatrix,2)
+    print('\n\n')
+    print('These are the old dipoles:')
+    printMatrix2D(dipoles[0],2)
+    print('\n\n')
+    print('These are the new dipoles:')
+    printMatrix2D(new_dipoles[0],2)
+    print('\n\n')
+    print('{}\n\nRELATI:\n{}\nONEDINP\n{}\nABS\n{}\n'.format(corrFNO,correctionArray1D,oneDarray,correctionArray1DABS))
+    return correctionArray1DABS
 
-    print(file1,file2)
 
-def directionRead(folder):
+
+
+def directionRead(folderO,folderE):
     '''
     I NEED TO CHECK THAT THESE CALCULATIONS ARE CONSECUTIVE !!!
-    filter is taking aout false, without checking anything !!!
+    filter is taking out falses, without checking anything !!!
     '''
     phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
       'P005-000', 'P006-000', 'P007-000']
@@ -207,13 +242,31 @@ def directionRead(folder):
       'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
       'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
       'P081-633', 'P080-816', 'P080-000']
-    rootName = os.path.join(folder,'zNorbornadiene_')
+    rootName = os.path.join(folderO,'zNorbornadiene_')
     mainLine = [ rootName + 'P000-000_P010-000_' + theta + '.all.h5' for theta
             in thetas ]
+    # this filter is NOT exactly what you want
     watchout = list(filter(os.path.isfile,mainLine))
-    correctThisfromThat(watchout[0],watchout[1])
+    print(watchout)
+    cutAt = 4
+    newsign = np.ones(cutAt)   # problem BOUND for states...
+    for i in range(len(watchout)):
+        if i != 0:
+            print('\n\n\n----------THIS IS {} -> cut at {}:\n'.format(i,cutAt))
+            newsign = correctThisfromThat(watchout[i],newsign,
+                    folderE,cutAt)
+            dipolesAll = retrieve_hdf5_data(watchout[i], 'DIPOLES')
+            first = 0
+            second = 2
+            aa = newsign[second]
+            bb = newsign[first]
+            cc = newsign[first]*newsign[second]
+            print('Steph {} * {} = {} ->   {} '.format(
+                         aa,bb,cc,
+                         dipolesAll[0,first, second]))
 
 if __name__ == "__main__":
 #    main()
-    directionRead('/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs')
+    directionRead('/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs',
+    '/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
 

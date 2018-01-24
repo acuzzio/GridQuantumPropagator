@@ -55,13 +55,15 @@ def graphMultiRassi(globalExp,poolSize):
     ''' collects rassi data and create the elementwise graphs '''
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
-    nstates = 14
+    nstates = 4 # PROBLEM BOUND
     bigArray = np.empty((dime,3,nstates,nstates))
 
     ind=0
     for fileN in allH5:
-        properties = retrieve_hdf5_data(fileN,'PROPERTIES')
-        dmMat = properties[0:3]
+        #properties = retrieve_hdf5_data(fileN,'PROPERTIES')
+        #dmMat = properties[0:3]
+        properties = retrieve_hdf5_data(fileN,'DIPOLES')
+        dmMat = properties
         bigArray[ind] = dmMat
         ind += 1
 
@@ -88,6 +90,7 @@ def graphMultiRassi(globalExp,poolSize):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi)
     plt.close('all')
 
+    # I first want to make a graph of EACH ELEMENT
     # warning... range(2) excludes Z values
     elems = [[x,y,z] for x in range(2) for y in range(nstates) for z in range(nstates)]
 
@@ -113,15 +116,15 @@ def graphMultiRassi(globalExp,poolSize):
 def doThisToEachRow(row, dime, bigArray):
     [a,b] = row
     label = str(a+1) + '_' + str(b+1)
-    makeMultiLineDipoleGraph(np.arange(dime),abs(bigArray[:,a,b]), 'All_from_' +
+    makeMultiLineDipoleGraph(np.arange(dime),bigArray[:,a,b], 'All_from_' +
             label, b)
 
 def doThisToEachElement(elem, dime, bigArray):
     ''' It creates two kind of graphs from the bigarray, elementwise'''
     [a,b,c] = elem
     label = str(a+1) + '_' + str(b+1) + '_' + str(c+1)
-    makeJustAnother2Dgraph('Lin_' + label, label, abs(bigArray[:,a,b,c]),np.arange(dime))
-    createHistogram(np.abs(bigArray[:,a,b,c]), 'His_' + label, binNum=20)
+    makeJustAnother2Dgraph('Lin_' + label, label, bigArray[:,a,b,c])
+    #createHistogram(np.abs(bigArray[:,a,b,c]), 'His_' + label, binNum=20)
 
 def kinAnalysis(globalExp, coorGraphs):
     '''

@@ -68,6 +68,27 @@ def writeH5file(fn, tuplesLabelValues):
             for (label,value) in tuplesLabelValues:
                 hf.create_dataset(label, data=value)
 
+def writeH5fileDict(fn, dictionary):
+    '''
+    writes a h5 file, dictionary edition
+    fn :: String <- the output path
+    dictionary :: {Values}  <- the content of Hdf5
+    '''
+    with h5py.File(fn, 'w') as hf:
+        for key in dictionary.keys():
+            hf.create_dataset(key, data=dictionary[key])
+
+def readWholeH5toDict(filename):
+    '''
+    read a h5 file and returns a dictionary (ready to be edited)
+    fn :: filePath <- ciao
+    '''
+    outDict = {}
+    with h5py.File(filename, 'r') as f:
+         for i in list(f.keys()):
+             outDict[i] = f[i].value
+    return outDict
+
 
 def correctSignThem(folder, nstates, proparraylength):
     '''
