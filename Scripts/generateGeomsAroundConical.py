@@ -42,8 +42,9 @@ geometries (given by globalexpression) and branching plane vectors")
                         dest="g",
                         type=str,
                         help="it is the global pattern of rasscf h5 files")
-    args = parser.parse_args()
 
+
+    args = parser.parse_args()
     if args.s != None:
         if len(args.s) == 3:
             [globE,grad,der] = args.s

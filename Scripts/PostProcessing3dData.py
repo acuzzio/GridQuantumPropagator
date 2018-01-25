@@ -25,17 +25,22 @@ def read_single_arguments(single_inputs):
     parser.add_argument("-o", "--outputFolder",
                         dest="o",
                         type=str,
-                        required=True,
                         help="The location of the output folder")
     parser.add_argument("-s", "--scanFolder",
                         dest="s",
                         type=str,
-                        required=True,
                         help="The location of the Grid folder")
     parser.add_argument("-p", "--parallel",
                         dest="p",
                         type=int,
                         help="number of processors if you want it parallel")
+    parser.add_argument("-d", "--displacement",
+                        dest="d",
+                        nargs='+',
+                        help="Corrector, takes two arguments:\n"
+                        "Expression of h5 files\n"
+                        "Folder of outputs\n")
+
 
     args = parser.parse_args()
     if args.o != None:
@@ -44,6 +49,8 @@ def read_single_arguments(single_inputs):
         single_inputs = single_inputs._replace(glob=args.s)
     if args.p != None:
         single_inputs = single_inputs._replace(proc=args.p)
+    if args.d != None:
+        single_inputs = single_inputs._replace(direction=args.d)
 
     return single_inputs
 
@@ -127,39 +134,45 @@ def unpackThingsFromParallel(listOfval):
     return(log,trues,length-trues)
 
 
-single_inputs = namedtuple("single_input", ("glob","outF","proc"))
+single_inputs = namedtuple("single_input", ("direction","glob","outF","proc"))
+
+stringOutput1 = '''
+{}
+
+finished -> {}
+problems -> {}
+'''
 
 
 def main():
     '''
     from a grid frolder to a folder ready to be propagated
     '''
-    o_inputs = single_inputs("","",1)
+    o_inputs = single_inputs("","","",1)
     inp = read_single_arguments(o_inputs)
-    folders = npArrayOfFiles(inp.glob)
-    fold = folders[:] # this does nothing, but I use it to try less files at the time
-    ####     serial Function
-    #for i in fold:
-    #    (log,boolean) = createOutputFile(i,inp.outF)
-    #    logAll += '\n' + log
-    #    if boolean:
-    #        finished += 1
-    #    else:
-    #        problems += 1
-    #### go parallel here
-    pool = multiprocessing.Pool(processes = inp.proc)
-    resultP = pool.map(createOutputFile, zip(fold, repeat(inp.outF)))
-    (logAll,finished,problems) = unpackThingsFromParallel(resultP)
-    results = '''
-{}
+    if inp.direction == "":
+        folders = npArrayOfFiles(inp.glob)
+        fold = folders[:] # this does nothing, but I use it to try less files at the time
+        ####     serial Function
+        #for i in fold:
+        #    (log,boolean) = createOutputFile(i,inp.outF)
+        #    logAll += '\n' + log
+        #    if boolean:
+        #        finished += 1
+        #    else:
+        #        problems += 1
+        #### go parallel here
+        pool = multiprocessing.Pool(processes = inp.proc)
+        resultP = pool.map(createOutputFile, zip(fold, repeat(inp.outF)))
+        (logAll,finished,problems) = unpackThingsFromParallel(resultP)
+        results = stringOutput1.format(logAll,finished,problems)
 
-finished -> {}
-problems -> {}
-'''.format(logAll,finished,problems)
-
-    with open('report','w') as f:
-        f.write(results)
-    print(results)
+        with open('report','w') as f:
+            f.write(results)
+        print(results)
+    else:
+        directionRead('/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs',
+        '/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
 
 
 def compressColumnOverlap(mat):
@@ -205,6 +218,8 @@ def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
     allValues['DIPOLES'] = new_dipoles
     writeH5fileDict(corrFNO,allValues)
     #print('file {} written'.format(corrFNO))
+    print('{}\n\nRELATIVE:\n{}\nFrom precedent Point:\n{}\nABSOLUTE correction:\n{}\n'.format(corrFNO,correctionArray1D,oneDarray,correctionArray1DABS))
+    print('\n\n')
     print('This is overlap:')
     printMatrix2D(overlaps,2)
     print('\n\n')
@@ -216,8 +231,6 @@ def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
     print('\n\n')
     print('These are the new dipoles:')
     printMatrix2D(new_dipoles[0],2)
-    print('\n\n')
-    print('{}\n\nRELATI:\n{}\nONEDINP\n{}\nABS\n{}\n'.format(corrFNO,correctionArray1D,oneDarray,correctionArray1DABS))
     return correctionArray1DABS
 
 
@@ -261,12 +274,9 @@ def directionRead(folderO,folderE):
             aa = newsign[second]
             bb = newsign[first]
             cc = newsign[first]*newsign[second]
-            print('Steph {} * {} = {} ->   {} '.format(
-                         aa,bb,cc,
-                         dipolesAll[0,first, second]))
+            dd = dipolesAll[0,first,second]
+            #print('\nSteph {} * {} = {} ->   {} '.format(aa,bb,cc,dd))
 
 if __name__ == "__main__":
-#    main()
-    directionRead('/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs',
-    '/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
+    main()
 
