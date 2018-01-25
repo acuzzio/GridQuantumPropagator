@@ -385,6 +385,7 @@ def makeMultiLineDipoleGraph(xs, yss, label, state):
         j.set_color(colors[i])
     ax1.legend(loc='upper right')
     plt.savefig(label, bbox_inches='tight', dpi=my_dpi)
+    plt.close('all')
 
 if __name__ == "__main__":
     a = np.arange(11)

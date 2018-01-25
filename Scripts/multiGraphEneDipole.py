@@ -5,15 +5,16 @@ makes graphs.
 It is a 1D module
 '''
 
-from collections import namedtuple
 from argparse import ArgumentParser
+from collections import namedtuple
+from itertools import repeat
 import glob
 import multiprocessing as mp
 import numpy as np
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
                               createHistogram, makeMultiLineDipoleGraph,
                               massOf, saveTraj, makeJustAnother2DgraphMULTI,
-                              calcAngle)
+                              calcAngle, err)
 import matplotlib.pyplot as plt
 
 def read_single_arguments(single_inputs):
@@ -55,7 +56,10 @@ def graphMultiRassi(globalExp,poolSize):
     ''' collects rassi data and create the elementwise graphs '''
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
-    nstates = 4 # PROBLEM BOUND
+    if dime == 0:
+        err("no files in {}".format(globalExp))
+    allH5First = allH5[0]
+    nstates = len(retrieve_hdf5_data(allH5First,'ROOT_ENERGIES'))
     bigArray = np.empty((dime,3,nstates,nstates))
 
     ind=0
@@ -94,33 +98,27 @@ def graphMultiRassi(globalExp,poolSize):
     # warning... range(2) excludes Z values
     elems = [[x,y,z] for x in range(2) for y in range(nstates) for z in range(nstates)]
 
-    with mp.Pool(processes=poolSize) as p:
-        promises = [ p.apply_async(doThisToEachElement, args=(elem, dime,
-            bigArray))
-                   for elem in elems ]
-        for (p, i) in zip(promises, elems):
-            p.get()
+    pool = mp.Pool(processes = poolSize)
+    pool.map(doThisToEachElement, zip(elems, repeat(dime), repeat(bigArray)))
 
     # warning... range(2) excludes Z values
     rows = [[x,y] for x in range(2) for y in range(nstates)]
 
-    for row in rows:
-        doThisToEachRow(row, dime, bigArray)
+    #for row in rows:
+    #    doThisToEachRow(row, dime, bigArray)
     # For some reason the perallel version of this does not work properly.
-    #with mp.Pool(processes=poolSize) as p:
-    #    promises = [ p.apply_async(doThisToEachRow, args=(row, dime, bigArray))
-    #               for row in rows ]
-    #    for (p, i) in zip(promises, rows):
-    #        p.get()
+    pool.map(doThisToEachRow, zip(rows, repeat(dime), repeat(bigArray)))
 
-def doThisToEachRow(row, dime, bigArray):
+def doThisToEachRow(tupleInput):
+    (row, dime, bigArray) = tupleInput
     [a,b] = row
     label = str(a+1) + '_' + str(b+1)
     makeMultiLineDipoleGraph(np.arange(dime),bigArray[:,a,b], 'All_from_' +
             label, b)
 
-def doThisToEachElement(elem, dime, bigArray):
+def doThisToEachElement(tupleInput):
     ''' It creates two kind of graphs from the bigarray, elementwise'''
+    (elem, dime, bigArray) = tupleInput
     [a,b,c] = elem
     label = str(a+1) + '_' + str(b+1) + '_' + str(c+1)
     makeJustAnother2Dgraph('Lin_' + label, label, bigArray[:,a,b,c])
@@ -136,6 +134,8 @@ def kinAnalysis(globalExp, coorGraphs):
     '''
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
+    if dime == 0:
+        err("no files in {}".format(globalExp))
     allH5First = allH5[0]
     nstates = len(retrieve_hdf5_data(allH5First,'SFS_ENERGIES'))
     natoms = len(retrieve_hdf5_data(allH5First,'CENTER_COORDINATES'))

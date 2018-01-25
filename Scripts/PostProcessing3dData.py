@@ -69,11 +69,11 @@ def createOutputFile(tupleI):
     root = folder +'/' + proj + '/' + proj
     oroot = os.path.join(outFol,proj)
     h5rasscf = root + '.rasscf.h5'
-    h5dipole = root + '.transDip.h5'
+    #h5dipole = root + '.transDip.h5'
     h5rassi = root + '.rassi.h5'
     h5out = root + '.out'
     a_exist = all([ os.path.isfile(f) for f in
-        [h5rassi,h5rasscf,h5dipole,h5out]])
+        [h5rassi,h5rasscf,h5out]])
     if a_exist:
         log = proj + ': all files present'
         boolean = True
@@ -82,10 +82,11 @@ def createOutputFile(tupleI):
                                     'CENTER_LABELS',
                                     'CI_VECTORS',
                                     'ROOT_ENERGIES'])
-        [dipoles, transDen] = retrieve_hdf5_data(h5dipole,
-                              ['PROPERTIES',
-                               'SFS_TRANSITION_DENSITIES'])
-        overlap = retrieve_hdf5_data(h5rassi,'ORIGINAL_OVERLAPS')
+        #[dipoles, transDen] = retrieve_hdf5_data(h5dipole,
+        #                      ['PROPERTIES',
+        #                       'SFS_TRANSITION_DENSITIES'])
+        [dipoles, overlap] = retrieve_hdf5_data(h5rassi,
+                           ['PROPERTIES','ORIGINAL_OVERLAPS'])
         NAC = parseNAC(h5out)
         outfile = oroot + '.all.h5'
 
@@ -121,6 +122,7 @@ def parseNAC(fileN):
     (output, err) = p.communicate()
     outputO = np.array([float(x) for x in output.split(b'\n') if x != b'' ])
     return(outputO)
+
 
 def unpackThingsFromParallel(listOfval):
     '''
@@ -175,20 +177,7 @@ def main():
         '/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
 
 
-def compressColumnOverlap(mat):
-    '''
-    mat :: np.array(X,Y) <- an overlap matrix
-    given a matrix with overlaps this will return an array of +1 or -1.
-    This will determine sign changes for this step.
-    '''
-    axis = 0
-    amax = mat.max(axis)
-    amin = mat.min(axis)
-    result = np.where(-amin > amax, -1, 1)
-    return result
-
-
-def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
+def correctThis(fileN,oneDarray,outputF,cutAt):
     '''
     This is the corrector. Go go go
     fileN :: String <- the path of the h5 file
@@ -197,17 +186,18 @@ def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
     outputF :: String <- the path of the output folder
     '''
     dataToGet = ['OVERLAP', 'DIPOLES']
-    [overlapsM, dipolesAll] = retrieve_hdf5_data(fileN, dataToGet)
+    [overlapsM, dipolesM] = retrieve_hdf5_data(fileN, dataToGet)
     (dim, _ ) = overlapsM.shape
     nstates = dim // 2
     overlapsAll = overlapsM[nstates:,:nstates]
+    dipolesAll = dipolesM[:,nstates:,nstates:]
 
     # let's cut something
     overlaps = overlapsAll[:cutAt, :cutAt]
     dipoles = dipolesAll[:, :cutAt, :cutAt]
 
-    correctionArray1D = compressColumnOverlap(overlaps)
-    correctionArray1DABS = correctionArray1D * oneDarray
+    correctionArray1DABS = createOneAndZeroABS(overlaps, oneDarray)
+    correctionArray1DABS2 = compressColumnOverlap(overlaps, oneDarray)
     correctionMatrix = createTabellineFromArray(correctionArray1DABS)
     new_dipoles = dipoles * correctionMatrix
 
@@ -217,8 +207,7 @@ def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
     allValues = readWholeH5toDict(fileN)
     allValues['DIPOLES'] = new_dipoles
     writeH5fileDict(corrFNO,allValues)
-    #print('file {} written'.format(corrFNO))
-    print('{}\n\nRELATIVE:\n{}\nFrom precedent Point:\n{}\nABSOLUTE correction:\n{}\n'.format(corrFNO,correctionArray1D,oneDarray,correctionArray1DABS))
+    print('file {} written'.format(corrFNO))
     print('\n\n')
     print('This is overlap:')
     printMatrix2D(overlaps,2)
@@ -232,8 +221,6 @@ def correctThisfromThat(fileN,oneDarray,outputF,cutAt):
     print('These are the new dipoles:')
     printMatrix2D(new_dipoles[0],2)
     return correctionArray1DABS
-
-
 
 
 def directionRead(folderO,folderE):
@@ -260,23 +247,60 @@ def directionRead(folderO,folderE):
             in thetas ]
     # this filter is NOT exactly what you want
     watchout = list(filter(os.path.isfile,mainLine))
-    print(watchout)
-    cutAt = 4
+    cutAt = 14
     newsign = np.ones(cutAt)   # problem BOUND for states...
     for i in range(len(watchout)):
         if i != 0:
             print('\n\n\n----------THIS IS {} -> cut at {}:\n'.format(i,cutAt))
-            newsign = correctThisfromThat(watchout[i],newsign,
+            newsign = correctThis(watchout[i],newsign,
                     folderE,cutAt)
             dipolesAll = retrieve_hdf5_data(watchout[i], 'DIPOLES')
-            first = 0
-            second = 2
-            aa = newsign[second]
-            bb = newsign[first]
-            cc = newsign[first]*newsign[second]
-            dd = dipolesAll[0,first,second]
-            #print('\nSteph {} * {} = {} ->   {} '.format(aa,bb,cc,dd))
+
+
+def compressColumnOverlap(mat, oneDarray):
+    '''
+    mat :: np.array(X,Y) <- an overlap matrix
+    given a matrix with overlaps this will return an array of +1 or -1.
+    This will determine sign changes for this step.
+    '''
+    axis = 0
+    amax = mat.max(axis)
+    amin = mat.min(axis)
+    result = np.where(-amin > amax, -1., 1.)
+    return (result*oneDarray)
+
+def createOneAndZeroABS(mat, oneDarray):
+    '''
+    mat :: np.array(X,Y) <- an overlap matrix
+    given a matrix with overlaps this will return a matrix with 0 and 1 and -1
+    This will determine sign changes for this step.
+    it is shitty, but we need to see if this works or not
+    '''
+    axis = 0
+    amax = mat.max(axis)
+    amin = mat.min(axis)
+    result = np.where(-amin > amax, amin, amax)
+    new = np.zeros_like(mat)
+    for i in result:
+        [uno,due] = np.argwhere(np.isin(mat,i))[0]
+        if i > 0:
+            new[uno,due] = 1
+        else:
+            new[uno,due] = -1
+    return (oneDarray @ new)
 
 if __name__ == "__main__":
     main()
 
+
+
+
+#    mat = np.array([[1.00e+00,-6.51e-03,2.93e-06,-1.35e-07],
+#    [-4.93e-03, -1.00e+00, -3.68e-05, 3.71e-06],
+#    [ 1.16e-05, 1.83e-06, -3.90e-06, -9.32e-01],
+#    [ 1.93e-05, -2.95e-05, 9.47e-01, -1.30e-04]])
+#    oneDarray = np.array([-1.,-1.,-1.,-1.])
+#    re = compressColumnOverlap(mat,oneDarray)
+#    re2 = compressColumnOverlap2(mat,oneDarray)
+#    print('{}\nenter    {}\nresult 1 {}\nresult 2 {}'.format(mat,oneDarray,re,re2))
+#
