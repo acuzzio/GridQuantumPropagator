@@ -60,15 +60,18 @@ def graphMultiRassi(globalExp,poolSize):
         err("no files in {}".format(globalExp))
     allH5First = allH5[0]
     nstates = len(retrieve_hdf5_data(allH5First,'ROOT_ENERGIES'))
+    natoms = len(retrieve_hdf5_data(allH5First,'CENTER_LABELS'))
     bigArray = np.empty((dime,3,nstates,nstates))
+    bigArrayNAC = np.empty((dime,nstates,nstates,natoms,3))
 
     ind=0
     for fileN in allH5:
-        #properties = retrieve_hdf5_data(fileN,'PROPERTIES')
-        #dmMat = properties[0:3]
-        properties = retrieve_hdf5_data(fileN,'DIPOLES')
-        dmMat = properties
+        [properties,NAC,ene] = retrieve_hdf5_data(fileN,
+                    ['DIPOLES','NAC','ROOT_ENERGIES'])
+        dmMat = properties # here...
         bigArray[ind] = dmMat
+        print(NAC[0,1,9,1], NAC[0,1,8,1], NAC[0,1,3,1])
+        bigArrayNAC[ind] = NAC
         ind += 1
 
     std = np.std(bigArray[:,0,0,0])
@@ -95,21 +98,23 @@ def graphMultiRassi(globalExp,poolSize):
     plt.close('all')
 
     # I first want to make a graph of EACH ELEMENT
-    # warning... range(2) excludes Z values
-    elems = [[x,y,z] for x in range(2) for y in range(nstates) for z in range(nstates)]
+    elems = [[x,y,z] for x in range(3) for y in range(nstates) for z in range(nstates)]
 
     pool = mp.Pool(processes = poolSize)
-    pool.map(doThisToEachElement, zip(elems, repeat(dime), repeat(bigArray)))
+    #pool.map(doThisToEachElement, zip(elems, repeat(dime), repeat(bigArray)))
 
-    # warning... range(2) excludes Z values
-    rows = [[x,y] for x in range(2) for y in range(nstates)]
+    rows = [[x,y] for x in range(3) for y in range(nstates)]
 
     #for row in rows:
-    #    doThisToEachRow(row, dime, bigArray)
+    #    doDipoToEachRow(row, dime, bigArray)
     # For some reason the perallel version of this does not work properly.
-    pool.map(doThisToEachRow, zip(rows, repeat(dime), repeat(bigArray)))
+    pool.map(doDipoToEachRow, zip(rows, repeat(dime), repeat(bigArray)))
 
-def doThisToEachRow(tupleInput):
+    for i in np.arange(2)+1:
+        lab = 'NacElement' + str(i)
+        makeJustAnother2Dgraph(lab, lab, bigArrayNAC[:,0,i,9,1])
+
+def doDipoToEachRow(tupleInput):
     (row, dime, bigArray) = tupleInput
     [a,b] = row
     label = str(a+1) + '_' + str(b+1)

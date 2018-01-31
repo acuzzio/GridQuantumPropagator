@@ -59,7 +59,8 @@ def abs2(x):
 
 def chunksOf(xs, n):
     """Yield successive n-sized chunks from xs"""
-    for i in range(0, xs.size, n):
+    shape0 = xs.shape[0]
+    for i in range(0, shape0, n):
         yield xs[i:i + n]
 
 
