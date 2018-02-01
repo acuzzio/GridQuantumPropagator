@@ -11,12 +11,11 @@ import glob
 import multiprocessing as mp
 import numpy as np
 from quantumpropagator import (retrieve_hdf5_data, makeJustAnother2Dgraph,
-                              createHistogram, makeMultiLineDipoleGraph
+                              createHistogram, makeMultiLineDipoleGraph,
                               mathematicaListGenerator, gnuSplotCircle)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import os.path
-import plotly
 import re
 
 def read_single_arguments(single_inputs):
@@ -58,7 +57,7 @@ def matrixApproach(globalExp, proc):
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
     allH5First = allH5[0]
-    nstates = len(retrieve_hdf5_data(allH5First,'SFS_ENERGIES'))
+    nstates = len(retrieve_hdf5_data(allH5First,'ROOT_ENERGIES'))
     natoms = len(retrieve_hdf5_data(allH5First,'CENTER_COORDINATES'))
     print('\nnstates: {} \ndimension: {}'.format(nstates,dime))
     newdime = (dime * 2)-1
@@ -84,7 +83,7 @@ def matrixApproach(globalExp, proc):
             fileN = re.sub('\*\.', 'Grid_' + singleLabel + '.', globalExp)
             exisT = os.path.exists(fileN)
             if exisT:
-               energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
+               energies = retrieve_hdf5_data(fileN,'ROOT_ENERGIES')
             else:
                energies = np.repeat(-271.0,nstates)
             blenderArray[Iax1,Iax2] = energies
@@ -109,7 +108,7 @@ def twoDGraph(globalExp, proc):
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
     allH5First = allH5[0]
-    nstates = len(retrieve_hdf5_data(allH5First,'SFS_ENERGIES'))
+    nstates = len(retrieve_hdf5_data(allH5First,'ROOT_ENERGIES'))
     natoms = len(retrieve_hdf5_data(allH5First,'CENTER_COORDINATES'))
     print('\nnstates: {} \ndimension: {}'.format(nstates,dime))
 
@@ -126,12 +125,11 @@ def twoDGraph(globalExp, proc):
     bigArrayAxis2_2 = np.empty((newdime))
     ind=0
     for fileN in allH5:
-        properties = retrieve_hdf5_data(fileN,'PROPERTIES')
-        energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
+        dmMat = retrieve_hdf5_data(fileN,'DIPOLES')
+        energies = retrieve_hdf5_data(fileN,'ROOT_ENERGIES')
         coords = retrieve_hdf5_data(fileN,'CENTER_COORDINATES')
-        dmMat = properties[0:3]
-        (axis1,str1) = stringTransformation(fileN,0,1)
-        (axis2,str2) = stringTransformation(fileN,2,3)
+        (axis1,str1) = stringTransformation(fileN,2,3)
+        (axis2,str2) = stringTransformation(fileN,4,5)
         bigArrayD[ind] = dmMat
         bigArrayE[ind] = energies
         bigArrayE2[ind] = energies

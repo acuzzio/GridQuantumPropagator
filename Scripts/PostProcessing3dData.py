@@ -157,17 +157,125 @@ def unpackThingsFromParallel(listOfval):
     return(log,trues,length-trues)
 
 
-def correctThis(fileN,oneDarray,outputF,cutAt,first=None):
+def makeCubeGraph(phis,gammas,thetas):
+    '''
+    This supremely problem bound function, will create a dictionary of
+    "directions" to run analysis functions across the scan in the right order
+    '''
+    graph = {}
+
+    gammaI = gammas[0]
+    phiI = phis[0]
+    for k in range(len(thetas)-1):
+        for j in range(len(gammas)-1):
+            for i in range(len(phis)-1):
+                name = '_'.join((phis[i],gammas[j],thetas[k]))
+                graph[name] = []
+                if phis[i] == phiI and gammas[j] == gammaI:
+                   succt = '_'.join((phis[i],gammas[j],thetas[k+1]))
+                   graph[name].append(succt)
+                if phis[i] == phiI:
+                   succg = '_'.join((phis[i],gammas[j+1],thetas[k]))
+                   graph[name].append(succg)
+                succp = '_'.join((phis[i+1],gammas[j],thetas[k]))
+                graph[name].append(succp)
+    # return the INVERSE dictionary, so I know from where I should take the
+    # correction vector
+    reverseGraph = dict((v,k) for k in graph for v in graph[k])
+    return(graph,reverseGraph)
+
+
+def printDict(dictionary):
+    '''
+    pretty printer for dictionary
+    dictionary :: Dictionary
+    '''
+    for x in dictionary:
+        print('{} -> {}'.format(x,dictionary[x]))
+
+
+def directionRead(folderO,folderE):
+    '''
+    I NEED TO CHECK THAT THESE CALCULATIONS ARE CONSECUTIVE !!!
+    the filter function is taking out falses, without checking anything !!!
+    watchout = list(filter(os.path.isfile,mainLine))
+    '''
+    # phis = phis[0:3]
+    # gammas = gammas[0:3]
+    # thetas = thetas[0:3]
+    phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
+      'P005-000', 'P006-000', 'P007-000']
+    gammas = ['P010-000', 'P010-714', 'P011-429', 'P012-143', 'P012-857',
+      'P013-571', 'P014-286', 'P015-000', 'P015-714', 'P016-429', 'P017-143',
+      'P017-857', 'P018-571', 'P019-286', 'P020-000']
+    thetas = ['P120-000', 'P119-184', 'P118-367', 'P117-551', 'P116-735',
+      'P115-918', 'P115-102', 'P114-286', 'P113-469', 'P112-653', 'P111-837',
+      'P111-020', 'P110-204', 'P109-388', 'P108-571', 'P107-755', 'P106-939',
+      'P106-122', 'P105-306', 'P104-490', 'P103-673', 'P102-857', 'P102-041',
+      'P101-224', 'P100-408', 'P099-592', 'P098-776', 'P097-959', 'P097-143',
+      'P096-327', 'P095-510', 'P094-694', 'P093-878', 'P093-061', 'P092-245',
+      'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
+      'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
+      'P081-633', 'P080-816', 'P080-000']
+    #phis = phis[0:3]
+    #gammas = gammas[0:3]
+    #thetas = thetas[0:3]
+    rootNameO = os.path.join(folderO,'zNorbornadiene_')
+    rootNameE = os.path.join(folderE,'zNorbornadiene_')
+    graph,revgraph = makeCubeGraph(phis,gammas,thetas)
+    first = 'P000-000_P010-000_P120-000'
+    cutAt = 14
+    datas = namedtuple("misc",["first","rootNameO","rootNameE","revGraph","cutAt"])
+    misc = datas(first,rootNameO,rootNameE,revgraph,cutAt)
+    printDict(graph)
+    loopGraph(graph,first,misc)
+
+
+def loopGraph(graph, element, misc):
+    '''
+    I try to make a function that makes an IO action based on a dictionary
+    This is recursive, as my calculation the keys are also values in the
+    dicts...
+    graph :: Dictionary  <- the graph of my scan
+    element :: the first element that should trigger the sub-branch
+    misc :: namedtuple to everything that wants to be passed to child functions
+    '''
+
+    fnIn = misc.rootNameO + element + '.all.h5'
+    exist = os.path.isfile(fnIn)
+    if exist:
+        if element == misc.first:
+            print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(misc.cutAt))
+            newsign = np.ones(misc.cutAt)
+            correctThis(element,newsign,misc,True)
+        else:
+            print('\n\n----------THIS IS {} -> cut at {}:\n'.format(element,misc.cutAt))
+            correction_from_filename = misc.revGraph[element]
+            fnE = misc.rootNameE + correction_from_filename + '.corrected.h5'
+            #print(os.path.isfile(fnE))
+            newsign = retrieve_hdf5_data(fnE,'ABS_CORRECTOR')
+            correctThis(element,newsign,misc)
+        for elem in graph[element]:
+            # recursive things
+            if elem in graph:
+                loopGraph(graph, elem, misc)
+#    else:
+#        print('{} does not exist'.format(fnIn))
+
+
+def correctThis(elem,oneDarray,misc,first=None):
     '''
     This is the corrector. Go go go
-    fileN :: String <- the path of the h5 file
+    elem :: String <- the label of the h5 file
     oneDarray :: np.array(NSTATES) <- this is the 1D vector that tells us how
                                       sign changed in LAST CALCULATION
-    outputF :: String <- the path of the output folder
-    cutAt :: Int <- wanna less states?
+    misc :: namedtuple to have more inputs
     '''
+    rootNameE = misc.rootNameE
+    cutAt = misc.cutAt
     first = first or False
     dataToGet = ['OVERLAP', 'DIPOLES', 'NAC']
+    fileN = misc.rootNameO + elem + '.all.h5'
     [overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
     if first:
         (_, nstates, _) = dipolesAll.shape
@@ -179,7 +287,6 @@ def correctThis(fileN,oneDarray,outputF,cutAt,first=None):
     # let's cut something
     dipoles = dipolesAll[:, :cutAt, :cutAt]
     overlaps = overlapsAll[:cutAt, :cutAt]
-    print(nacAll.shape)
     nacs = nacAll[:cutAt, :cutAt]
 
     #correctionArray1DABS = createOneAndZeroABS(overlaps, oneDarray)
@@ -217,54 +324,13 @@ def correctThis(fileN,oneDarray,outputF,cutAt,first=None):
 
 
     # file handling
-    corrFN = os.path.basename(os.path.splitext(fileN)[0] + 'corrected.h5')
-    corrFNO = os.path.join(outputF,corrFN)
+    corrFNO = rootNameE + elem + '.corrected.h5'
     allValues = readWholeH5toDict(fileN)
     allValues['DIPOLES'] = new_dipoles
     allValues['NAC'] = new_nacs
+    allValues['ABS_CORRECTOR'] = correctionArray1DABS
     writeH5fileDict(corrFNO,allValues)
     print('\n\nfile {} written'.format(corrFNO))
-
-
-    return correctionArray1DABS
-
-
-def directionRead(folderO,folderE):
-    '''
-    I NEED TO CHECK THAT THESE CALCULATIONS ARE CONSECUTIVE !!!
-    the filter function is taking out falses, without checking anything !!!
-    watchout = list(filter(os.path.isfile,mainLine))
-    '''
-    phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
-      'P005-000', 'P006-000', 'P007-000']
-    gammas = ['P010-000', 'P010-714', 'P011-429', 'P012-143', 'P012-857',
-      'P013-571', 'P014-286', 'P015-000', 'P015-714', 'P016-429', 'P017-143',
-      'P017-857', 'P018-571', 'P019-286', 'P020-000']
-    thetas = ['P120-000', 'P119-184', 'P118-367', 'P117-551', 'P116-735',
-      'P115-918', 'P115-102', 'P114-286', 'P113-469', 'P112-653', 'P111-837',
-      'P111-020', 'P110-204', 'P109-388', 'P108-571', 'P107-755', 'P106-939',
-      'P106-122', 'P105-306', 'P104-490', 'P103-673', 'P102-857', 'P102-041',
-      'P101-224', 'P100-408', 'P099-592', 'P098-776', 'P097-959', 'P097-143',
-      'P096-327', 'P095-510', 'P094-694', 'P093-878', 'P093-061', 'P092-245',
-      'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
-      'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
-      'P081-633', 'P080-816', 'P080-000']
-    rootName = os.path.join(folderO,'zNorbornadiene_')
-    mainLine = [ rootName + 'P000-000_P010-000_' + theta + '.all.h5' for theta
-            in thetas ]
-    # this filter is NOT exactly what you want
-    watchout = list(filter(os.path.isfile,mainLine))
-    cutAt = 14
-    newsign = np.ones(cutAt)
-    for i in range(len(watchout)):
-    #for i in range(3):
-        if i == 0:
-            print('\n\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(cutAt))
-            correctThis(watchout[i],newsign,folderE,cutAt,True)
-        else:
-            print('\n\n\n----------THIS IS {} -> cut at {}:\n'.format(i,cutAt))
-            newsign = correctThis(watchout[i],newsign,
-                    folderE,cutAt)
 
 
 def compressColumnOverlap(mat, oneDarray):
@@ -332,12 +398,31 @@ def main():
             f.write(results)
         print(results)
     else:
-        directionRead('/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs',
-        '/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
-
+        directionRead(inp.direction[0],inp.direction[1])
+        #'/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs',
+        #'/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
 
 if __name__ == "__main__":
     main()
+    #phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
+    #  'P005-000', 'P006-000', 'P007-000']
+    #gammas = ['P010-000', 'P010-714', 'P011-429', 'P012-143', 'P012-857',
+    #  'P013-571', 'P014-286', 'P015-000', 'P015-714', 'P016-429', 'P017-143',
+    #  'P017-857', 'P018-571', 'P019-286', 'P020-000']
+    #thetas = ['P120-000', 'P119-184', 'P118-367', 'P117-551', 'P116-735',
+    #  'P115-918', 'P115-102', 'P114-286', 'P113-469', 'P112-653', 'P111-837',
+    #  'P111-020', 'P110-204', 'P109-388', 'P108-571', 'P107-755', 'P106-939',
+    #  'P106-122', 'P105-306', 'P104-490', 'P103-673', 'P102-857', 'P102-041',
+    #  'P101-224', 'P100-408', 'P099-592', 'P098-776', 'P097-959', 'P097-143',
+    #  'P096-327', 'P095-510', 'P094-694', 'P093-878', 'P093-061', 'P092-245',
+    #  'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
+    #  'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
+    #  'P081-633', 'P080-816', 'P080-000']
+    ##phis = phis[0:3]
+    ##gammas = gammas[0:3]
+    ##thetas = thetas[0:3]
+    #graph = makeCubeGraph(phis,gammas,thetas)
+    #printDict(graph)
 
 
 
