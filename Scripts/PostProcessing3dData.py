@@ -14,7 +14,7 @@ import os
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
-                       writeH5fileDict, readWholeH5toDict, chunksOf)
+                       writeH5fileDict, readWholeH5toDict, chunksOf,err)
 
 
 def read_single_arguments(single_inputs):
@@ -193,41 +193,40 @@ def printDict(dictionary):
     for x in dictionary:
         print('{} -> {}'.format(x,dictionary[x]))
 
+def readDirectionFile(fn):
+    '''
+    fn :: filePath
+    '''
+    with open(fn,'r') as f:
+        f.readline()
+        phis = f.readline()
+        f.readline()
+        f.readline()
+        gammas = f.readline()
+        f.readline()
+        f.readline()
+        thetas = f.readline()
+    return(phis.rstrip().split(' '),gammas.rstrip().split(' '), thetas.rstrip().split(' '))
 
 def directionRead(folderO,folderE):
     '''
-    I NEED TO CHECK THAT THESE CALCULATIONS ARE CONSECUTIVE !!!
-    the filter function is taking out falses, without checking anything !!!
-    watchout = list(filter(os.path.isfile,mainLine))
     '''
+    fn = '/home/alessio/Desktop/a-3dScanSashaSupport/l-NewFinerScan/directions'
+    phis,gammas,thetas = readDirectionFile(fn)
     # phis = phis[0:3]
     # gammas = gammas[0:3]
     # thetas = thetas[0:3]
-    phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
-      'P005-000', 'P006-000', 'P007-000']
-    gammas = ['P010-000', 'P010-714', 'P011-429', 'P012-143', 'P012-857',
-      'P013-571', 'P014-286', 'P015-000', 'P015-714', 'P016-429', 'P017-143',
-      'P017-857', 'P018-571', 'P019-286', 'P020-000']
-    thetas = ['P120-000', 'P119-184', 'P118-367', 'P117-551', 'P116-735',
-      'P115-918', 'P115-102', 'P114-286', 'P113-469', 'P112-653', 'P111-837',
-      'P111-020', 'P110-204', 'P109-388', 'P108-571', 'P107-755', 'P106-939',
-      'P106-122', 'P105-306', 'P104-490', 'P103-673', 'P102-857', 'P102-041',
-      'P101-224', 'P100-408', 'P099-592', 'P098-776', 'P097-959', 'P097-143',
-      'P096-327', 'P095-510', 'P094-694', 'P093-878', 'P093-061', 'P092-245',
-      'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
-      'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
-      'P081-633', 'P080-816', 'P080-000']
     #phis = phis[0:3]
     #gammas = gammas[0:3]
     #thetas = thetas[0:3]
     rootNameO = os.path.join(folderO,'zNorbornadiene_')
     rootNameE = os.path.join(folderE,'zNorbornadiene_')
     graph,revgraph = makeCubeGraph(phis,gammas,thetas)
-    first = 'P000-000_P010-000_P120-000'
+    first = 'P000-000_P010-000_P130-000'
     cutAt = 14
     datas = namedtuple("misc",["first","rootNameO","rootNameE","revGraph","cutAt"])
     misc = datas(first,rootNameO,rootNameE,revgraph,cutAt)
-    printDict(graph)
+    #printDict(graph)
     loopGraph(graph,first,misc)
 
 
@@ -242,6 +241,7 @@ def loopGraph(graph, element, misc):
     '''
 
     fnIn = misc.rootNameO + element + '.all.h5'
+    print(fnIn)
     exist = os.path.isfile(fnIn)
     if exist:
         if element == misc.first:
@@ -289,15 +289,15 @@ def correctThis(elem,oneDarray,misc,first=None):
     overlaps = overlapsAll[:cutAt, :cutAt]
     nacs = nacAll[:cutAt, :cutAt]
 
-    #correctionArray1DABS = createOneAndZeroABS(overlaps, oneDarray)
-    correctionArray1DABS = compressColumnOverlap(overlaps, oneDarray)
+    correctionArray1DABS = createOneAndZero(overlaps, oneDarray)
+    #correctionArray1DABS = compressColumnOverlap(overlaps, oneDarray)
     correctionMatrix = createTabellineFromArray(correctionArray1DABS)
     new_dipoles = dipoles * correctionMatrix
     # here I use the fact that correctionMatrix is ALWAYS 2d
     # so I loop over the it
     new_nacs = np.empty_like(nacs)
-    for i in range(nstates):
-        for j in range(nstates):
+    for i in range(cutAt):
+        for j in range(cutAt):
             new_nacs[i,j] = nacs[i,j] * correctionMatrix[i,j]
 
 
@@ -305,7 +305,7 @@ def correctThis(elem,oneDarray,misc,first=None):
     print('This is overlap:')
     printMatrix2D(overlaps,2)
     print('\n\n')
-    print('oneD -> {}\ncorr -> {}'.format(oneDarray,correctionArray1DABS))
+    print('from Previous\n {}\neffective correction:\n {}'.format(oneDarray,correctionArray1DABS))
     print('\n\n')
     print('this is correction Matrix')
     printMatrix2D(correctionMatrix,2)
@@ -343,31 +343,35 @@ def compressColumnOverlap(mat, oneDarray):
     amax = mat.max(axis)
     amin = mat.min(axis)
     result = np.where(-amin > amax, -1., 1.)
+    resultREAL= np.where(-amin > amax, amin, amax)
+    resultAbs = abs(resultREAL)
+    resultAbsMin = resultAbs.min(0)
+    minDiagonal = abs(np.diagonal(mat)).min()
+    if minDiagonal < 0.5:
+        print('WARNING, out of diagonal')
+    index = np.argmin(resultAbs)
+    if resultAbsMin < 0.9:
+        string = 'warning, overlap element lower than 0.9 at {} -> {}'
+        print(string.format(index+1,resultREAL))
     return (result*oneDarray)
 
-def createOneAndZeroABS(mat, oneDarray):
+def createOneAndZero(mat, oneDarray):
     '''
     mat :: np.array(X,Y) <- an overlap matrix
     given a matrix with overlaps this will return a matrix with 0 and 1 and -1
     This will determine sign changes for this step.
-
-    Somehow this function is broken
-
     '''
-    (dimension,_) = mat[:].shape
-    new = np.zeros_like(mat)
-    for i in np.arange(dimension):
-        amax = mat[i].max()
-        amin = mat[i].min()
-        result = np.where(-amin > amax, amin, amax)
-        [due] = np.argwhere(np.isin(mat[i],result))[0]
-        print(amax,amin,result,due)
-        if result > 0:
-            new [i,due] = 1
-        else:
-            new [i,due] = -1
-    print('mult {} for:\n{}'.format(oneDarray, new))
-    return (oneDarray @ new)
+    threshold = 0.7
+    # a better condition would be the MAXIMUM...
+    newMat = np.where(mat < -threshold,-1,0) + np.where(mat > threshold,1,0)
+    booltest = np.all(np.count_nonzero(newMat,axis = 0) == 1)
+    # I check if all columns and rows have exactly one one.
+    if not booltest:
+        print('there is an overlap matrix that you should check')
+        printMatrix2D(newMat)
+    newcorrVector = oneDarray @ newMat.T
+    fillWithOne = newcorrVector + np.where(newcorrVector==0,1,0)
+    return (fillWithOne)
 
 
 single_inputs = namedtuple("single_input", ("direction","glob","outF","proc"))
@@ -433,6 +437,11 @@ if __name__ == "__main__":
 #    [ 1.93e-05, -2.95e-05, 9.47e-01, -1.30e-04]])
 #    oneDarray = np.array([-1.,-1.,-1.,-1.])
 #    re = compressColumnOverlap(mat,oneDarray)
-#    re2 = compressColumnOverlap2(mat,oneDarray)
-#    print('{}\nenter    {}\nresult 1 {}\nresult 2 {}'.format(mat,oneDarray,re,re2))
-#
+#    re2 = createOneAndZeroABS(mat,oneDarray)
+#    re3 = createOneAndZeroABS2(mat,oneDarray)
+#    print('''{}
+#    enter    {}
+#    result 1 {}
+#    result 2 {}
+#    result 3 {}'''.format(mat,oneDarray,re,re2,re3))
+

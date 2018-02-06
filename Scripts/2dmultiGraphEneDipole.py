@@ -65,8 +65,8 @@ def matrixApproach(globalExp, proc):
     bigArrayLab2 =  np.empty((dime), dtype=object)
     ind = 0
     for fileN in allH5:
-        (axis1,str1) = stringTransformation(fileN,0,1)
-        (axis2,str2) = stringTransformation(fileN,2,3)
+        (axis1,str1) = stringTransformation(fileN,2,3)
+        (axis2,str2) = stringTransformation(fileN,4,5)
         bigArrayLab1[ind] = str1
         bigArrayLab2[ind] = str2
         ind += 1
@@ -160,7 +160,8 @@ def twoDGraph(globalExp, proc):
     #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
     #print(a,b,c)
     [a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
-    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,2,:]]
+    print(bigArrayD.shape)
+    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,1,:]]
     #[a,b,c] = [bigArrayAxis1_2Zero, bigArrayAxis2_2, bigArrayE2Zero]
     #np.savetxt('1.txt', a)
     #np.savetxt('2.txt', b)
