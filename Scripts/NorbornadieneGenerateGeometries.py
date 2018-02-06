@@ -74,6 +74,8 @@ def generateNorbGeometry(phi,gam,the):
     phi2 = np.deg2rad(phi)
     gam2 = np.deg2rad(gam)
     torsionalCI = -6.710 # values for phi AT WHICH
+    # this is the vecot that displaces our 8 moving atoms from the CLOSEST CI I
+    # can reach with the old scan and the real conical intersection
     deltasCI = np.array([[ 0.070875, -0.160203,  0.09242 ],
                          [-0.013179,  0.004003,  0.009601],
                          [-0.070257,  0.160501,  0.093007],

@@ -210,12 +210,11 @@ def readDirectionFile(fn):
 
 def directionRead(folderO,folderE):
     '''
+    This function does not do anything particular... it is some kind of driver
+    filler that we would need to address. But right now we do not really care
     '''
     fn = '/home/alessio/Desktop/a-3dScanSashaSupport/l-NewFinerScan/directions'
     phis,gammas,thetas = readDirectionFile(fn)
-    # phis = phis[0:3]
-    # gammas = gammas[0:3]
-    # thetas = thetas[0:3]
     #phis = phis[0:3]
     #gammas = gammas[0:3]
     #thetas = thetas[0:3]
@@ -269,7 +268,7 @@ def correctThis(elem,oneDarray,misc,first=None):
     elem :: String <- the label of the h5 file
     oneDarray :: np.array(NSTATES) <- this is the 1D vector that tells us how
                                       sign changed in LAST CALCULATION
-    misc :: namedtuple to have more inputs
+    misc :: namedtuple to have more inputs to pass
     '''
     rootNameE = misc.rootNameE
     cutAt = misc.cutAt
@@ -290,7 +289,6 @@ def correctThis(elem,oneDarray,misc,first=None):
     nacs = nacAll[:cutAt, :cutAt]
 
     correctionArray1DABS = createOneAndZero(overlaps, oneDarray)
-    #correctionArray1DABS = compressColumnOverlap(overlaps, oneDarray)
     correctionMatrix = createTabellineFromArray(correctionArray1DABS)
     new_dipoles = dipoles * correctionMatrix
     # here I use the fact that correctionMatrix is ALWAYS 2d
@@ -333,45 +331,69 @@ def correctThis(elem,oneDarray,misc,first=None):
     print('\n\nfile {} written'.format(corrFNO))
 
 
-def compressColumnOverlap(mat, oneDarray):
-    '''
-    mat :: np.array(X,Y) <- an overlap matrix
-    given a matrix with overlaps this will return an array of +1 or -1.
-    This will determine sign changes for this step.
-    '''
-    axis = 0
-    amax = mat.max(axis)
-    amin = mat.min(axis)
-    result = np.where(-amin > amax, -1., 1.)
-    resultREAL= np.where(-amin > amax, amin, amax)
-    resultAbs = abs(resultREAL)
-    resultAbsMin = resultAbs.min(0)
-    minDiagonal = abs(np.diagonal(mat)).min()
-    if minDiagonal < 0.5:
-        print('WARNING, out of diagonal')
-    index = np.argmin(resultAbs)
-    if resultAbsMin < 0.9:
-        string = 'warning, overlap element lower than 0.9 at {} -> {}'
-        print(string.format(index+1,resultREAL))
-    return (result*oneDarray)
+# THIS FUNCTION IS OVERPERFORMED BY createOneAndZero
+#def compressColumnOverlap(mat, oneDarray):
+#    '''
+#    mat :: np.array(X,Y) <- an overlap matrix
+#    given a matrix with overlaps this will return an array of +1 or -1.
+#    This will determine sign changes for this step.
+#    '''
+#    axis = 0
+#    amax = mat.max(axis)
+#    amin = mat.min(axis)
+#    result = np.where(-amin > amax, -1., 1.)
+#    resultREAL= np.where(-amin > amax, amin, amax)
+#    resultAbs = abs(resultREAL)
+#    resultAbsMin = resultAbs.min(0)
+#    minDiagonal = abs(np.diagonal(mat)).min()
+#    if minDiagonal < 0.5:
+#        print('WARNING, out of diagonal')
+#    index = np.argmin(resultAbs)
+#    if resultAbsMin < 0.9:
+#        string = 'warning, overlap element lower than 0.9 at {} -> {}'
+#        print(string.format(index+1,resultREAL))
+#    return (result*oneDarray)
 
 def createOneAndZero(mat, oneDarray):
     '''
     mat :: np.array(X,Y) <- an overlap matrix
-    given a matrix with overlaps this will return a matrix with 0 and 1 and -1
+    given a matrix with overlaps this will return an array with 1 and -1
     This will determine sign changes for this step.
+
+    This function is quite convoluted. Rows are new states, so I go along rows
+    and seek for the absolute maximum value. if this is negative I put a -1, or
+    a +1 if it is positive, then I take out the state I just assigned. This is
+    to avoid overlap matrices with double 1 or no 1 at all (they happens)
     '''
-    threshold = 0.7
     # a better condition would be the MAXIMUM...
-    newMat = np.where(mat < -threshold,-1,0) + np.where(mat > threshold,1,0)
+    # threshold = 0.7
+    # newMat = np.where(mat < -threshold,-1,0) + np.where(mat > threshold,1,0)
+
+    # Maximum implementation
+    newMat = np.empty_like(mat)
+    ind = 0
+    taken = []
+    for line in mat:
+        i = np.copy(line)
+        i[taken] = 0
+        maxL,minL = (i.max(),i.min())
+        if -minL > maxL:
+            newMat[ind] = np.where(i==minL,-1,0)
+            take = np.argwhere(i==minL)[0][0]
+            taken += [take]
+        else:
+            newMat[ind] = np.where(i==maxL, 1,0)
+            take = np.argwhere(i==maxL)[0][0]
+            taken += [take]
+        ind+=1
+
     booltest = np.all(np.count_nonzero(newMat,axis = 0) == 1)
     # I check if all columns and rows have exactly one one.
     if not booltest:
         print('there is an overlap matrix that you should check')
         printMatrix2D(newMat)
     newcorrVector = oneDarray @ newMat.T
-    fillWithOne = newcorrVector + np.where(newcorrVector==0,1,0)
-    return (fillWithOne)
+    return (newcorrVector)
 
 
 single_inputs = namedtuple("single_input", ("direction","glob","outF","proc"))

@@ -159,9 +159,9 @@ def twoDGraph(globalExp, proc):
     #print(labelsAxis1,labelsAxis2)
     #[a,b,c] = [bigArrayB1[0:4], bigArrayB2[0:4], bigArrayE[0:4]]
     #print(a,b,c)
-    [a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
+    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayE]
     print(bigArrayD.shape)
-    #[a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,1,:]]
+    [a,b,c] = [bigArrayAxis1, bigArrayAxis2, bigArrayD[:,0,0,:]]
     #[a,b,c] = [bigArrayAxis1_2Zero, bigArrayAxis2_2, bigArrayE2Zero]
     #np.savetxt('1.txt', a)
     #np.savetxt('2.txt', b)
