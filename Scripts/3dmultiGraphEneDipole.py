@@ -46,7 +46,7 @@ def matrixApproach(globalExp, proc):
     allH5 = sorted(glob.glob(globalExp))
     dime = len(allH5)
     allH5First = allH5[0]
-    nstates = len(retrieve_hdf5_data(allH5First,'SFS_ENERGIES'))
+    nstates = len(retrieve_hdf5_data(allH5First,'ROOT_ENERGIES'))
     natoms = len(retrieve_hdf5_data(allH5First,'CENTER_COORDINATES'))
     print('\nnstates: {} \ndimension: {}'.format(nstates,dime))
     newdime = (dime * 2)-1
@@ -65,6 +65,10 @@ def matrixApproach(globalExp, proc):
     labelsAxis3 = np.unique(bigArrayLab3)
     blenderArray = np.empty((labelsAxis1.size,labelsAxis2.size,
                              labelsAxis3.size,nstates))
+    blenderArrayDipo = np.empty((labelsAxis1.size,labelsAxis2.size,
+                             labelsAxis3.size,nstates))
+    blenderArrayDipo2 = np.empty((labelsAxis1.size,labelsAxis2.size,
+                             labelsAxis3.size,nstates))
     folder = ('/').join(globalExp.split('/')[:-1])
     if folder == '':
         folder = '.'
@@ -76,23 +80,28 @@ def matrixApproach(globalExp, proc):
             for Iax3 in range(labelsAxis3.size):
                 ax3 = labelsAxis3[Iax3]
                 singleLabel = ax1 + '_' + ax2 + '_' + ax3
-                fileNonly = 'zNorbornadiene_' + singleLabel + '.rassi.h5'
+                fileNonly = 'zNorbornadiene_' + singleLabel + '.corrected.h5'
                 fileN = folder + '/' + fileNonly
                 exisT = os.path.exists(fileN)
                 print(exisT)
                 if exisT:
-                    energies = retrieve_hdf5_data(fileN,'SFS_ENERGIES')
+                    energies = retrieve_hdf5_data(fileN,'ROOT_ENERGIES')
+                    dipole = retrieve_hdf5_data(fileN,'DIPOLES')
                 else:
                     energies = np.repeat(-271.0,nstates)
                     print(fileN + ' does not exist...')
                 blenderArray[Iax1,Iax2,Iax3] = energies
+                blenderArrayDipo[Iax1,Iax2,Iax3] = dipole[0,0,:]
+                blenderArrayDipo2[Iax1,Iax2,Iax3] = dipole[1,0,:]
     axFloat1 = np.array([ labTranform(a) for a in labelsAxis1 ])
     axFloat2 = np.array([ labTranform(b) for b in labelsAxis2 ])
     axFloat3 = np.array([ labTranform(c) for c in labelsAxis3 ])
     axFloat1.tofile('fullA.txt')
     axFloat2.tofile('fullB.txt')
     axFloat3.tofile('fullC.txt')
-    blenderArray.tofile('fullD.txt')
+    blenderArray.tofile('fullE.txt')
+    blenderArrayDipo.tofile('fullDx0')
+    blenderArrayDipo2.tofile('fullDy0')
 
 single_inputs = namedtuple("single_input", ("glob","proc"))
 

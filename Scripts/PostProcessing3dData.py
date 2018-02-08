@@ -14,7 +14,7 @@ import os
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
-                       writeH5fileDict, readWholeH5toDict, chunksOf,err)
+                       writeH5fileDict, readWholeH5toDict, chunksOf, err, good)
 
 
 def read_single_arguments(single_inputs):
@@ -227,6 +227,7 @@ def directionRead(folderO,folderE):
     misc = datas(first,rootNameO,rootNameE,revgraph,cutAt)
     #printDict(graph)
     loopGraph(graph,first,misc)
+    good('Remember that this function does NOT correct the points at the edge')
 
 
 def loopGraph(graph, element, misc):
