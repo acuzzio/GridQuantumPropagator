@@ -182,7 +182,8 @@ def makeCubeGraph(phis,gammas,thetas):
     # return the INVERSE dictionary, so I know from where I should take the
     # correction vector
     reverseGraph = dict((v,k) for k in graph for v in graph[k])
-    return(graph,reverseGraph)
+    first = '_'.join((phis[0],gammas[0],thetas[0]))
+    return(graph,reverseGraph,first)
 
 
 def printDict(dictionary):
@@ -213,69 +214,40 @@ def directionRead(folderO,folderE):
     This function does not do anything particular... it is some kind of driver
     filler that we would need to address. But right now we do not really care
     '''
-    fn = '/home/alessio/Desktop/a-3dScanSashaSupport/l-NewFinerScan/directions'
+    fn = '/home/alessio/Desktop/a-3dScanSashaSupport/i-NewScan/directions'
     phis,gammas,thetas = readDirectionFile(fn)
     #phis = phis[0:3]
     #gammas = gammas[0:3]
     #thetas = thetas[0:3]
     rootNameO = os.path.join(folderO,'zNorbornadiene_')
     rootNameE = os.path.join(folderE,'zNorbornadiene_')
-    graph,revgraph = makeCubeGraph(phis,gammas,thetas)
-    first = 'P000-000_P010-000_P130-000'
+    graph,revgraph,first = makeCubeGraph(phis,gammas,thetas)
     cutAt = 14
-    datas = namedtuple("misc",["first","rootNameO","rootNameE","revGraph","cutAt"])
-    misc = datas(first,rootNameO,rootNameE,revgraph,cutAt)
-    #printDict(graph)
-    loopGraph(graph,first,misc)
-    good('Remember that this function does NOT correct the points at the edge')
-
-
-def loopGraph(graph, element, misc):
-    '''
-    I try to make a function that makes an IO action based on a dictionary
-    This is recursive, as my calculation the keys are also values in the
-    dicts...
-    graph :: Dictionary  <- the graph of my scan
-    element :: the first element that should trigger the sub-branch
-    misc :: namedtuple to everything that wants to be passed to child functions
-    '''
-
-    fnIn = misc.rootNameO + element + '.all.h5'
-    print(fnIn)
-    exist = os.path.isfile(fnIn)
-    if exist:
-        if element == misc.first:
-            print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(misc.cutAt))
-            newsign = np.ones(misc.cutAt)
-            correctThis(element,newsign,misc,True)
-        else:
-            print('\n\n----------THIS IS {} -> cut at {}:\n'.format(element,misc.cutAt))
-            correction_from_filename = misc.revGraph[element]
-            fnE = misc.rootNameE + correction_from_filename + '.corrected.h5'
-            #print(os.path.isfile(fnE))
+    # correct first here
+    print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(cutAt))
+    newsign = np.ones(cutAt)
+    correctThis(first,newsign,rootNameE,rootNameO,cutAt,True)
+    # correct the other here key is file to be corrected VALUE the one where to
+    # take the correction
+    for key, value in revgraph.items():
+        fnIn = rootNameO + key + '.all.h5'
+        if os.path.isfile(fnIn):
+            print('\n\n----------THIS IS {} -> cut at {}:\n'.format(key,cutAt))
+            fnE = rootNameE + value + '.corrected.h5'
             newsign = retrieve_hdf5_data(fnE,'ABS_CORRECTOR')
-            correctThis(element,newsign,misc)
-        for elem in graph[element]:
-            # recursive things
-            if elem in graph:
-                loopGraph(graph, elem, misc)
-#    else:
-#        print('{} does not exist'.format(fnIn))
+            correctThis(key,newsign,rootNameE,rootNameO,cutAt)
 
 
-def correctThis(elem,oneDarray,misc,first=None):
+def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     '''
     This is the corrector. Go go go
     elem :: String <- the label of the h5 file
     oneDarray :: np.array(NSTATES) <- this is the 1D vector that tells us how
                                       sign changed in LAST CALCULATION
-    misc :: namedtuple to have more inputs to pass
     '''
-    rootNameE = misc.rootNameE
-    cutAt = misc.cutAt
     first = first or False
     dataToGet = ['OVERLAP', 'DIPOLES', 'NAC']
-    fileN = misc.rootNameO + elem + '.all.h5'
+    fileN = rootNameO + elem + '.all.h5'
     [overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
     if first:
         (_, nstates, _) = dipolesAll.shape
@@ -426,8 +398,6 @@ def main():
         print(results)
     else:
         directionRead(inp.direction[0],inp.direction[1])
-        #'/home/alessio/Desktop/a-3dScanSashaSupport/f-outputs',
-        #'/home/alessio/Desktop/a-3dScanSashaSupport/g-outsCorrected')
 
 if __name__ == "__main__":
     main()
@@ -445,11 +415,16 @@ if __name__ == "__main__":
     #  'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
     #  'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
     #  'P081-633', 'P080-816', 'P080-000']
-    ##phis = phis[0:3]
-    ##gammas = gammas[0:3]
-    ##thetas = thetas[0:3]
-    #graph = makeCubeGraph(phis,gammas,thetas)
+    #phis = phis[0:3]
+    #gammas = gammas[0:3]
+    #thetas = thetas[0:3]
+    #graph,revG,first = makeCubeGraph(phis,gammas,thetas)
+    #print(first)
+    #print('')
     #printDict(graph)
+    #print('')
+    #printDict(revG)
+    #print('')
 
 
 
