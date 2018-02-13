@@ -69,7 +69,6 @@ def generateNorbGeometry(phi,gam,the):
     rBond = 1.541 # distance of bridge
     L = 1.116359  # half distance between C2-C3
     chBond = 1.077194 # distance between moving C and H
-    bridgeDis = 2.337775 # distance
     the2 = np.deg2rad(the/2)
     phi2 = np.deg2rad(phi)
     gam2 = np.deg2rad(gam)

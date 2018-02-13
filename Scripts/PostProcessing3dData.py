@@ -166,19 +166,23 @@ def makeCubeGraph(phis,gammas,thetas):
 
     gammaI = gammas[0]
     phiI = phis[0]
-    for k in range(len(thetas)-1):
-        for j in range(len(gammas)-1):
-            for i in range(len(phis)-1):
+    thetaL = thetas[-1]
+    gammaL = gammas[-1]
+    phiL = phis[-1]
+    for k in range(len(thetas)):
+        for j in range(len(gammas)):
+            for i in range(len(phis)):
                 name = '_'.join((phis[i],gammas[j],thetas[k]))
                 graph[name] = []
-                if phis[i] == phiI and gammas[j] == gammaI:
+                if phis[i] == phiI and gammas[j] == gammaI and thetas[k] != thetaL:
                    succt = '_'.join((phis[i],gammas[j],thetas[k+1]))
                    graph[name].append(succt)
-                if phis[i] == phiI:
+                if phis[i] == phiI and gammas[j] != gammaL:
                    succg = '_'.join((phis[i],gammas[j+1],thetas[k]))
                    graph[name].append(succg)
-                succp = '_'.join((phis[i+1],gammas[j],thetas[k]))
-                graph[name].append(succp)
+                if phis[i] != phiL:
+                   succp = '_'.join((phis[i+1],gammas[j],thetas[k]))
+                   graph[name].append(succp)
     # return the INVERSE dictionary, so I know from where I should take the
     # correction vector
     reverseGraph = dict((v,k) for k in graph for v in graph[k])
@@ -229,6 +233,12 @@ def directionRead(folderO,folderE):
     correctThis(first,newsign,rootNameE,rootNameO,cutAt,True)
     # correct the other here key is file to be corrected VALUE the one where to
     # take the correction
+    #print("{}\n{}\n{}".format(phis,gammas,thetas))
+    #print(' ')
+    #printDict(graph)
+    #print(' ')
+    #printDict(revgraph)
+    #print(len(revgraph))
     for key, value in revgraph.items():
         fnIn = rootNameO + key + '.all.h5'
         if os.path.isfile(fnIn):
