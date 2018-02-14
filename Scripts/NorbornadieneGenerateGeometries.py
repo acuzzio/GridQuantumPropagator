@@ -75,14 +75,27 @@ def generateNorbGeometry(phi,gam,the):
     torsionalCI = -6.710 # values for phi AT WHICH
     # this is the vecot that displaces our 8 moving atoms from the CLOSEST CI I
     # can reach with the old scan and the real conical intersection
-    deltasCI = np.array([[ 0.070875, -0.160203,  0.09242 ],
-                         [-0.013179,  0.004003,  0.009601],
-                         [-0.070257,  0.160501,  0.093007],
-                         [ 0.012403, -0.003651,  0.010003],
-                         [ 0.42767 , -0.179024, -0.209179],
-                         [-0.611326, -0.044297, -0.381173],
-                         [-0.427096,  0.179845, -0.209129],
-                         [ 0.612631,  0.044969, -0.381281]])
+    deltasCIN = np.array([[ 0.070875, -0.160203,  0.09242 ],
+                          [-0.013179,  0.004003,  0.009601],
+                          [-0.070257,  0.160501,  0.093007],
+                          [ 0.012403, -0.003651,  0.010003],
+                          [ 0.42767 , -0.179024, -0.209179],
+                          [-0.611326, -0.044297, -0.381173],
+                          [-0.427096,  0.179845, -0.209129],
+                          [ 0.612631,  0.044969, -0.381281]])
+
+    # in the positive direction I need to cross C8 with C11 etc...
+    deltasCIP = np.array([
+                          [ 0.012403,  0.003651,  0.010003],
+                          [-0.070257, -0.160501,  0.093007],
+                          [-0.013179, -0.004003,  0.009601],
+                          [ 0.070875,  0.160203,  0.09242 ],
+                          [ 0.612631, -0.044969, -0.381281],
+                          [-0.427096, -0.179845, -0.209129],
+                          [-0.611326,  0.044297, -0.381173],
+                          [ 0.42767 ,  0.179024, -0.209179],
+                          ])
+
 
     # This is the code for the ACTUAL angle between the three carbons. 
     # But now theta keeps CC constant
@@ -128,12 +141,15 @@ def generateNorbGeometry(phi,gam,the):
 
     newAtoms = np.array([[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
                 [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]])
-    this = ((phi/torsionalCI) * deltasCI)
     #print(the2,torsionalCI,this)
     if phi > 0.0:
+        this = ((phi/torsionalCI) * deltasCIP)
         newCorrectedAtoms = newAtoms - this
+        #newCorrectedAtoms = newAtoms
     else:
+        this = ((phi/torsionalCI) * deltasCIN)
         newCorrectedAtoms = newAtoms + this
+        #newCorrectedAtoms = newAtoms
     #print(deltasCI)
     #print(newAtoms)
     #print(newCorrectedAtoms)
