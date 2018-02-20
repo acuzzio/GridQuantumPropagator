@@ -18,6 +18,10 @@ def read_single_arguments(single_inputs):
                         nargs='+',
                         help='Values of phi, gamma and theta',
                         )
+    parser.add_argument('-n','--newlist',
+                        nargs='+',
+                        help='Values of phi, gamma and theta, where phi is linear',
+                        )
     parser.add_argument('-i','--info',
                         dest="i",
                         type=str,
@@ -43,12 +47,30 @@ def read_single_arguments(single_inputs):
             single_inputs = single_inputs._replace(theta0=float(args.list[2]))
         else:
             err("WTF? This takes 3 numbers (single point) or 9 (for a line/box)")
+    if args.newlist != None:
+        single_inputs = single_inputs._replace(linearphi=True)
+        if len(args.newlist) == 9:
+            single_inputs = single_inputs._replace(phi0=float(args.newlist[0]))
+            single_inputs = single_inputs._replace(phiF=float(args.newlist[1]))
+            single_inputs = single_inputs._replace(phiD=float(args.newlist[2]))
+            single_inputs = single_inputs._replace(gamma0=float(args.newlist[3]))
+            single_inputs = single_inputs._replace(gammaF=float(args.newlist[4]))
+            single_inputs = single_inputs._replace(gammaD=float(args.newlist[5]))
+            single_inputs = single_inputs._replace(theta0=float(args.newlist[6]))
+            single_inputs = single_inputs._replace(thetaF=float(args.newlist[7]))
+            single_inputs = single_inputs._replace(thetaD=float(args.newlist[8]))
+        elif len(args.newlist) == 3:
+            single_inputs = single_inputs._replace(phi0=float(args.newlist[0]))
+            single_inputs = single_inputs._replace(gamma0=float(args.newlist[1]))
+            single_inputs = single_inputs._replace(theta0=float(args.newlist[2]))
+        else:
+            err("WTF? This takes 3 numbers (single point) or 9 (for a line/box)")
     return single_inputs
 
 single_inputs = namedtuple("angles",
                           ("phi0","gamma0","theta0",
                            "phiF","gammaF","thetaF",
-                           "phiD","gammaD","thetaD","geomfile"))
+                           "phiD","gammaD","thetaD","geomfile","linearphi"))
 
 def generateNorbGeometry(phi,gam,the):
     '''
@@ -69,52 +91,53 @@ def generateNorbGeometry(phi,gam,the):
     rBond = 1.541 # distance of bridge
     L = 1.116359  # half distance between C2-C3
     chBond = 1.077194 # distance between moving C and H
+
     the2 = np.deg2rad(the/2)
     phi2 = np.deg2rad(phi)
     gam2 = np.deg2rad(gam)
-    torsionalCI = -6.710 # values for phi AT WHICH
-    # this is the vecot that displaces our 8 moving atoms from the CLOSEST CI I
+
+    torsionalCI = 6 # values for phi AT WHICH
+    # this is the vector that displaces our 8 moving atoms from the CLOSEST CI I
     # can reach with the old scan and the real conical intersection
-    deltasCIN = np.array([[ 0.070875, -0.160203,  0.09242 ],
-                          [-0.013179,  0.004003,  0.009601],
-                          [-0.070257,  0.160501,  0.093007],
-                          [ 0.012403, -0.003651,  0.010003],
-                          [ 0.42767 , -0.179024, -0.209179],
-                          [-0.611326, -0.044297, -0.381173],
-                          [-0.427096,  0.179845, -0.209129],
-                          [ 0.612631,  0.044969, -0.381281]])
+    deltasCIN = np.array([
+                          [-0.165777,  0.067387,  0.016393],
+                          [-0.14517 , -0.096085, -0.143594],
+                          [ 0.165162, -0.067684,  0.015809],
+                          [ 0.145943,  0.095734, -0.143995],
+                          [-0.520977,  0.086124,  0.316644],
+                          [ 0.450303, -0.048   ,  0.245432],
+                          [ 0.520405, -0.086941,  0.316594],
+                          [-0.451602,  0.047331,  0.24554 ],
+])
 
     # in the positive direction I need to cross C8 with C11 etc...
     deltasCIP = np.array([
-                          [ 0.012403,  0.003651,  0.010003],
-                          [-0.070257, -0.160501,  0.093007],
-                          [-0.013179, -0.004003,  0.009601],
-                          [ 0.070875,  0.160203,  0.09242 ],
-                          [ 0.612631, -0.044969, -0.381281],
-                          [-0.427096, -0.179845, -0.209129],
-                          [-0.611326,  0.044297, -0.381173],
-                          [ 0.42767 ,  0.179024, -0.209179],
-                          ])
+                          [ 0.145943, -0.095734, -0.143995],
+                          [ 0.165162,  0.067684,  0.015809],
+                          [-0.14517 ,  0.096085, -0.143594],
+                          [-0.165777, -0.067387,  0.016393],
+                          [-0.451602, -0.047331,  0.24554 ],
+                          [ 0.520405,  0.086941,  0.316594],
+                          [ 0.450303,  0.048   ,  0.245432],
+                          [-0.520977, -0.086124,  0.316644],
+])
 
 
-    # This is the code for the ACTUAL angle between the three carbons. 
-    # But now theta keeps CC constant
-
-    xC1 = -rBond * np.cos(gam2) * np.sin(phi2+the2)
+    xC1 = -rBond * np.cos(gam2) * np.sin(the2)
     yC1 = L + rBond * - np.sin(gam2)
-    zC1 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
+    zC1 = -rBond * np.cos(the2) * np.cos(gam2)
 
-    xC2 = -rBond * np.cos(gam2) * np.sin(phi2-the2)
+    xC2 = -rBond * np.cos(gam2) * np.sin(-the2)
     yC2 = L - rBond * np.sin(gam2)
-    zC2 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
+    zC2 = -rBond * np.cos(-the2) * np.cos(gam2)
 
-    xC3 = rBond * np.cos(gam2) * np.sin(phi2+the2)
+    xC3 = rBond * np.cos(gam2) * np.sin(+the2)
     yC3 = -L + rBond * np.sin(gam2)
-    zC3 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
+    zC3 = -rBond * np.cos(+the2) * np.cos(gam2)
 
-    xC4 = rBond * np.cos(gam2) * np.sin(phi2-the2)
+    xC4 = rBond * np.cos(gam2) * np.sin(-the2)
     yC4 = -L + rBond * np.sin(gam2)
-    zC4 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
+    zC4 = -rBond * np.cos(-the2) * np.cos(gam2)
 
     # in the end we did this with cartesian... interesting workaround...
     # desperation?
@@ -141,24 +164,16 @@ def generateNorbGeometry(phi,gam,the):
 
     newAtoms = np.array([[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
                 [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]])
-    #print(the2,torsionalCI,this)
     if phi > 0.0:
         this = ((phi/torsionalCI) * deltasCIP)
         newCorrectedAtoms = newAtoms - this
-        #newCorrectedAtoms = newAtoms
     else:
         this = ((phi/torsionalCI) * deltasCIN)
         newCorrectedAtoms = newAtoms + this
-        #newCorrectedAtoms = newAtoms
-    #print(deltasCI)
-    #print(newAtoms)
-    #print(newCorrectedAtoms)
     new = np.append(fixed,newCorrectedAtoms,0)
     atomTN = atomT + ['C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
-    #print(new)
     # saveTraj works on LIST of geometries, that is why the double list brackets
     saveTraj(np.array([new]),atomTN,fn)
-    #print('LookAtNorbDyn.sh ' + fn + '.xyz')
 
 def getAnglesFRomGeometry(fn):
     '''
@@ -194,7 +209,7 @@ def main():
     if you give the script 3 numbers, it will create a geometry, otherwise 9
     numbers will create a 3x3 grid
     '''
-    o_inputs = single_inputs(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"")
+    o_inputs = single_inputs(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"",False)
     inp = read_single_arguments(o_inputs)
     print('\n')
     print(inp)
@@ -234,24 +249,6 @@ def main():
 if __name__ == "__main__":
         main()
 
-
-# Old attempts at writing Carbon positions
-# Those are the values of the conical : )
-#     xC1 = -0.836451
-#     yC1 = 0.637790
-#     zC1 = -1.111774
-# 
-#     xC2 = 1.148851
-#     yC2 = 0.801996
-#     zC2 = -0.951133
-# 
-#     xC3 = 0.837069
-#     yC3 = -0.637492
-#     zC3 = -1.111187
-# 
-#     xC4 = -1.149627
-#     yC4 = -0.801644
-#     zC4 = -0.950731
 
 # this attempt is done with mathematica, keeps the angle at the projection
 # DOes well describe gamma and theta (problems with phi)
@@ -333,3 +330,103 @@ if __name__ == "__main__":
 #    yC4 = -L + rBond * np.cos(phi2-the2) * np.sin(gam2)
 #    zC4 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
 
+
+#def generateNorbGeometry(phi,gam,the):
+#    '''
+#    This function generates an xyz given the value of the three angles
+#    phi,gam,the :: Double  <- the three angles
+#    '''
+#    # Norbornadiene_P001-000_N001-000_P001-000
+#    fnO = 'zNorbornadiene_{:+08.3f}_{:+08.3f}_{:+08.3f}'.format(phi,gam,the)
+#    fn = fnO.replace('-','N').replace('.','-').replace('+','P')
+#    atomT = ['C','C','C','H','H','H','H']
+#    fixed = np.array([[0.000000, 0.000000, 1.078168],
+#             [0.000000, -1.116359, 0.000000],
+#             [0.000000, 1.116359, 0.000000],
+#             [0.894773, 0.000000, 1.698894],
+#             [-0.894773, 0.000000, 1.698894],
+#             [0.000000, -2.148889, 0.336566],
+#             [0.000000, 2.148889, 0.336566]])
+#    rBond = 1.541 # distance of bridge
+#    L = 1.116359  # half distance between C2-C3
+#    chBond = 1.077194 # distance between moving C and H
+#    the2 = np.deg2rad(the/2)
+#    phi2 = np.deg2rad(phi)
+#    gam2 = np.deg2rad(gam)
+#    torsionalCI = -6.710 # values for phi AT WHICH
+#    # this is the vector that displaces our 8 moving atoms from the CLOSEST CI I
+#    # can reach with the old scan and the real conical intersection
+#    deltasCIN = np.array([[ 0.070875, -0.160203,  0.09242 ],
+#                          [-0.013179,  0.004003,  0.009601],
+#                          [-0.070257,  0.160501,  0.093007],
+#                          [ 0.012403, -0.003651,  0.010003],
+#                          [ 0.42767 , -0.179024, -0.209179],
+#                          [-0.611326, -0.044297, -0.381173],
+#                          [-0.427096,  0.179845, -0.209129],
+#                          [ 0.612631,  0.044969, -0.381281]])
+#
+#    # in the positive direction I need to cross C8 with C11 etc...
+#    deltasCIP = np.array([[ 0.012403,  0.003651,  0.010003],
+#                          [-0.070257, -0.160501,  0.093007],
+#                          [-0.013179, -0.004003,  0.009601],
+#                          [ 0.070875,  0.160203,  0.09242 ],
+#                          [ 0.612631, -0.044969, -0.381281],
+#                          [-0.427096, -0.179845, -0.209129],
+#                          [-0.611326,  0.044297, -0.381173],
+#                          [ 0.42767 ,  0.179024, -0.209179]])
+#
+#
+#    # This is the code for the ACTUAL angle between the three carbons. 
+#    # But now theta keeps CC constant
+#
+#    xC1 = -rBond * np.cos(gam2) * np.sin(phi2+the2)
+#    yC1 = L + rBond * - np.sin(gam2)
+#    zC1 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
+#
+#    xC2 = -rBond * np.cos(gam2) * np.sin(phi2-the2)
+#    yC2 = L - rBond * np.sin(gam2)
+#    zC2 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
+#
+#    xC3 = rBond * np.cos(gam2) * np.sin(phi2+the2)
+#    yC3 = -L + rBond * np.sin(gam2)
+#    zC3 = -rBond * np.cos(phi2+the2) * np.cos(gam2)
+#
+#    xC4 = rBond * np.cos(gam2) * np.sin(phi2-the2)
+#    yC4 = -L + rBond * np.sin(gam2)
+#    zC4 = -rBond * np.cos(phi2-the2) * np.cos(gam2)
+#
+#    # in the end we did this with cartesian... interesting workaround...
+#    # desperation?
+#    dx = +0.694921
+#    dy = +0.661700
+#    dz = +0.494206
+#
+#    xH1 = xC1 - dx
+#    yH1 = yC1 + dy
+#    zH1 = zC1 - dz
+#
+#    xH2 = xC2 + dx
+#    yH2 = yC2 + dy
+#    zH2 = zC2 - dz
+#
+#    xH3 = xC3 + dx
+#    yH3 = yC3 - dy
+#    zH3 = zC3 - dz
+#
+#    xH4 = xC4 - dx
+#    yH4 = yC4 - dy
+#    zH4 = zC4 - dz
+#
+#
+#    newAtoms = np.array([[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
+#                [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]])
+#    if phi > 0.0:
+#        this = ((phi/torsionalCI) * deltasCIP)
+#        newCorrectedAtoms = newAtoms - this
+#    else:
+#        this = ((phi/torsionalCI) * deltasCIN)
+#        newCorrectedAtoms = newAtoms + this
+#    new = np.append(fixed,newCorrectedAtoms,0)
+#    atomTN = atomT + ['C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
+#    # saveTraj works on LIST of geometries, that is why the double list brackets
+#    saveTraj(np.array([new]),atomTN,fn)
