@@ -77,7 +77,6 @@ def generateNorbGeometry(phi,gam,the):
     This function generates an xyz given the value of the three angles
     phi,gam,the :: Double  <- the three angles
     '''
-    # Norbornadiene_P001-000_N001-000_P001-000
     fnO = 'zNorbornadiene_{:+08.3f}_{:+08.3f}_{:+08.3f}'.format(phi,gam,the)
     fn = fnO.replace('-','N').replace('.','-').replace('+','P')
     atomT = ['C','C','C','H','H','H','H']
@@ -97,8 +96,10 @@ def generateNorbGeometry(phi,gam,the):
     gam2 = np.deg2rad(gam)
 
     torsionalCI = 6 # values for phi AT WHICH
+
     # this is the vector that displaces our 8 moving atoms from the CLOSEST CI I
     # can reach with the old scan and the real conical intersection
+
     deltasCIN = np.array([
                           [-0.165777,  0.067387,  0.016393],
                           [-0.14517 , -0.096085, -0.143594],
@@ -186,20 +187,37 @@ def getAnglesFRomGeometry(fn):
     atom1 = 2
     atom2 = 11
     atom3 = 10
-    [[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]] = [geom[atom1-1],geom[atom2-1],geom[atom3-1]]
-    theta11 = np.rad2deg(np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2))))
-    theta12 = np.rad2deg(np.arcsin((x3-x1)/(np.sqrt((x3-x1)**2+(z3-z1)**2))))
-    theta = theta12 - theta11
-    phi = (theta11 + theta12) / 2
-    gamma = 90 - calcAngle(geom,11,2,3)
-    gammaP = np.rad2deg(np.arcsin((y2-y1)/(np.sqrt((y2-y1)**2+(z2-z1)**2))))
+    atom4 = 9
+    atom5 = 8
+    [[x1,y1,z1],[x2,y2,z2],[x3,y3,z3],[x4,y4,z4],[x5,y5,z5]] = [
+            geom[atom1-1],geom[atom2-1],geom[atom3-1],geom[atom4-1],geom[atom5-1]]
+    theta10 = np.rad2deg(np.arcsin((x2-x1)/(np.sqrt((x2-x1)**2+(z2-z1)**2))))
+    theta11 = np.rad2deg(np.arcsin((x3-x1)/(np.sqrt((x3-x1)**2+(z3-z1)**2))))
+    theta9 = np.rad2deg(np.arcsin((x4-x1)/(np.sqrt((x4-x1)**2+(z4-z1)**2))))
+    theta8 = np.rad2deg(np.arcsin((x5-x1)/(np.sqrt((x5-x1)**2+(z5-z1)**2))))
+    #theta = theta12 - theta11
+    gamma8 = 90 - calcAngle(geom,8,3,2)
+    gamma9 = 90 - calcAngle(geom,9,3,2)
+    gamma10 = 90 - calcAngle(geom,10,2,3)
+    gamma11 = 90 - calcAngle(geom,11,2,3)
+    #gammaP = np.rad2deg(np.arcsin((y2-y1)/(np.sqrt((y2-y1)**2+(z2-z1)**2))))
+    gavg = (gamma11 + gamma10 + gamma9 + gamma8)/4
+    tavg = (abs(theta11) + abs(theta10) + abs(theta9) + abs(theta8))/2
     string = '''
     Geomtry file:   {}
 
-    Phi   = {:7.3f}
-    Gamma = {:7.3f}
-    Theta = {:7.3f}
-    '''.format(fn,phi,gamma,theta)
+    Gamma8 = {:7.3f}
+    Gamma9 = {:7.3f}
+    Gamma10 = {:7.3f}
+    Gamma11 = {:7.3f}
+    GammaAVG = {:7.3f}
+
+    Theta8 = {:7.3f}
+    Theta9 = {:7.3f}
+    Theta10 = {:7.3f}
+    Theta11 = {:7.3f}
+    ThetaAVG = {:7.3f}
+    '''.format(fn,gamma8,gamma9,gamma10,gamma11,gavg,theta8,theta9,theta10,theta11,tavg)
     print(string)
 
 def main():

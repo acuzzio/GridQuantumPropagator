@@ -217,15 +217,19 @@ def directionRead(folderO,folderE):
     '''
     This function does not do anything particular... it is some kind of driver
     filler that we would need to address. But right now we do not really care
+    super problem bound
     '''
-    fn = '/home/alessio/Desktop/a-3dScanSashaSupport/i-NewScan/directions'
-    phis,gammas,thetas = readDirectionFile(fn)
+    fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/m-biggerScanEnergies2ways/directions1'
+    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/m-biggerScanEnergies2ways/directions2'
+    phis1,gammas1,thetas1 = readDirectionFile(fn1)
+    phis2,gammas2,thetas2 = readDirectionFile(fn2)
     #phis = phis[0:3]
     #gammas = gammas[0:3]
     #thetas = thetas[0:3]
     rootNameO = os.path.join(folderO,'zNorbornadiene_')
     rootNameE = os.path.join(folderE,'zNorbornadiene_')
-    graph,revgraph,first = makeCubeGraph(phis,gammas,thetas)
+    graph1,revgraph1,first1 = makeCubeGraph(phis1,gammas1,thetas1)
+    graph2,revgraph2,first2 = makeCubeGraph(phis2,gammas2,thetas2)
     cutAt = 14
     # correct first here
     print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(cutAt))
@@ -239,7 +243,8 @@ def directionRead(folderO,folderE):
     #print(' ')
     #printDict(revgraph)
     #print(len(revgraph))
-    for key, value in revgraph.items():
+    revgraphSum = {**revgraph2, **revgraph1}
+    for key, value in revgraphSum.items():
         fnIn = rootNameO + key + '.all.h5'
         if os.path.isfile(fnIn):
             print('\n\n----------THIS IS {} -> cut at {}:\n'.format(key,cutAt))
@@ -314,29 +319,6 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     print('\n\nfile {} written'.format(corrFNO))
 
 
-# THIS FUNCTION IS OVERPERFORMED BY createOneAndZero
-#def compressColumnOverlap(mat, oneDarray):
-#    '''
-#    mat :: np.array(X,Y) <- an overlap matrix
-#    given a matrix with overlaps this will return an array of +1 or -1.
-#    This will determine sign changes for this step.
-#    '''
-#    axis = 0
-#    amax = mat.max(axis)
-#    amin = mat.min(axis)
-#    result = np.where(-amin > amax, -1., 1.)
-#    resultREAL= np.where(-amin > amax, amin, amax)
-#    resultAbs = abs(resultREAL)
-#    resultAbsMin = resultAbs.min(0)
-#    minDiagonal = abs(np.diagonal(mat)).min()
-#    if minDiagonal < 0.5:
-#        print('WARNING, out of diagonal')
-#    index = np.argmin(resultAbs)
-#    if resultAbsMin < 0.9:
-#        string = 'warning, overlap element lower than 0.9 at {} -> {}'
-#        print(string.format(index+1,resultREAL))
-#    return (result*oneDarray)
-
 def createOneAndZero(mat, oneDarray):
     '''
     mat :: np.array(X,Y) <- an overlap matrix
@@ -348,9 +330,6 @@ def createOneAndZero(mat, oneDarray):
     a +1 if it is positive, then I take out the state I just assigned. This is
     to avoid overlap matrices with double 1 or no 1 at all (they happens)
     '''
-    # a better condition would be the MAXIMUM...
-    # threshold = 0.7
-    # newMat = np.where(mat < -threshold,-1,0) + np.where(mat > threshold,1,0)
 
     # Maximum implementation
     newMat = np.empty_like(mat)
