@@ -39,7 +39,7 @@ def read_single_arguments(single_inputs):
         single_inputs = single_inputs._replace(proc=args.p)
     return single_inputs
 
-def matrixApproach(globalExp, proc):
+def matrixApproach(globalExp, proc, processed_states):
     '''
     Create blender files from 3d data... meraviglia
     '''
@@ -65,9 +65,7 @@ def matrixApproach(globalExp, proc):
     labelsAxis3 = np.unique(bigArrayLab3)
     blenderArray = np.empty((labelsAxis1.size,labelsAxis2.size,
                              labelsAxis3.size,nstates))
-    blenderArrayDipo = np.empty((labelsAxis1.size,labelsAxis2.size,
-                             labelsAxis3.size,nstates))
-    blenderArrayDipo2 = np.empty((labelsAxis1.size,labelsAxis2.size,
+    blenderArrayDipo = np.empty((3,processed_states,labelsAxis1.size,labelsAxis2.size,
                              labelsAxis3.size,nstates))
     folder = ('/').join(globalExp.split('/')[:-1])
     if folder == '':
@@ -91,8 +89,9 @@ def matrixApproach(globalExp, proc):
                     energies = np.repeat(-271.0,nstates)
                     print(fileN + ' does not exist...')
                 blenderArray[Iax1,Iax2,Iax3] = energies
-                blenderArrayDipo[Iax1,Iax2,Iax3] = dipole[0,0,:]
-                blenderArrayDipo2[Iax1,Iax2,Iax3] = dipole[1,0,:]
+                for xyz in np.arange(3):
+                    for sss in np.arange(processed_states):
+                        blenderArrayDipo[xyz,sss,Iax1,Iax2,Iax3] = dipole[xyz,sss,:]
     axFloat1 = np.array([ labTranform(a) for a in labelsAxis1 ])
     axFloat2 = np.array([ labTranform(b) for b in labelsAxis2 ])
     axFloat3 = np.array([ labTranform(c) for c in labelsAxis3 ])
@@ -100,8 +99,12 @@ def matrixApproach(globalExp, proc):
     axFloat2.tofile('fullB.txt')
     axFloat3.tofile('fullC.txt')
     blenderArray.tofile('fullE.txt')
-    blenderArrayDipo.tofile('fullDx0')
-    blenderArrayDipo2.tofile('fullDy0')
+    for xyz in np.arange(3):
+        for sss in np.arange(processed_states):
+            elementSlice = blenderArrayDipo[xyz,sss,:]
+            labl = {0:'x',1:'y',2:'z'}
+            name = 'fullD_' + labl[xyz] + '_' + str(sss) + '.txt'
+            elementSlice.tofile(name)
 
 single_inputs = namedtuple("single_input", ("glob","proc"))
 
@@ -110,7 +113,7 @@ def main():
     Dipole transition elements '''
     o_inputs = single_inputs("*.rassi.h5", 1)
     inp = read_single_arguments(o_inputs)
-    matrixApproach(inp.glob, inp.proc)
+    matrixApproach(inp.glob, inp.proc, 8)
 
 if __name__ == "__main__":
         main()
