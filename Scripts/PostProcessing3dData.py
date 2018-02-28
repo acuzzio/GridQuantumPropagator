@@ -215,9 +215,8 @@ def readDirectionFile(fn):
 
 def directionRead(folderO,folderE):
     '''
-    This function does not do anything particular... it is some kind of driver
-    filler that we would need to address. But right now we do not really care
-    super problem bound
+    This function is the corrector that follows the direction files...
+    suuuuper problem bound
     '''
     fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/m-biggerScanEnergies2ways/directions1'
     fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/m-biggerScanEnergies2ways/directions2'
@@ -228,10 +227,16 @@ def directionRead(folderO,folderE):
     #thetas = thetas[0:3]
     rootNameO = os.path.join(folderO,'zNorbornadiene_')
     rootNameE = os.path.join(folderE,'zNorbornadiene_')
-    graph1,revgraph1,first1 = makeCubeGraph(phis1,gammas1,thetas1)
-    graph2,revgraph2,first2 = makeCubeGraph(phis2,gammas2,thetas2)
+    graph1,revgraph1,first = makeCubeGraph(phis1,gammas1,thetas1)
+    graph2,revgraph2,_ = makeCubeGraph(phis2,gammas1,thetas1)
+    graph3,revgraph3,_ = makeCubeGraph(phis1,gammas2,thetas1)
+    graph4,revgraph4,_ = makeCubeGraph(phis2,gammas2,thetas1)
+    graph5,revgraph5,_ = makeCubeGraph(phis1,gammas1,thetas2)
+    graph6,revgraph6,_ = makeCubeGraph(phis2,gammas1,thetas2)
+    graph7,revgraph7,_ = makeCubeGraph(phis1,gammas2,thetas2)
+    graph8,revgraph8,_ = makeCubeGraph(phis2,gammas2,thetas2)
     cutAt = 14
-    # correct first here
+    # correct first point here - True means "I am the first"
     print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(cutAt))
     newsign = np.ones(cutAt)
     correctThis(first,newsign,rootNameE,rootNameO,cutAt,True)
@@ -242,8 +247,15 @@ def directionRead(folderO,folderE):
     #printDict(graph)
     #print(' ')
     #printDict(revgraph)
-    #print(len(revgraph))
-    revgraphSum = {**revgraph2, **revgraph1}
+    revgraphSum = {**revgraph8,
+                   **revgraph7,
+                   **revgraph6,
+                   **revgraph5,
+                   **revgraph4,
+                   **revgraph3,
+                   **revgraph2,
+                   **revgraph1}
+    #print(len(revgraphSum))
     for key, value in revgraphSum.items():
         fnIn = rootNameO + key + '.all.h5'
         if os.path.isfile(fnIn):
@@ -251,6 +263,7 @@ def directionRead(folderO,folderE):
             fnE = rootNameE + value + '.corrected.h5'
             newsign = retrieve_hdf5_data(fnE,'ABS_CORRECTOR')
             correctThis(key,newsign,rootNameE,rootNameO,cutAt)
+    good('Hey, you are using an hardcoded direction file')
 
 
 def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
@@ -327,8 +340,9 @@ def createOneAndZero(mat, oneDarray):
 
     This function is quite convoluted. Rows are new states, so I go along rows
     and seek for the absolute maximum value. if this is negative I put a -1, or
-    a +1 if it is positive, then I take out the state I just assigned. This is
-    to avoid overlap matrices with double 1 or no 1 at all (they happens)
+    a +1 if it is positive, then I take out the state I just assigned (so it
+    cannot be assigned again). This is to avoid overlap matrices with double 1
+    or no 1 at all (they happen).
     '''
 
     # Maximum implementation
