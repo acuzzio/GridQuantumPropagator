@@ -10,6 +10,14 @@ import pandas as pd
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def printDict(dictionary):
+    '''
+    pretty printer for dictionary
+    dictionary :: Dictionary
+    '''
+    for x in dictionary:
+        print('{} -> {}'.format(x,dictionary[x]))
+
 def readGeometry(fn):
     '''
     It gives back the geometry from a file

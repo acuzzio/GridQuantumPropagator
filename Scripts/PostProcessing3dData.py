@@ -14,7 +14,8 @@ import os
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
-                       writeH5fileDict, readWholeH5toDict, chunksOf, err, good)
+                       writeH5fileDict, readWholeH5toDict, chunksOf, err, good,
+                       printDict)
 
 
 def read_single_arguments(single_inputs):
@@ -189,14 +190,6 @@ def makeCubeGraph(phis,gammas,thetas):
     first = '_'.join((phis[0],gammas[0],thetas[0]))
     return(graph,reverseGraph,first)
 
-
-def printDict(dictionary):
-    '''
-    pretty printer for dictionary
-    dictionary :: Dictionary
-    '''
-    for x in dictionary:
-        print('{} -> {}'.format(x,dictionary[x]))
 
 def readDirectionFile(fn):
     '''
