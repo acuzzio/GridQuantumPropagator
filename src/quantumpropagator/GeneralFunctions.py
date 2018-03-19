@@ -153,6 +153,9 @@ def dipoleMoment(states,matMu):
         dipole[component] = summa
     return dipole
 
+def fromFsToAu(n):
+    ''' from femtosecond to au '''
+    return (n*41.341)
 
 def fromBohToAng(n):
     ''' From Bohr to Angstrom conversion - n :: Double '''

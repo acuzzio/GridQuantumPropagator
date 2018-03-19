@@ -43,8 +43,6 @@ b = b - bmin
 cmin = np.min(c)
 c = c - cmin
 
-#angleN = 3
-#diheN = 4
 
 scaleZ = 30
 scaleX = 5
@@ -119,3 +117,6 @@ for i in bpy.context.scene.objects:
     bpy.context.object.modifiers["Wireframe"].material_offset = 1
     bpy.context.object.modifiers["Wireframe"].use_replace = False
     cou += 1
+
+print(ax1N,ax2N,ax3N)
+
