@@ -3,12 +3,12 @@
 import glob
 import numpy as np
 import os
-import yaml
 
 from argparse import ArgumentParser
 from collections import namedtuple
 from quantumpropagator import (fromFsToAu,
-        ensure_dir,printDict,stringTransformation3d,retrieve_hdf5_data)
+        ensure_dir,printDict,stringTransformation3d,retrieve_hdf5_data,
+        loadInputYAML)
 
 
 def read_single_arguments(single_inputs):
@@ -29,15 +29,6 @@ def read_single_arguments(single_inputs):
         single_inputs = single_inputs._replace(inputFile=args.i)
     return single_inputs
 
-def loadInputYAML(fn):
-    '''
-    this function reads the input file and returns a dictionary with inputs
-    fn :: filePath
-    '''
-    with open(fn, 'r') as f:
-         diction = yaml.load(f)
-    return diction
-
 single_inputs = namedtuple("single_input",
             ("inputFile"
             )
@@ -46,6 +37,7 @@ single_inputs = namedtuple("single_input",
 defaultYaml = '''# folders
 inputFol : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/b-corrected
 outFol : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results
+
 # propagation details in fs.
 dt : 0.01
 states : 8
@@ -87,7 +79,7 @@ def revListString(a):
 
 def main():
     '''
-    This launches a 3d wavepacket propagation.
+    This will launch a 3d wavepacket propagation.
     '''
     default = single_inputs(".")              # input file
     inputs = read_single_arguments(default)
@@ -109,7 +101,7 @@ def main():
         allH5First = allH5[0]
         nstates = len(retrieve_hdf5_data(allH5First,'ROOT_ENERGIES'))
         natoms = len(retrieve_hdf5_data(allH5First,'CENTER_COORDINATES'))
-        newdime = (dime * 2)-1
+        newdime = (dime * 2) - 1
         bigArrayLab1 =  np.empty((dime), dtype=object)
         bigArrayLab2 =  np.empty((dime), dtype=object)
         bigArrayLab3 =  np.empty((dime), dtype=object)

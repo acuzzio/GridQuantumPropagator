@@ -13,7 +13,7 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                chunksOf, chunksOfList, calcBond, calcAngle,
                                calcDihedral, massOf, saveTraj, scanvalues,
                                printMatrix2D, readGeometry, labTranform,
-                               stringTransformation3d,
+                               stringTransformation3d, loadInputYAML,
                                createTabellineFromArray,fromFsToAu, printDict)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,

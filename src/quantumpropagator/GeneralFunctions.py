@@ -5,6 +5,7 @@ This is the module for general purposes functions
 import multiprocessing as mp
 import numpy as np
 import pandas as pd
+import yaml
 
 #Debug time
 #import pdb
@@ -364,8 +365,21 @@ def stringTransformation3d(fn):
             [str1,str2,str3]]
     return(axis1,str1,axis2,str2,axis3,str3)
 
+
+def loadInputYAML(fn):
+    '''
+    this function reads the input file and returns a dictionary with inputs
+    fn :: filePath
+    '''
+    with open(fn, 'r') as f:
+         diction = yaml.load(f)
+    return diction
+
+
 if __name__ == "__main__":
     a = np.arange(36).reshape(6,6)
     print(a)
     printMatrix2D(a)
+
+
 
