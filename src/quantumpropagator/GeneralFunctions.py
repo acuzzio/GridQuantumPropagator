@@ -372,7 +372,7 @@ def loadInputYAML(fn):
     fn :: filePath
     '''
     with open(fn, 'r') as f:
-         diction = yaml.load(f)
+         diction = yaml.safe_load(f)
     return diction
 
 

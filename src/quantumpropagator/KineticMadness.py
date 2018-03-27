@@ -1,7 +1,8 @@
 ''' here we try our best '''
 
-from numpy import (dot,cos,sin,sqrt,sum,array,stack,deg2rad)
-from numpy.linalg import norm
+from numpy import (dot,cos,sin,sqrt,array,stack,deg2rad)
+#from numpy import (dot,cos,sin,sqrt,sum,array,stack,deg2rad)
+#from numpy.linalg import norm
 
 def calc_g_G(phi,gam,the):
     gam = deg2rad(gam)
@@ -88,11 +89,6 @@ def calc_g_G(phi,gam,the):
     g_12 = dot(dp_phi,dg_gam)
     g_13 = dot(dp_phi,dt_the)
     det_g = g_11 * g_22 * g_33 - g_12**2 * g_33 + g_13**2 * g_22
-    #print(dp_phi)
-    #print(dg_gam)
-    #print(dt_the)
-    #print('\n')
-    #print(g_11,g_22,g_33,g_12,g_13)
     print('det: {}'.format(det_g))
 
     # G matrix
