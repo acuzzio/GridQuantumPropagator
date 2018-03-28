@@ -89,16 +89,19 @@ def calc_g_G(phi,gam,the):
     g_12 = dot(dp_phi,dg_gam)
     g_13 = dot(dp_phi,dt_the)
     det_g = g_11 * g_22 * g_33 - g_12**2 * g_33 + g_13**2 * g_22
-    print('\nDet:\n{}'.format(det_g))
+    #print('\nDet:\n{}'.format(det_g))
 
     # G matrix
     G_pp = (g_33 * g_22)/det_g
     G_pg = (-g_33 * g_12)/det_g
+    G_gp = G_pg
     G_pt = (-g_22 * g_13)/det_g
+    G_tp = G_pt
     G_gg = (g_33 * g_11 - g_13**2)/det_g
     G_gt = (g_13 * g_12)/det_g
+    G_tg = G_gt
     G_tt = (g_22 * g_11 - g_12**2)/det_g
-    print('\nG elements:\n{} {} {} {} {} {}'.format(G_pp,G_pg,G_pt,G_gg,G_gt,G_tt))
+    # print('\nG elements:\n{} {} {} {} {} {}'.format(G_pp,G_pg,G_pt,G_gg,G_gt,G_tt))
 
     # derivatives of det(g) they're 6
     dgdet_g = 32 * (cc**2 + ch**2) * cos(gam) * (-2 * (cc**2 + ch**2) * (dp_c8x**2 + dp_c8y**2 + dp_c8z**2 + dp_c9x**2 + dp_c9y**2 +dp_c9z**2 + dp_h12x**2 + dp_h12y**2 + dp_h12z**2 + dp_h13x**2 + dp_h13y**2 + dp_h13z**2) * sin(gam) + sin(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 + cos(gam) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * sin(gam) + cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + sin(gam) * (-(cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (-cc * dp_c8x + cc * dp_c9x - ch * dp_h12x + ch * dp_h13x) * sin(the))) + sin(gam) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + sin(gam) * (-(cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (-cc * dp_c8x + cc * dp_c9x - ch * dp_h12x + ch * dp_h13x) * sin(the)))**2)
@@ -108,7 +111,7 @@ def calc_g_G(phi,gam,the):
     dgdtdet_g = dtdgdet_g
     dtdtdet_g = 32 * (cc**2 + ch**2) * cos(gam)**3 * (cos(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 - ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the)) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * sin(gam) + cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))))
 
-    print('\nDerivatives g:\n{} {} {} {} {} {}'.format(dtdet_g,dgdet_g,dgdgdet_g,dtdtdet_g,dtdgdet_g,dgdtdet_g))
+    # print('\nDerivatives g:\n{} {} {} {} {} {}'.format(dtdet_g,dgdet_g,dgdgdet_g,dtdtdet_g,dtdgdet_g,dgdtdet_g))
 
     # Now the G' elements. They're 6
     dgGggs = 8 * cos(gam) * sin(gam) * (-2 * (cc**2 + ch**2) * (dp_c8x**2 + dp_c8y**2 + dp_c8z**2 + dp_c9x**2 + dp_c9y**2 +dp_c9z**2 + dp_h12x**2 + dp_h12y**2 + dp_h12z**2 + dp_h13x**2 + dp_h13y**2 + dp_h13z**2) + ((cc * (-dp_c8x + dp_c9x) + ch * (-dp_h12x + dp_h13x)) * cos(the) + (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2)
@@ -117,13 +120,13 @@ def calc_g_G(phi,gam,the):
     dtGtgs = 2 * cos(gam) * (-2 * sin(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 + ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the)) * (-2 * (cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + 2 * sin(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))))
     dtGtps = -8 * (cc**2 + ch**2) * cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the))
     dtGtts = -8 * sin(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the)) * (-(cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + sin(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the)))
-    print('\nDerivatives G:\n{} {} {} {} {} {}'.format(dgGggs,dgGgps,dgGgts,dtGtgs,dtGtps,dtGtts))
+    #print('\nDerivatives G:\n{} {} {} {} {} {}'.format(dgGggs,dgGgps,dgGgts,dtGtgs,dtGtps,dtGtts))
 
     # Now it is time to write down the effective coefficients of T. Labels are 0,1,2 (indicating derivatives) and the usual p t g
     hbar = 1
     hb = hbar**2
 
-    # zero derivatives coefficients
+    # zero order derivative coefficients
     Tgg0 = (hb * dgGggs * dgdet_g)/(8 * det_g**2) - (7 * hb * G_gg * dgdet_g**2)/(32 * det_g**3) + (hb * G_gg * dgdgdet_g)/(8 * det_g**2)
     Ttt0 = (hb * dtGtts * dtdet_g)/(8 * det_g**2) - (7 * hb * G_tt * dtdet_g**2)/(32 * det_g**3) + (hb * G_tt * dtdtdet_g)/(8 * det_g**2)
     Tgt0 = (hb * dgGgts * dtdet_g)/(8 * det_g**2) - (7 * hb * G_gt * dgdet_g * dtdet_g)/(32 * det_g**3) + (hb * G_gt * dgdtdet_g)/(8 * det_g**2)
@@ -134,16 +137,38 @@ def calc_g_G(phi,gam,the):
     Tpt0 = 0
     Tpp0 = 0
 
-    # first derivative coefficients
-    Tgg1 = - (hb * dgGggs)/(2 * det_g) + (3 * hb * G_gg * dgdet_g)/(8 det_g**2)
-    Ttt1 = - (hb * dtGtts)/(2 * det_g) + (3 * hb * G_tt * dtdet_g)/(8 det_g**2)
-    Tgt1 = - (hb * dgGgts)/(2 * det_g) + (3 * hb * G_gt * dgdet_g)/(8 det_g**2)
-    Ttg1 = - (hb * dtGtgs)/(2 * det_g) + (3 * hb * G_tg * dtdet_g)/(8 det_g**2)
-    Tgp1 = - (hb * dgGgps)/(2 * det_g) + (3 * hb * G_gp * dgdet_g)/(8 det_g**2)
-    Ttp1 = - (hb * dtGtps)/(2 * det_g) + (3 * hb * G_tp * dtdet_g)/(8 det_g**2)
-    Tpg1 =                             + (3 * hb * G_pg * dgdet_g)/(8 det_g**2)
-    Tpt1 =                             + (3 * hb * G_pt * dtdet_g)/(8 det_g**2)
+    # first order derivative coefficients
+    Tgg1 = - (hb * dgGggs)/(2 * det_g) + (3 * hb * G_gg * dgdet_g)/(8 * det_g**2)
+    Ttt1 = - (hb * dtGtts)/(2 * det_g) + (3 * hb * G_tt * dtdet_g)/(8 * det_g**2)
+    Tgt1 = - (hb * dgGgts)/(2 * det_g) + (3 * hb * G_gt * dgdet_g)/(8 * det_g**2)
+    Ttg1 = - (hb * dtGtgs)/(2 * det_g) + (3 * hb * G_tg * dtdet_g)/(8 * det_g**2)
+    Tgp1 = - (hb * dgGgps)/(2 * det_g) + (3 * hb * G_gp * dgdet_g)/(8 * det_g**2)
+    Ttp1 = - (hb * dtGtps)/(2 * det_g) + (3 * hb * G_tp * dtdet_g)/(8 * det_g**2)
+    Tpg1 =                             + (3 * hb * G_pg * dgdet_g)/(8 * det_g**2)
+    Tpt1 =                             + (3 * hb * G_pt * dtdet_g)/(8 * det_g**2)
     Tpp1 = 0
+
+    # second order derivative coefficients
+    Tgg2 = - (hb * G_gg)/(2 * det_g)
+    Ttt2 = - (hb * G_tt)/(2 * det_g)
+    Tgt2 = - (hb * G_gt)/(2 * det_g)
+    Ttg2 = - (hb * G_tg)/(2 * det_g)
+    Tgp2 = - (hb * G_gp)/(2 * det_g)
+    Ttp2 = - (hb * G_tp)/(2 * det_g)
+    Tpg2 = - (hb * G_pg)/(2 * det_g)
+    Tpt2 = - (hb * G_pt)/(2 * det_g)
+    Tpp2 = - (hb * G_pp)/(2 * det_g)
+
+    Ttot = array([[Tpp0,Tpp1,Tpp2],
+                  [Tpg0,Tpg1,Tpg2],
+                  [Tpt0,Tpt1,Tpt2],
+                  [Tgp0,Tgp1,Tgp2],
+                  [Tgg0,Tgg1,Tgg2],
+                  [Tgt0,Tgt1,Tgt2],
+                  [Ttp0,Ttp1,Ttp2],
+                  [Ttg0,Ttg1,Ttg2],
+                  [Ttt0,Ttt1,Ttt2]])
+    print('\nT coefficient Matrix:\n',Ttot)
 
 
 
@@ -154,8 +179,9 @@ def all_of_them():
     for the in thetas:
         for gam in gammas:
             for phi in phis:
+                print(the,gam,phi)
                 calc_g_G(phi,gam,the/2)
 
 if __name__ == "__main__":
-    calc_g_G(2.0,15,50)
-    #all_of_them()
+    #calc_g_G(2.0,15,50)
+    all_of_them()

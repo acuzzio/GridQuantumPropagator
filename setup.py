@@ -31,6 +31,6 @@ setup(
      'Scripts/generateGeomsAroundConical.py',
      'Scripts/ThreeDPropagator.py',
      'Scripts/PostProcessing3dData.py'],
-    install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib','yaml'],
+    install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib'],
     extras_require={'test': ['nose', 'coverage']}
 )
