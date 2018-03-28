@@ -44,3 +44,4 @@ from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, co
                       envel, pulse)
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
+from .KineticMadness import calc_g_G

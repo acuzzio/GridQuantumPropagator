@@ -15,7 +15,7 @@ import os
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
                        writeH5fileDict, readWholeH5toDict, chunksOf, err, good,
-                       printDict)
+                       printDict, stringTransformation3d, calc_g_G)
 
 
 def read_single_arguments(single_inputs):
@@ -80,10 +80,9 @@ def createOutputFile(tupleI):
 
         boolean = True
 
-        [geom,aType,ciVect,ener] = retrieve_hdf5_data(h5rasscf,
+        [geom,aType,ener] = retrieve_hdf5_data(h5rasscf,
                                    ['CENTER_COORDINATES',
                                     'CENTER_LABELS',
-                                    'CI_VECTORS',
                                     'ROOT_ENERGIES'])
 
         [dipoles, transDen] = retrieve_hdf5_data(h5dipole,
@@ -98,9 +97,9 @@ def createOutputFile(tupleI):
         outfile = oroot + '.all.h5'
         outTuple = [('CENTER_COORDINATES', geom),
                     ('CENTER_LABELS', aType),
-                    ('CI_VECTORS', ciVect),
                     ('ROOT_ENERGIES', ener),
                     ('DIPOLES', dipoles),
+                    #('CI_VECTORS', ciVect),
                     #('TRANDENS',transDen),
                     ('OVERLAP', overlap[nstates:,:nstates]),
                     ('NAC', NAC)]
@@ -269,6 +268,10 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     first = first or False
     dataToGet = ['OVERLAP', 'DIPOLES', 'NAC']
     fileN = rootNameO + elem + '.all.h5'
+    # I add a string LOL in front of elem to make it equal to a normal file name, but elem here
+    # is just the three labels (small dirty fix)
+    axis1,_,axis2,_,axis3,_ = stringTransformation3d("LOL_" + elem)
+    print(axis1,axis2,axis3)
     [overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
     if first:
         (_, nstates, _) = dipolesAll.shape
@@ -282,7 +285,7 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     overlaps = overlapsAll[:cutAt, :cutAt]
     nacs = nacAll[:cutAt, :cutAt]
 
-    correctionArray1DABS = createOneAndZero(overlaps, oneDarray)
+    correctionArray1DABS, overlap_one_zero = createOneAndZero(overlaps, oneDarray)
     correctionMatrix = createTabellineFromArray(correctionArray1DABS)
     new_dipoles = dipoles * correctionMatrix
     # here I use the fact that correctionMatrix is ALWAYS 2d
@@ -321,6 +324,8 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     allValues['DIPOLES'] = new_dipoles
     allValues['NAC'] = new_nacs
     allValues['ABS_CORRECTOR'] = correctionArray1DABS
+    allValues['OVERLAPONEZERO'] = overlap_one_zero
+    allValues['KINETIC_COEFFICIENTS'] = calc_g_G(axis1,axis2,axis3)
     writeH5fileDict(corrFNO,allValues)
     print('\n\nfile {} written'.format(corrFNO))
 
@@ -362,7 +367,7 @@ def createOneAndZero(mat, oneDarray):
         print('there is an overlap matrix that you should check')
         printMatrix2D(newMat)
     newcorrVector = oneDarray @ newMat.T
-    return (newcorrVector)
+    return (newcorrVector,newMat)
 
 
 single_inputs = namedtuple("single_input", ("direction","glob","outF","proc"))

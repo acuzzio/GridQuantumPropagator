@@ -110,7 +110,6 @@ def calc_g_G(phi,gam,the):
     dtdgdet_g = 32 * (cc**2 + ch**2) * cos(gam)**2 * ((cc * (-dp_c8x + dp_c9x) + ch * (-dp_h12x + dp_h13x)) * cos(the) + (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the)) * (-(cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * (-1 + 2 * cos(2 * gam)) + 2 * (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) * sin(2 * gam) + 2 * (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(2 * gam) * sin(the))
     dgdtdet_g = dtdgdet_g
     dtdtdet_g = 32 * (cc**2 + ch**2) * cos(gam)**3 * (cos(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 - ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the)) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * sin(gam) + cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))))
-
     # print('\nDerivatives g:\n{} {} {} {} {} {}'.format(dtdet_g,dgdet_g,dgdgdet_g,dtdtdet_g,dtdgdet_g,dgdtdet_g))
 
     # Now the G' elements. They're 6
@@ -168,7 +167,9 @@ def calc_g_G(phi,gam,the):
                   [Ttp0,Ttp1,Ttp2],
                   [Ttg0,Ttg1,Ttg2],
                   [Ttt0,Ttt1,Ttt2]])
-    print('\nT coefficient Matrix:\n',Ttot)
+    #print('\nT coefficient Matrix:\n',Ttot)
+    return(Ttot)
+
 
 
 
