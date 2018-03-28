@@ -17,18 +17,18 @@ def calc_g_G(phi,gam,the):
     ch    = 1.541 * ang2boh * sqrt(1  * umass)
 
     # derivatives of phi
-    dp_c8x  = -0.165777 * ang2boh / 6 * sqrt(12 * umass)
-    dp_c8y  = 0.067387  * ang2boh / 6 * sqrt(12 * umass)
-    dp_c8z  = 0.016393  * ang2boh / 6 * sqrt(12 * umass)
-    dp_c9x  = -0.145170 * ang2boh / 6 * sqrt(12 * umass)
-    dp_c9y  = -0.096085 * ang2boh / 6 * sqrt(12 * umass)
-    dp_c9z  = -0.143594 * ang2boh / 6 * sqrt(12 * umass)
-    dp_h12x = -0.520977 * ang2boh / 6 * sqrt(1  * umass)
-    dp_h12y = 0.086124  * ang2boh / 6 * sqrt(1  * umass)
-    dp_h12z = 0.316644  * ang2boh / 6 * sqrt(1  * umass)
-    dp_h13x = 0.450303  * ang2boh / 6 * sqrt(1  * umass)
-    dp_h13y = -0.048000 * ang2boh / 6 * sqrt(1  * umass)
-    dp_h13z = 0.245432  * ang2boh / 6 * sqrt(1  * umass)
+    dp_c8x  = (-0.165777 * ang2boh / 6) * sqrt(12 * umass)
+    dp_c8y  = (0.067387  * ang2boh / 6) * sqrt(12 * umass)
+    dp_c8z  = (0.016393  * ang2boh / 6) * sqrt(12 * umass)
+    dp_c9x  = (-0.145170 * ang2boh / 6) * sqrt(12 * umass)
+    dp_c9y  = (-0.096085 * ang2boh / 6) * sqrt(12 * umass)
+    dp_c9z  = (-0.143594 * ang2boh / 6) * sqrt(12 * umass)
+    dp_h12x = (-0.520977 * ang2boh / 6) * sqrt(1  * umass)
+    dp_h12y = (0.086124  * ang2boh / 6) * sqrt(1  * umass)
+    dp_h12z = (0.316644  * ang2boh / 6) * sqrt(1  * umass)
+    dp_h13x = (0.450303  * ang2boh / 6) * sqrt(1  * umass)
+    dp_h13y = (-0.048000 * ang2boh / 6) * sqrt(1  * umass)
+    dp_h13z = (0.245432  * ang2boh / 6) * sqrt(1  * umass)
     dp_phi  = array([ dp_c8x,   dp_c8y,  dp_c8z,
                       dp_c9x,   dp_c9y,  dp_c9z,
                      -dp_c8x,  -dp_c8y,  dp_c8z,
@@ -89,7 +89,7 @@ def calc_g_G(phi,gam,the):
     g_12 = dot(dp_phi,dg_gam)
     g_13 = dot(dp_phi,dt_the)
     det_g = g_11 * g_22 * g_33 - g_12**2 * g_33 + g_13**2 * g_22
-    #print('\nDet:\n{}'.format(det_g))
+    print('\nDet:\n{}'.format(det_g))
 
     # G matrix
     G_pp = (g_33 * g_22)/det_g
@@ -101,7 +101,7 @@ def calc_g_G(phi,gam,the):
     G_gt = (g_13 * g_12)/det_g
     G_tg = G_gt
     G_tt = (g_22 * g_11 - g_12**2)/det_g
-    # print('\nG elements:\n{} {} {} {} {} {}'.format(G_pp,G_pg,G_pt,G_gg,G_gt,G_tt))
+    print('\nG elements:\n{} {} {} {} {} {}'.format(G_pp,G_pg,G_pt,G_gg,G_gt,G_tt))
 
     # derivatives of det(g) they're 6
     dgdet_g = 32 * (cc**2 + ch**2) * cos(gam) * (-2 * (cc**2 + ch**2) * (dp_c8x**2 + dp_c8y**2 + dp_c8z**2 + dp_c9x**2 + dp_c9y**2 +dp_c9z**2 + dp_h12x**2 + dp_h12y**2 + dp_h12z**2 + dp_h13x**2 + dp_h13y**2 + dp_h13z**2) * sin(gam) + sin(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 + cos(gam) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * sin(gam) + cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + sin(gam) * (-(cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (-cc * dp_c8x + cc * dp_c9x - ch * dp_h12x + ch * dp_h13x) * sin(the))) + sin(gam) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + sin(gam) * (-(cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (-cc * dp_c8x + cc * dp_c9x - ch * dp_h12x + ch * dp_h13x) * sin(the)))**2)
@@ -110,7 +110,7 @@ def calc_g_G(phi,gam,the):
     dtdgdet_g = 32 * (cc**2 + ch**2) * cos(gam)**2 * ((cc * (-dp_c8x + dp_c9x) + ch * (-dp_h12x + dp_h13x)) * cos(the) + (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the)) * (-(cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * (-1 + 2 * cos(2 * gam)) + 2 * (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) * sin(2 * gam) + 2 * (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(2 * gam) * sin(the))
     dgdtdet_g = dtdgdet_g
     dtdtdet_g = 32 * (cc**2 + ch**2) * cos(gam)**3 * (cos(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 - ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the)) * ((cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * sin(gam) + cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))))
-    # print('\nDerivatives g:\n{} {} {} {} {} {}'.format(dtdet_g,dgdet_g,dgdgdet_g,dtdtdet_g,dtdgdet_g,dgdtdet_g))
+    print('\nDerivatives g:\n{} {} {} {} {} {}'.format(dtdet_g,dgdet_g,dgdgdet_g,dtdtdet_g,dtdgdet_g,dgdtdet_g))
 
     # Now the G' elements. They're 6
     dgGggs = 8 * cos(gam) * sin(gam) * (-2 * (cc**2 + ch**2) * (dp_c8x**2 + dp_c8y**2 + dp_c8z**2 + dp_c9x**2 + dp_c9y**2 +dp_c9z**2 + dp_h12x**2 + dp_h12y**2 + dp_h12z**2 + dp_h13x**2 + dp_h13y**2 + dp_h13z**2) + ((cc * (-dp_c8x + dp_c9x) + ch * (-dp_h12x + dp_h13x)) * cos(the) + (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2)
@@ -119,7 +119,7 @@ def calc_g_G(phi,gam,the):
     dtGtgs = 2 * cos(gam) * (-2 * sin(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the))**2 + ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the)) * (-2 * (cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + 2 * sin(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the))))
     dtGtps = -8 * (cc**2 + ch**2) * cos(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * sin(the))
     dtGtts = -8 * sin(gam) * ((cc * (dp_c8x - dp_c9x) + ch * (dp_h12x - dp_h13x)) * cos(the) - (cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * sin(the)) * (-(cc * (dp_c8y + dp_c9y) + ch * (dp_h12y + dp_h13y)) * cos(gam) + sin(gam) * ((cc * (dp_c8z + dp_c9z) + ch * (dp_h12z + dp_h13z)) * cos(the) + (cc * dp_c8x - cc * dp_c9x + ch * dp_h12x - ch * dp_h13x) * sin(the)))
-    #print('\nDerivatives G:\n{} {} {} {} {} {}'.format(dgGggs,dgGgps,dgGgts,dtGtgs,dtGtps,dtGtts))
+    print('\nDerivatives G:\n{} {} {} {} {} {}'.format(dgGggs,dgGgps,dgGgts,dtGtgs,dtGtps,dtGtts))
 
     # Now it is time to write down the effective coefficients of T. Labels are 0,1,2 (indicating derivatives) and the usual p t g
     hbar = 1
@@ -169,7 +169,7 @@ def calc_g_G(phi,gam,the):
                   [Ttp0,Ttp1,Ttp2],
                   [Ttg0,Ttg1,Ttg2],
                   [Ttt0,Ttt1,Ttt2]])
-    #print('\nT coefficient Matrix:\n',Ttot)
+    print('\nT coefficient Matrix:\n',Ttot)
     return(Ttot)
 
 

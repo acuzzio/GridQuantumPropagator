@@ -270,8 +270,7 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     fileN = rootNameO + elem + '.all.h5'
     # I add a string LOL in front of elem to make it equal to a normal file name, but elem here
     # is just the three labels (small dirty fix)
-    axis1,_,axis2,_,axis3,_ = stringTransformation3d("LOL_" + elem)
-    print(axis1,axis2,axis3)
+    phiA,_,gammaA,_,thetA,_ = stringTransformation3d("LOL_" + elem)
     [overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
     if first:
         (_, nstates, _) = dipolesAll.shape
@@ -325,7 +324,7 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     allValues['NAC'] = new_nacs
     allValues['ABS_CORRECTOR'] = correctionArray1DABS
     allValues['OVERLAPONEZERO'] = overlap_one_zero
-    allValues['KINETIC_COEFFICIENTS'] = calc_g_G(axis1,axis2,axis3)
+    allValues['KINETIC_COEFFICIENTS'] = calc_g_G(phiA,gammaA,thetA/2)
     writeH5fileDict(corrFNO,allValues)
     print('\n\nfile {} written'.format(corrFNO))
 
