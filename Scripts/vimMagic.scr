@@ -1,0 +1,23 @@
+" excellence 
+:%s/^ *//
+:%s/\n\n/PORCHETTA/g
+:%s/\n//
+:%s/\^/**/g
+:%s/Cos/cos/g
+:%s/Sin/sin/g
+:%s/\]/)/g
+:%s/\[/(/g
+:%s/\([0-9]\) (/\1 * (/g
+:%s/\([0-9]\) cos/\1 * cos/g
+:%s/\([0-9]\) sin/\1 * sin/g
+:%s/\([0-9]\) gam/\1 * gam/g
+:%s/\([0-9]\) the/\1 * gam/g
+:%s/) (/) * (/g
+:%s/cc (/cc * (/g
+:%s/ch (/ch * (/g
+:%s/cc d/cc * d/g
+:%s/ch d/ch * d/g
+:%s/) cos/) * cos/g
+:%s/) sin/) * sin/g
+:.s/d/dp_/g
+:%s/PORCHETTA/\r/g
