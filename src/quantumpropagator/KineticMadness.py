@@ -158,6 +158,8 @@ def calc_g_G(phi,gam,the):
     Tpt2 = - (hb * G_pt)/(2 * det_g)
     Tpp2 = - (hb * G_pp)/(2 * det_g)
 
+    # until here the order is the same as the Latex document (from hard gg to easy pp). 
+    # But here we need to reorder as it is in the main matrix
     Ttot = array([[Tpp0,Tpp1,Tpp2],
                   [Tpg0,Tpg1,Tpg2],
                   [Tpt0,Tpt1,Tpt2],
@@ -184,5 +186,5 @@ def all_of_them():
                 calc_g_G(phi,gam,the/2)
 
 if __name__ == "__main__":
-    #calc_g_G(2.0,15,50)
-    all_of_them()
+    calc_g_G(2.0,15,50)
+    #all_of_them()

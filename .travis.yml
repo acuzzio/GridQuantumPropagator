@@ -15,7 +15,7 @@ install:
 
   # Install virtual enviroment 
   - conda create -q -n quantumpropagator python=3.5
-  - conda install --name quantumpropagator -c anaconda hdf5 yaml
+  - conda install --name quantumpropagator -c anaconda hdf5
   - source activate quantumpropagator
 
   # Package dependencies
