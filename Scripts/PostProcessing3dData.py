@@ -15,7 +15,7 @@ import os
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
                        writeH5fileDict, readWholeH5toDict, chunksOf, err, good,
-                       printDict, stringTransformation3d, calc_g_G)
+                       printDict, stringTransformation3d, calc_g_G, readDirectionFile)
 
 
 def read_single_arguments(single_inputs):
@@ -189,21 +189,6 @@ def makeCubeGraph(phis,gammas,thetas):
     first = '_'.join((phis[0],gammas[0],thetas[0]))
     return(graph,reverseGraph,first)
 
-
-def readDirectionFile(fn):
-    '''
-    fn :: filePath
-    '''
-    with open(fn,'r') as f:
-        f.readline()
-        phis = f.readline()
-        f.readline()
-        f.readline()
-        gammas = f.readline()
-        f.readline()
-        f.readline()
-        thetas = f.readline()
-    return(phis.rstrip().split(' '),gammas.rstrip().split(' '), thetas.rstrip().split(' '))
 
 def directionRead(folderO,folderE):
     '''

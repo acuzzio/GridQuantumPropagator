@@ -91,16 +91,16 @@ def calc_g_G(phi,gam,the):
     det_g = g_11 * g_22 * g_33 - g_12**2 * g_33 + g_13**2 * g_22
     print('\nDet:\n{}'.format(det_g))
 
-    # G matrix
-    G_pp = (g_33 * g_22)/det_g
-    G_pg = (-g_33 * g_12)/det_g
+    # G' matrix
+    G_pp = (g_33 * g_22)
+    G_pg = (-g_33 * g_12)
     G_gp = G_pg
-    G_pt = (-g_22 * g_13)/det_g
+    G_pt = (-g_22 * g_13)
     G_tp = G_pt
-    G_gg = (g_33 * g_11 - g_13**2)/det_g
-    G_gt = (g_13 * g_12)/det_g
+    G_gg = (g_33 * g_11 - g_13**2)
+    G_gt = (g_13 * g_12)
     G_tg = G_gt
-    G_tt = (g_22 * g_11 - g_12**2)/det_g
+    G_tt = (g_22 * g_11 - g_12**2)
     print('\nG elements:\n{} {} {} {} {} {}'.format(G_pp,G_pg,G_pt,G_gg,G_gt,G_tt))
 
     # derivatives of det(g) they're 6

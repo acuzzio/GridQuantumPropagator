@@ -11,6 +11,22 @@ import yaml
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def readDirectionFile(fn):
+    '''
+    fn :: filePath
+    '''
+    with open(fn,'r') as f:
+        f.readline()
+        phis = f.readline()
+        f.readline()
+        f.readline()
+        gammas = f.readline()
+        f.readline()
+        f.readline()
+        thetas = f.readline()
+    return(phis.rstrip().split(' '),gammas.rstrip().split(' '), thetas.rstrip().split(' '))
+
+
 def printDict(dictionary):
     '''
     pretty printer for dictionary
