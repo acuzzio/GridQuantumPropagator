@@ -11,6 +11,23 @@ import yaml
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def bring_input_to_AU(iDic):
+    '''
+    this function is here to make the conversions between fs/ev and AU
+    inputDict :: Dict
+    '''
+    iDic['dt'] = fromFsToAu(iDic['dt'])
+    iDic['fullTime'] = fromFsToAu(iDic['fullTime'])
+    # change sigmas and T_0s
+    iDic['pulseX'][2] = fromFsToAu(iDic['pulseX'][2])
+    iDic['pulseX'][4] = fromFsToAu(iDic['pulseX'][4])
+    iDic['pulseY'][2] = fromFsToAu(iDic['pulseY'][2])
+    iDic['pulseY'][4] = fromFsToAu(iDic['pulseY'][4])
+    iDic['pulseZ'][2] = fromFsToAu(iDic['pulseZ'][2])
+    iDic['pulseZ'][4] = fromFsToAu(iDic['pulseZ'][4])
+    return (iDic)
+
+
 def readDirectionFile(fn):
     '''
     fn :: filePath
@@ -34,6 +51,9 @@ def printDict(dictionary):
     '''
     for x in dictionary:
         print('{} -> {}'.format(x,dictionary[x]))
+
+def printDictKeys(dictionary):
+    print(dictionary.keys())
 
 def readGeometry(fn):
     '''

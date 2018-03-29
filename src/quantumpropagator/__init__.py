@@ -14,7 +14,8 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                calcDihedral, massOf, saveTraj, scanvalues,
                                printMatrix2D, readGeometry, labTranform,
                                stringTransformation3d, loadInputYAML,
-                               createTabellineFromArray,fromFsToAu, printDict, readDirectionFile)
+                               createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
+                               bring_input_to_AU, printDictKeys)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,
@@ -45,3 +46,4 @@ from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, co
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
 from .KineticMadness import calc_g_G
+from .TDPropagator import propagate3D

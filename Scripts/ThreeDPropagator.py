@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from collections import namedtuple
 from quantumpropagator import (fromFsToAu,
         ensure_dir,printDict,stringTransformation3d,retrieve_hdf5_data,
-        loadInputYAML, readDirectionFile, err)
+        loadInputYAML, readDirectionFile, err, good, propagate3D, bring_input_to_AU)
 
 
 def read_single_arguments(single_inputs):
@@ -60,22 +60,6 @@ directions2 : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/direction
 
 '''
 
-def bring_input_to_AU(iDic):
-    '''
-    this function is here to make the conversions between fs/ev and AU
-    inputDict :: Dict
-    '''
-    iDic['dt'] = fromFsToAu(iDic['dt'])
-    iDic['fullTime'] = fromFsToAu(iDic['fullTime'])
-    # change sigmas and T_0s
-    iDic['pulseX'][2] = fromFsToAu(iDic['pulseX'][2])
-    iDic['pulseX'][4] = fromFsToAu(iDic['pulseX'][4])
-    iDic['pulseY'][2] = fromFsToAu(iDic['pulseY'][2])
-    iDic['pulseY'][4] = fromFsToAu(iDic['pulseY'][4])
-    iDic['pulseZ'][2] = fromFsToAu(iDic['pulseZ'][2])
-    iDic['pulseZ'][4] = fromFsToAu(iDic['pulseZ'][4])
-    return (iDic)
-
 def revListString(a):
     '''
     Just need to order my strings when the negative is there...
@@ -113,46 +97,65 @@ def main():
         inputAU['outFol'] = projfolder
         print('\nNEW 3D PROPAGATION')
         printDict(inputAU)
+        # is there a data file?
+        if 'dataFile' in inputAU:
+            data = np.load(inputAU['dataFile'])
 
-        # load all h5 files
-        phis, gams, thes = readDirections(inputAU['directions1'],inputAU['directions2'])
+            # LAUNCH THE PROPAGATION, BITCH
 
-        # read the first one to understand who is the seed of the cube and take numbers
-        phi1, gam1, the1 = readDirectionFile(inputAU['directions1'])
-        ext = '.corrected.h5'
-        prjlab = inputAU['proj_label']
-        first_file = inputAU['proj_label'] + phi1[0] + '_' + gam1[0] + '_' + the1[0] + ext
-        fnh5 = os.path.join(inputAU['inputFol'], first_file)
-        nstates = len(retrieve_hdf5_data(fnh5,'ROOT_ENERGIES'))
-        natoms = len(retrieve_hdf5_data(fnh5,'CENTER_COORDINATES'))
-        lengths = '\nnstates: {}\nnatoms:  {}\nphi:     {}\ngamma:   {}\ntheta:   {}'
-        phiL, gamL, theL = len(phis), len(gams), len(thes)
-        output = lengths.format(nstates, natoms, phiL, gamL, theL)
-        print(output)
+            propagate3D(data, inputAU)
 
-        # start to allocate the vectors
-        potCUBE = np.empty((phiL, gamL, theL, nstates))
-        kinCUBE = np.empty((phiL, gamL, theL, 9, 3))
-        # dipCUBE = np.empty((phiL, gamL, theL, 3, nstates, nstates))
+        else:
+            # if not, guess you should create it...
+            phis, gams, thes = readDirections(inputAU['directions1'],inputAU['directions2'])
 
-        for p, phi in enumerate(phis):
-            for g, gam in enumerate(gams):
-                for t, the in enumerate(thes):
-                    labelZ = prjlab + phi + '_' + gam + '_' + the + ext
-                    fnh5 = os.path.join(inputAU['inputFol'], labelZ)
-                    if os.path.exists(fnh5):
-                        potCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'ROOT_ENERGIES')
-                        kinCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'KINETIC_COEFFICIENTS')
-                    else:
-                        err('{} does not exist'.format(labelZ))
+            # read the first one to understand who is the seed of the cube and take numbers
+            phi1, gam1, the1 = readDirectionFile(inputAU['directions1'])
+            ext = '.corrected.h5'
+            prjlab = inputAU['proj_label']
+            first_file = inputAU['proj_label'] + phi1[0] + '_' + gam1[0] + '_' + the1[0] + ext
+            fnh5 = os.path.join(inputAU['inputFol'], first_file)
+            nstates = len(retrieve_hdf5_data(fnh5,'ROOT_ENERGIES'))
+            natoms = len(retrieve_hdf5_data(fnh5,'CENTER_COORDINATES'))
+            lengths = '\nnstates: {}\nnatoms:  {}\nphi:     {}\ngamma:   {}\ntheta:   {}'
+            phiL, gamL, theL = len(phis), len(gams), len(thes)
+            output = lengths.format(nstates, natoms, phiL, gamL, theL)
 
-        print(kinCUBE)
+            # start to allocate the vectors
+            potCUBE = np.empty((phiL, gamL, theL, nstates))
+            kinCUBE = np.empty((phiL, gamL, theL, 9, 3))
+            dipCUBE = np.empty((phiL, gamL, theL, 3, nstates, nstates))
+            geoCUBE = np.empty((phiL, gamL, theL, natoms, 3))
+
+            for p, phi in enumerate(phis):
+                for g, gam in enumerate(gams):
+                    for t, the in enumerate(thes):
+                        labelZ = prjlab + phi + '_' + gam + '_' + the + ext
+                        fnh5 = os.path.join(inputAU['inputFol'], labelZ)
+                        if os.path.exists(fnh5):
+                            potCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'ROOT_ENERGIES')
+                            kinCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'KINETIC_COEFFICIENTS')
+                            dipCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'DIPOLES')
+                            geoCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'CENTER_COORDINATES')
+                        else:
+                            err('{} does not exist'.format(labelZ))
+
+            data = {'kinCube' : kinCUBE,
+                    'potCube' : potCUBE,
+                    'dipCUBE' : dipCUBE,
+                    'geoCUBE' : geoCUBE
+                    }
+            np.save('data' + filename, data)
+            good('data file created')
+            with open(fn, 'a') as f:
+                stringAdd = 'dataFile : data' + filename + '.npy'
+                f.write(stringAdd)
 
     else:
         filename, file_extension = os.path.splitext(fn)
         if file_extension == '':
             fn = fn + '.yml'
-        print('File ' + fn + ' does not exist. Creating a skel one')
+        good('File ' + fn + ' does not exist. Creating a skel one')
         with open(fn,'w') as f:
             f.write(defaultYaml)
 
