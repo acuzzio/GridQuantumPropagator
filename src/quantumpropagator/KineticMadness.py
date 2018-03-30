@@ -136,11 +136,12 @@ def calc_g_G(phi,gam,the):
     Tpt0 = 0
     Tpp0 = 0
 
-    # first order derivative coefficients
-    Tgg1 = - (hb * dgGggs)/(2 * det_g) + (3 * hb * G_gg * dgdet_g)/(8 * det_g**2)
-    Ttt1 = - (hb * dtGtts)/(2 * det_g) + (3 * hb * G_tt * dtdet_g)/(8 * det_g**2)
-    Tgt1 = - (hb * dgGgts)/(2 * det_g) + (3 * hb * G_gt * dgdet_g)/(8 * det_g**2)
-    Ttg1 = - (hb * dtGtgs)/(2 * det_g) + (3 * hb * G_tg * dtdet_g)/(8 * det_g**2)
+    # first order derivative coefficients -> the cross terms 3/8 + 1/8 adds up to 1/2! So even if in the latex formulas they appear in two
+    #                                        different term, we pack them togheter in this calculation, so the Ttot matrix is still 3x9!! 
+    Tgg1 = - (hb * dgGggs)/(2 * det_g) + (    hb * G_gg * dgdet_g)/(2 * det_g**2)
+    Ttt1 = - (hb * dtGtts)/(2 * det_g) + (    hb * G_tt * dtdet_g)/(2 * det_g**2)
+    Tgt1 = - (hb * dgGgts)/(2 * det_g) + (    hb * G_gt * dgdet_g)/(2 * det_g**2)
+    Ttg1 = - (hb * dtGtgs)/(2 * det_g) + (    hb * G_tg * dtdet_g)/(2 * det_g**2)
     Tgp1 = - (hb * dgGgps)/(2 * det_g) + (3 * hb * G_gp * dgdet_g)/(8 * det_g**2)
     Ttp1 = - (hb * dtGtps)/(2 * det_g) + (3 * hb * G_tp * dtdet_g)/(8 * det_g**2)
     Tpg1 =                             + (3 * hb * G_pg * dgdet_g)/(8 * det_g**2)
