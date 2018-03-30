@@ -8,13 +8,12 @@ def propagate3D(dataDict, inputDict):
     Two dictionaries, one from data file and one from input file
     it starts and run the 3d propagation of the wavefunction...
     '''
-    printDictKeys(dataDict)
     printDict(inputDict)
+    printDictKeys(dataDict)
     printDictKeys(inputDict)
 
     h = inputDict['dt']
     startState = inputDict['states']
-
 
 
 if __name__ == "__main__":

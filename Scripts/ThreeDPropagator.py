@@ -96,14 +96,14 @@ def main():
         ensure_dir(projfolder)
         inputAU['outFol'] = projfolder
         print('\nNEW 3D PROPAGATION')
-        printDict(inputAU)
         # is there a data file?
         if 'dataFile' in inputAU:
             data = np.load(inputAU['dataFile'])
 
-            # LAUNCH THE PROPAGATION, BITCH
+            # LAUNCH THE PROPAGATION, BITCH 
+            # [()] <- because np.load returns a numpy wrapper on the dictionary
 
-            propagate3D(data, inputAU)
+            propagate3D(data[()], inputAU)
 
         else:
             # if not, guess you should create it...
