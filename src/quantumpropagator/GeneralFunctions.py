@@ -6,10 +6,34 @@ import multiprocessing as mp
 import numpy as np
 import pandas as pd
 import yaml
+import sys
 
 #Debug time
 #import pdb
 #pdb.set_trace() #to debug h=help
+
+def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, bar_length=60):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        bar_length  - Optional  : character length of bar (Int)
+    """
+    total = total -1
+    str_format = "{0:." + str(decimals) + "f}"
+    percents = str_format.format(100 * (iteration / float(total)))
+    filled_length = int(round(bar_length * iteration / float(total)))
+    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+
+    sys.stdout.write('\r%s |%s| %s%s %s' % (prefix, bar, percents, '%', suffix)),
+    if iteration == total:
+        sys.stdout.write('\n')
+    sys.stdout.flush()
+
 
 def bring_input_to_AU(iDic):
     '''
@@ -159,6 +183,17 @@ def gaussian(x, mu, sig):
     sig :: Double - the sigma value
     '''
     return (np.exp(-np.power((x - mu)/sig, 2.)/2)) + (0j)
+
+
+def gaussian2(x, x0, gw):
+    '''
+    It calculates the gaussian value at point x. This gaussian is not normalized because
+    in this problem the normalization is done at the end.
+    x :: Double - the x point
+    x0 :: Double - the displacement on the x axis
+    sig :: Double - the value of the gw factor in front of the equation
+    '''
+    return np.exp((- gw * (x - x0)**2) / 2) + 0j
 
 
 def saveComplex(fn,array):
@@ -387,6 +422,15 @@ def labTranform(string):
     return (float(string.replace('-','.').replace('N','-').replace('P','+')))
 
 
+def labTranformA(strings):
+    '''
+    transform an array of string of the form
+    P014-800
+    into his +14.8 float type numpy array : D
+    '''
+    return (np.array([labTranform(a) for a in strings]))
+
+
 def stringTransformation3d(fn):
     '''
     transform the string of the form
@@ -413,9 +457,19 @@ def loadInputYAML(fn):
 
 
 if __name__ == "__main__":
-    a = np.arange(36).reshape(6,6)
-    print(a)
-    printMatrix2D(a)
+    from time import sleep
+
+    # A List of Items
+    items = list(range(0, 57))
+    l = len(items)
+
+    # Initial call to print 0% progress
+    printProgressBar(0, l, prefix = 'Progress:', suffix = 'Complete', length = 50)
+    for i, item in enumerate(items):
+        # Do stuff...
+        sleep(0.1)
+        # Update Progress Bar
+        printProgressBar(i + 1, l, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 
 

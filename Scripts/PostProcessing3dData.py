@@ -14,7 +14,7 @@ import os
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
-                       writeH5fileDict, readWholeH5toDict, chunksOf, err, good,
+                       writeH5fileDict, readWholeH5toDict, chunksOf, err, good, warning,
                        printDict, stringTransformation3d, calc_g_G, readDirectionFile)
 
 
@@ -74,6 +74,7 @@ def createOutputFile(tupleI):
     h5rassi = root + '.rassi.h5'
     h5out = root + '.out'
     a_exist = all([ os.path.isfile(f) for f in
+        #[h5rassi,h5rasscf,h5dipole]])   Soon we will not need out anymore
         [h5rassi,h5rasscf,h5out,h5dipole]])
     if a_exist:
         log = proj + ': all files present'
@@ -93,7 +94,15 @@ def createOutputFile(tupleI):
         nstates = ener.size
         natoms = aType.size
         # I want to save only the low left corner of overlap
-        NAC = parseNAC(h5out,nstates,natoms)
+        #NAC = parseNAC(h5out,nstates,natoms)
+
+        #############################
+        # HERE WARNING WARNING HERE # NAC parsing is deactivated !!!
+        #############################
+
+        warning("NAC PARSING TURNED OFF")
+
+        NAC = np.zeros((nstates,nstates,natoms,3))
         outfile = oroot + '.all.h5'
         outTuple = [('CENTER_COORDINATES', geom),
                     ('CENTER_LABELS', aType),

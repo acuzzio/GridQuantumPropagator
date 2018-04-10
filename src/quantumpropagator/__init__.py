@@ -4,18 +4,18 @@ Init module to import quantumpropagator
 
 from .astridParser import (astridParser)
 from .commandlineParser import (readArguments)
-from .errors import (err, good, box)
+from .errors import (err, good, box, warning)
 from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
-                               groundState, gaussian, saveComplex,
+                               groundState, gaussian, saveComplex, gaussian2,
                                loadComplex, print2ArrayInColumns, dipoleMoment,
                                fromBohToAng, fromAngToBoh, fromEvtoHar, fromHartoEv, DFT_slow,
                                fromCmMin1toHartree, calculateGradientOnMatrix0,
                                chunksOf, chunksOfList, calcBond, calcAngle,
                                calcDihedral, massOf, saveTraj, scanvalues,
-                               printMatrix2D, readGeometry, labTranform,
+                               printMatrix2D, readGeometry, labTranform, labTranformA,
                                stringTransformation3d, loadInputYAML,
                                createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
-                               bring_input_to_AU, printDictKeys)
+                               bring_input_to_AU, printDictKeys, printProgressBar)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,

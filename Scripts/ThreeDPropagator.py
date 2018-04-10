@@ -8,7 +8,8 @@ from argparse import ArgumentParser
 from collections import namedtuple
 from quantumpropagator import (fromFsToAu,
         ensure_dir,printDict,stringTransformation3d,retrieve_hdf5_data,
-        loadInputYAML, readDirectionFile, err, good, propagate3D, bring_input_to_AU)
+        loadInputYAML, readDirectionFile, err, good, propagate3D, bring_input_to_AU,
+        printProgressBar)
 
 
 def read_single_arguments(single_inputs):
@@ -107,6 +108,7 @@ def main():
 
         else:
             # if not, guess you should create it...
+            good('data file creation in progress...')
             phis, gams, thes = readDirections(inputAU['directions1'],inputAU['directions2'])
 
             # read the first one to understand who is the seed of the cube and take numbers
@@ -139,17 +141,21 @@ def main():
                             geoCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'CENTER_COORDINATES')
                         else:
                             err('{} does not exist'.format(labelZ))
+                    printProgressBar(p*gamL+g,phiL*gamL,prefix = 'H5 data loaded:')
 
             data = {'kinCube' : kinCUBE,
                     'potCube' : potCUBE,
                     'dipCUBE' : dipCUBE,
-                    'geoCUBE' : geoCUBE
+                    'geoCUBE' : geoCUBE,
+                    'phis'    : phis,
+                    'gams'    : gams,
+                    'thes'    : thes
                     }
             np.save('data' + filename, data)
-            good('data file created')
             with open(fn, 'a') as f:
                 stringAdd = 'dataFile : data' + filename + '.npy'
                 f.write(stringAdd)
+            print('\n...done!\n')
 
     else:
         filename, file_extension = os.path.splitext(fn)

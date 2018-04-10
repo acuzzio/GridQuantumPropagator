@@ -16,6 +16,12 @@ def good(string):
     '''
     box('OKGREEN', string, False)
 
+def warning(string):
+    '''
+    box with yellow message (it does not raise an error)
+    '''
+    box('WARNING', string, False)
+
 def box(col, string, erro):
     '''
     This is the function that prints boxes on the command line

@@ -116,14 +116,15 @@ def grapPulse(totaltime, dt, Ed, omega, sigma, phi, t0, fn):
     plt.close('all')
 
 
-def makeJustAnother2DgraphComplex(xs,ys,fn,labl):
+def makeJustAnother2DgraphComplex(xs,ys,fn,labl,xlimit=None):
     transp = False
+    xlimit = xlimit or [-1,1]
     my_dpi = 150
     ratio = (16, 9)
     imgL = labl + " Imag"
     reaL = labl + " Real"
     fig, ax1 = plt.subplots(figsize=ratio)
-    ax1.set_ylim([-1,1])
+    ax1.set_ylim(xlimit)
     plt.plot(xs, np.real(ys), linewidth=3.0, label=reaL)
     plt.plot(xs, np.imag(ys), linewidth=3.0, label=imgL)
     ax1.legend(loc='upper right')
