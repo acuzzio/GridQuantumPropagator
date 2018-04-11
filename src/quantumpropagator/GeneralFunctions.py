@@ -191,7 +191,7 @@ def gaussian2(x, x0, gw):
     in this problem the normalization is done at the end.
     x :: Double - the x point
     x0 :: Double - the displacement on the x axis
-    sig :: Double - the value of the gw factor in front of the equation
+    gw :: Double - the value of the gw factor in front of the equation
     '''
     return np.exp((- gw * (x - x0)**2) / 2) + 0j
 
@@ -256,6 +256,10 @@ def fromHartoEv(n):
 def fromCmMin1toHartree(n):
     ''' from cm-1 to hartree conversion - n :: Double '''
     return (n*4.5563e-06)
+
+def fromHartreetoCmMin1(n):
+    ''' from hartree to cm-1 conversion - n :: Double '''
+    return (n/4.5563e-06)
 
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/

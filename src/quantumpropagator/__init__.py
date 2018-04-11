@@ -11,7 +11,7 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                fromBohToAng, fromAngToBoh, fromEvtoHar, fromHartoEv, DFT_slow,
                                fromCmMin1toHartree, calculateGradientOnMatrix0,
                                chunksOf, chunksOfList, calcBond, calcAngle,
-                               calcDihedral, massOf, saveTraj, scanvalues,
+                               calcDihedral, massOf, saveTraj, scanvalues, fromHartreetoCmMin1,
                                printMatrix2D, readGeometry, labTranform, labTranformA,
                                stringTransformation3d, loadInputYAML,
                                createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
@@ -37,7 +37,7 @@ from .initialConditions import (addPhase, createInitialState, reducedMassLiH,
                                 absorbingPotential3Right)
 from .molcas import (launchSPfromGeom, writeRassiLiHInput, LiHxyz, WaterXyz,
                      generateLiHxyz, generateWater)
-from .Propagator import (rk4Ene1dSLOW, derivative1d, HamiltonianEle1d,
+from .Propagator import (rk4Ene1dSLOW, rk4Ene3d, derivative3d, derivative1d, HamiltonianEle1d,
                          NuclearKinetic1d, doubleDeronK, singleDerOnK,
                          createXaxisReciprocalspace1d, divideByTwo, calculateTotal,
                          rk6Ene1dSLOW, EULER1d)

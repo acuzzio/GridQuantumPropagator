@@ -1,6 +1,69 @@
 import numpy as np
 import quantumpropagator.EMPulse as pp
 
+def rk4Ene3d(f, t, y, inp):
+    '''
+    Runge Kutta with 3d grid as y
+    f -> function that returns the derivative value
+    t -> time at which the derivative is calculated
+    y -> the numpy array
+    inp -> dictionaries with immutable objects
+    '''
+    h = inp['h']
+    k1 = h * f(t, y, inp)
+    k2 = h * f(t + 0.5 * h, y + 0.5 * k1, inp)
+    k3 = h * f(t + 0.5 * h, y + 0.5 * k2, inp)
+    k4 = h * f(t + h, y + k3, inp)
+    return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
+
+def derivative3d(t,GRID,inp):
+    '''
+    ORA SI BALLA
+    3d propagator using kinetic madness
+    '''
+    # I want to loop through all point that are 2 points far away from the border.
+    # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
+    for p in np.arange(inp['phiL']-4)+2:
+        for g in np.arange(inp['gamL']-4)+2:
+            for t in np.arange(inp['theL']-4)+2:
+                G = GRID[p,g,t]
+                V = inp['potCube'][p,g,t]
+                K = inp['kinCube'][p,g,t]
+                # derivatives in phi
+                dG_dp   = (GRID[p+1,g,t]-GRID[p-1,g,t]) / (2 * inp['dphi'])
+                d2G_dp2 = (-GRID[p+2,g,t]+16*GRID[p+1,g,t]-30*GRID[p,g,t]+16*GRID[p-1,g,t]-GRID[p-2,g,t]) / (12 * inp['dphi']**2)
+
+                # derivatives in gam
+                dG_dg   = (GRID[p,g+1,t]-GRID[p,g-1,t]) / (2 * inp['dgam'])
+                d2G_dg2 = (-GRID[p,g+2,t]+16*GRID[p,g+1,t]-30*GRID[p,g,t]+16*GRID[p,g-1,t]-GRID[p,g-2,t]) / (12 * inp['dgam']**2)
+
+                # derivatives in the
+                dG_dt   = (GRID[p,g,t-1]-GRID[p,g,t-1]) / (2 * inp['dthe'])
+                d2G_dt2 = (-GRID[p,g,t+2]+16*GRID[p,g,t+1]-30*GRID[p,g,t]+16*GRID[p,g,t-1]-GRID[p,g,t-2]) / (12 * inp['dthe']**2)
+
+                # cross terms: they're 6
+                d2G_dpg = - (GRID[p+1,g,t]+GRID[p-1,g,t]+GRID[p,g+1,t]+GRID[p,g-1,t]-2*G-GRID[p+1,g+1,t]-GRID[p-1,g-1,t])/(2*inp['dphi']*inp['dgam'])
+                d2G_dpt = - (GRID[p+1,g,t]+GRID[p-1,g,t]+GRID[p,g,t+1]+GRID[p,g,t-1]-2*G-GRID[p+1,g,t+1]-GRID[p-1,g,t-1])/(2*inp['dphi']*inp['dthe'])
+                d2G_dgp = d2G_dpg
+                d2G_dgt = - (GRID[p,g+1,t]+GRID[p,g-1,t]+GRID[p,g,t+1]+GRID[p,g,t-1]-2*G-GRID[p,g+1,t+1]-GRID[p,g-1,t-1])/(2*inp['dgam']*inp['dthe'])
+                d2G_dtp = d2G_dpt
+                d2G_dtg = d2G_dgt
+
+                Tpp = K[0,0] * G + K[0,1] * dG_dp + K[0,2] * d2G_dp2
+                Tpg =              K[1,1] * dG_dp + K[1,2] * d2G_dpg
+                Tpt =              K[2,1] * dG_dp + K[2,2] * d2G_dpt
+                Tgp =              K[3,1] * dG_dg + K[3,2] * d2G_dgp
+                Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
+                Tgt = K[5,0] * G + K[5,1] * dG_dg + K[5,2] * d2G_dgt
+                Ttp =              K[6,1] * dG_dt + K[6,2] * d2G_dtp
+                Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
+                Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
+
+                Ttot = Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt
+
+    return GRID
+
+
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):
     k1 = h * f(t, y, pulse[0], ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot)
     k2 = h * f(t + 0.5 * h, y + 0.5 * k1, pulse[1], ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot)
