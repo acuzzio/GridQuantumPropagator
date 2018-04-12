@@ -37,7 +37,7 @@ def propagate3D(dataDict, inputDict):
     h = inputDict['dt']
     t = 0
     counter  = 0
-    fulltime = 200
+    fulltime = 2
 
 
     # LOG Purposes
@@ -58,11 +58,12 @@ def propagate3D(dataDict, inputDict):
             'kinCube': dataDict['kinCube'],
             }
 
-    printDict(inp)
-
     for ii in range(fulltime):
         print(ii)
         wf = rk4Ene3d(derivative3d,t,wf,inp)
+        norm_wf = np.linalg.norm(wf)
+        print('NORM: {}'.format(norm_wf))
+
 
     print('\n\n\n')
 
@@ -188,21 +189,21 @@ def initialCondition3d(wf,dataDict):
     #mja2g('par3','theta',parabola3)
 
     # graph the parabola
-    mja2dgm = makeJustAnother2DgraphMULTI
-    zero_par_phi = parabola_phi - np.amin(parabola_phi)
-    par_force_phi = force_phi * (phis-phi0)**2
-    toSee_phi = np.stack((wf_phi_line,zero_par_phi,par_force_phi),axis=1)
-    mja2dgm(phis,toSee_phi,'parpot_phi','phi')
+    #mja2dgm = makeJustAnother2DgraphMULTI
+    #zero_par_phi = parabola_phi - np.amin(parabola_phi)
+    #par_force_phi = force_phi * (phis-phi0)**2
+    #toSee_phi = np.stack((wf_phi_line,zero_par_phi,par_force_phi),axis=1)
+    #mja2dgm(phis,toSee_phi,'parpot_phi','phi')
 
-    zero_par_gam = parabola_gam - np.amin(parabola_gam)
-    par_force_gam = force_gam * (gams-gam0)**2
-    toSee_gam = np.stack((wf_gam_line,zero_par_gam,par_force_gam),axis=1)
-    mja2dgm(gams,toSee_gam,'parpot_gam','gam')
+    #zero_par_gam = parabola_gam - np.amin(parabola_gam)
+    #par_force_gam = force_gam * (gams-gam0)**2
+    #toSee_gam = np.stack((wf_gam_line,zero_par_gam,par_force_gam),axis=1)
+    #mja2dgm(gams,toSee_gam,'parpot_gam','gam')
 
-    zero_par_the = parabola_the - np.amin(parabola_the)
-    par_force_the = force_the * (thes-the0)**2
-    toSee_the = np.stack((wf_the_line,zero_par_the,par_force_the),axis=1)
-    mja2dgm(thes,toSee_the,'parpot_the','the')
+    #zero_par_the = parabola_the - np.amin(parabola_the)
+    #par_force_the = force_the * (thes-the0)**2
+    #toSee_the = np.stack((wf_the_line,zero_par_the,par_force_the),axis=1)
+    #mja2dgm(thes,toSee_the,'parpot_the','the')
 
     return(wf)
 

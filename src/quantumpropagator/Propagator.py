@@ -24,13 +24,14 @@ def derivative3d(t,GRID,inp):
     THE PULSE NEEDS TO BE INSIDE HERE BECAUSE IT DEPENDS ON T AND RK calls it 4 times
 
     '''
+    new = np.empty_like(GRID)
     # I want to loop through all point that are 2 points far away from the border.
     # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
     for p in np.arange(inp['phiL']-4)+2:
          for g in np.arange(inp['gamL']-4)+2:
             for t in np.arange(inp['theL']-4)+2:
                 G = GRID[p,g,t]
-                V = inp['potCube'][p,g,t]
+                V = inp['potCube'][p,g,t,0]
                 K = inp['kinCube'][p,g,t]
                 # derivatives in phi
                 dG_dp   = (GRID[p+1,g,t]-GRID[p-1,g,t]) / (2 * inp['dphi'])
@@ -52,7 +53,8 @@ def derivative3d(t,GRID,inp):
                 d2G_dtp = d2G_dpt
                 d2G_dtg = d2G_dgt
 
-                Tpp = K[0,0] * G + K[0,1] * dG_dp + K[0,2] * d2G_dp2
+                # WARNING Tpp
+                Tpp =                               K[0,2] * d2G_dp2
                 Tpg =              K[1,1] * dG_dp + K[1,2] * d2G_dpg
                 Tpt =              K[2,1] * dG_dp + K[2,2] * d2G_dpt
                 Tgp =              K[3,1] * dG_dg + K[3,2] * d2G_dgp
@@ -63,9 +65,17 @@ def derivative3d(t,GRID,inp):
                 Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
 
                 Ttot = Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt
-    con = -1j
+                Vtot = V * G
 
-    return Ttot
+                print()
+                print(K)
+                print('d1: {} {} {}'.format(dG_dp,dG_dg,dG_dt))
+                print('d2: {} {} {}'.format(d2G_dp2,d2G_dg2,d2G_dt2))
+                print('T: {} {} {} {} {} {} {} {} {}'.format(Tpp, Tpg, Tpt, Tgp, Tgg, Tgt, Ttp, Ttg, Ttt))
+                print('({},{},{})    Ttot: {}      Vtot: {}   elem: {}'.format(p,g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+                new[p,g,t] = -1j * (Ttot+Vtot)
+    return new
 
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):
