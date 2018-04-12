@@ -3,7 +3,7 @@
 import numpy as np
 from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_input_to_AU,
          makeJustAnother2Dgraph, warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
-         fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d)
+         fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi)
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -39,7 +39,6 @@ def propagate3D(dataDict, inputDict):
     counter  = 0
     fulltime = 2
 
-
     # LOG Purposes
     counterP = '{:04}'.format(counter)
 
@@ -58,9 +57,23 @@ def propagate3D(dataDict, inputDict):
             'kinCube': dataDict['kinCube'],
             }
 
+    # REDUCE THE PROBLEM IN 1D 1 state
+    # Take equilibrium points
+    gsm_phi_ind = dataDict['phis'].index('P000-000')
+    gsm_gam_ind = dataDict['gams'].index('P016-211')
+    gsm_the_ind = dataDict['thes'].index('P114-719')
+
+    inp['potCube'] = dataDict['potCube'][:,gsm_gam_ind,gsm_the_ind,0]
+    inp['kinCube'] = dataDict['kinCube'][:,gsm_gam_ind,gsm_the_ind]
+    wf             =       groundStateWF[:,gsm_gam_ind,gsm_the_ind]
+    print('shapes: P:{} K:{} W:{} '.format(inp['potCube'].shape,inp['kinCube'].shape,wf.shape))
+
+
     for ii in range(fulltime):
         print(ii)
-        wf = rk4Ene3d(derivative3d,t,wf,inp)
+        # propagation in phi only
+        wf = rk4Ene3d(derivative1dPhi,t,wf,inp)
+        #wf = rk4Ene3d(derivative3d,t,groundStateWF,inp)
         norm_wf = np.linalg.norm(wf)
         print('NORM: {}'.format(norm_wf))
 

@@ -16,6 +16,37 @@ def rk4Ene3d(f, t, y, inp):
     k4 = h * f(t + h, y + k3, inp)
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
+def derivative1dPhi(t,GRID,inp):
+    '''
+    ORA SI BALLA
+    Propagator 1d to have some fun
+    '''
+    new = np.empty_like(GRID)
+    # I want to loop through all point that are 2 points far away from the border.
+    # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
+    for p in np.arange(inp['phiL']-4)+2:
+                G = GRID[p]
+                V = inp['potCube'][p]
+                K = inp['kinCube'][p]
+                # derivatives in phi
+                dG_dp   = (GRID[p+1]-GRID[p-1]) / (2 * inp['dphi'])
+                d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
+                # WARNING Tpp
+                Tpp = K[0,2] * d2G_dp2
+                Ttot = Tpp
+                Vtot = V * G
+
+                print()
+                print('K:\n{}'.format(K))
+                print('G:\n{}'.format(G))
+                print('d1: {}'.format(dG_dp))
+                print('d2: {}'.format(d2G_dp2))
+                print('T: {}'.format(Tpp))
+                print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(p,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+                new[p] = -1j * (Ttot+Vtot)
+    return new
+
 def derivative3d(t,GRID,inp):
     '''
     ORA SI BALLA
