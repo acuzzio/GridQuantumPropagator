@@ -116,4 +116,5 @@ Ene.png
 *.old
 build/
 *.out
+*.png
 

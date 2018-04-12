@@ -62,7 +62,7 @@ def propagate3D(dataDict, inputDict):
 
     for ii in range(fulltime):
         print(ii)
-        #wf = rk4Ene3d(derivative3d,t,wf,inp)
+        wf = rk4Ene3d(derivative3d,t,wf,inp)
 
     print('\n\n\n')
 

@@ -20,11 +20,14 @@ def derivative3d(t,GRID,inp):
     '''
     ORA SI BALLA
     3d propagator using kinetic madness
+
+    THE PULSE NEEDS TO BE INSIDE HERE BECAUSE IT DEPENDS ON T AND RK calls it 4 times
+
     '''
     # I want to loop through all point that are 2 points far away from the border.
     # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
     for p in np.arange(inp['phiL']-4)+2:
-        for g in np.arange(inp['gamL']-4)+2:
+         for g in np.arange(inp['gamL']-4)+2:
             for t in np.arange(inp['theL']-4)+2:
                 G = GRID[p,g,t]
                 V = inp['potCube'][p,g,t]
@@ -60,8 +63,9 @@ def derivative3d(t,GRID,inp):
                 Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
 
                 Ttot = Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt
+    con = -1j
 
-    return GRID
+    return Ttot
 
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):
