@@ -22,29 +22,43 @@ def derivative1dPhi(t,GRID,inp):
     Propagator 1d to have some fun
     '''
     new = np.empty_like(GRID)
-    # I want to loop through all point that are 2 points far away from the border.
-    # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
-    for p in np.arange(inp['phiL']-4)+2:
-                G = GRID[p]
-                V = inp['potCube'][p]
-                K = inp['kinCube'][p]
-                # derivatives in phi
-                dG_dp   = (GRID[p+1]-GRID[p-1]) / (2 * inp['dphi'])
-                d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
-                # WARNING Tpp
-                Tpp = K[0,2] * d2G_dp2
-                Ttot = Tpp
-                Vtot = V * G
+    for p in np.arange(inp['phiL']):
+        G = GRID[p]
+        V = inp['potCube'][p]
+        K = inp['kinCube'][p]
+        # derivatives in phi
+        if p == 0:
+            dG_dp   = (GRID[p+1]) / (2 * inp['dphi'])
+            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]) / (12 * inp['dphi']**2)
+        elif p == 1:
+            dG_dp   = (GRID[p+1]-GRID[p-1]) / (2 * inp['dphi'])
+            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]) / (12 * inp['dphi']**2)
 
-                print()
-                print('K:\n{}'.format(K))
-                print('G:\n{}'.format(G))
-                print('d1: {}'.format(dG_dp))
-                print('d2: {}'.format(d2G_dp2))
-                print('T: {}'.format(Tpp))
-                print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(p,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+        elif p == inp['phiL']-2:
+            dG_dp   = (GRID[p+1]-GRID[p-1]) / (2 * inp['dphi'])
+            d2G_dp2 = (+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
 
-                new[p] = -1j * (Ttot+Vtot)
+        elif p == inp['phiL']-1:
+            dG_dp   = (-GRID[p-1]) / (2 * inp['dphi'])
+            d2G_dp2 = (-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
+
+        else:
+            dG_dp   = (GRID[p+1]-GRID[p-1]) / (2 * inp['dphi'])
+            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
+
+        Tpp = K[0,2] * d2G_dp2
+        Ttot = Tpp
+        Vtot = V * G
+
+        #print()
+        #print('K:\n{}'.format(K))
+        #print('G:\n{}'.format(G))
+        #print('d1: {}'.format(dG_dp))
+        #print('d2: {}'.format(d2G_dp2))
+        #print('T: {}'.format(Tpp))
+        #print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(p,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+        new[p] = -1j * (Ttot+Vtot)
     return new
 
 def derivative3d(t,GRID,inp):
@@ -55,6 +69,9 @@ def derivative3d(t,GRID,inp):
     THE PULSE NEEDS TO BE INSIDE HERE BECAUSE IT DEPENDS ON T AND RK calls it 4 times
 
     '''
+
+    npad = (2,2)
+    GRID = np.pad(GRID, pad_width=npad, mode='constant', constant_values=0)
     new = np.empty_like(GRID)
     # I want to loop through all point that are 2 points far away from the border.
     # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
@@ -98,15 +115,15 @@ def derivative3d(t,GRID,inp):
                 Ttot = Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt
                 Vtot = V * G
 
-                print()
-                print(K)
-                print('d1: {} {} {}'.format(dG_dp,dG_dg,dG_dt))
-                print('d2: {} {} {}'.format(d2G_dp2,d2G_dg2,d2G_dt2))
-                print('T: {} {} {} {} {} {} {} {} {}'.format(Tpp, Tpg, Tpt, Tgp, Tgg, Tgt, Ttp, Ttg, Ttt))
-                print('({},{},{})    Ttot: {}      Vtot: {}   elem: {}'.format(p,g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+                #print()
+                #print(K)
+                #print('d1: {} {} {}'.format(dG_dp,dG_dg,dG_dt))
+                #print('d2: {} {} {}'.format(d2G_dp2,d2G_dg2,d2G_dt2))
+                #print('T: {} {} {} {} {} {} {} {} {}'.format(Tpp, Tpg, Tpt, Tgp, Tgg, Tgt, Ttp, Ttg, Ttt))
+                #print('({},{},{})    Ttot: {}      Vtot: {}   elem: {}'.format(p,g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
                 new[p,g,t] = -1j * (Ttot+Vtot)
-    return new
+    return new[2:-2,2:-2,2:-2]
 
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):

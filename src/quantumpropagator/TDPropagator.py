@@ -1,9 +1,11 @@
 ''' this is the module for the hamiltonian '''
 
 import numpy as np
+import os
 from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_input_to_AU,
          makeJustAnother2Dgraph, warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
-         fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi)
+         fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,good,asyncFun,
+         makeJustAnother2DgraphComplexALLS)
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -21,7 +23,7 @@ def propagate3D(dataDict, inputDict):
 
     # INITIAL WF
     wf = np.zeros((phiL, gamL, theL), dtype=complex)
-    groundStateWF = initialCondition3d(wf,dataDict)
+    wf = initialCondition3d(wf,dataDict)
 
     # Take values array from labels
     phis = labTranformA(dataDict['phis'])
@@ -37,7 +39,9 @@ def propagate3D(dataDict, inputDict):
     h = inputDict['dt']
     t = 0
     counter  = 0
-    fulltime = 2
+    fulltime = 5000
+    deltasGraph = 50
+
 
     # LOG Purposes
     counterP = '{:04}'.format(counter)
@@ -57,25 +61,35 @@ def propagate3D(dataDict, inputDict):
             'kinCube': dataDict['kinCube'],
             }
 
-    # REDUCE THE PROBLEM IN 1D 1 state
-    # Take equilibrium points
-    gsm_phi_ind = dataDict['phis'].index('P000-000')
-    gsm_gam_ind = dataDict['gams'].index('P016-211')
-    gsm_the_ind = dataDict['thes'].index('P114-719')
+    ## REDUCE THE PROBLEM IN 1D 1 state
+    ## Take equilibrium points
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-211')
+    #gsm_the_ind = dataDict['thes'].index('P114-719')
 
-    inp['potCube'] = dataDict['potCube'][:,gsm_gam_ind,gsm_the_ind,0]
-    inp['kinCube'] = dataDict['kinCube'][:,gsm_gam_ind,gsm_the_ind]
-    wf             =       groundStateWF[:,gsm_gam_ind,gsm_the_ind]
-    print('shapes: P:{} K:{} W:{} '.format(inp['potCube'].shape,inp['kinCube'].shape,wf.shape))
+    #zero_pot = dataDict['potCube'] - np.amin(dataDict['potCube'])
+    #inp['potCube'] = zero_pot[:,gsm_gam_ind,gsm_the_ind,0]
+    #inp['kinCube'] = dataDict['kinCube'][:,gsm_gam_ind,gsm_the_ind]
+    #wf             =       groundStateWF[:,gsm_gam_ind,gsm_the_ind]
+    #print('shapes: P:{} K:{} W:{} '.format(inp['potCube'].shape,inp['kinCube'].shape,wf.shape))
+    #norm_wf = np.linalg.norm(wf)
+    #wf = wf / norm_wf
 
-
+    norm_wf = np.linalg.norm(wf)
+    good('starting NORM deviation : {}'.format(1-norm_wf))
+    counter = 0
+    nameRoot = inputDict['outFol']
     for ii in range(fulltime):
-        print(ii)
         # propagation in phi only
-        wf = rk4Ene3d(derivative1dPhi,t,wf,inp)
-        #wf = rk4Ene3d(derivative3d,t,groundStateWF,inp)
+        #wf = rk4Ene3d(derivative1dPhi,t,wf,inp)
+        wf = rk4Ene3d(derivative3d,t,wf,inp)
+        #print('WF: {}'.format(wf))
         norm_wf = np.linalg.norm(wf)
-        print('NORM: {}'.format(norm_wf))
+        good('NORM deviation : {}'.format(1-norm_wf))
+        if (ii % deltasGraph) == 0:
+            name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
+            counter += 1
+            asyncFun(makeJustAnother2DgraphComplexALLS, phis, np.array([wf]), name,"gauss " + '{:8.5f}'.format(t/41.5), xaxisL=[-10,10])
 
 
     print('\n\n\n')

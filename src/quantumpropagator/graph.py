@@ -133,14 +133,14 @@ def makeJustAnother2DgraphComplex(xs,ys,fn,labl,xlimit=None):
 
 
 def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=None):
-    xaxisL = xaxisL or [1,14] # better way to give default values
+    xaxisL = xaxisL or [1,14]
     nstates = yss.shape[0]
     transp = False
     my_dpi = 150
     ratio = (16, 9)
     fig, ax1 = plt.subplots(figsize=ratio)
     ax1.set_xlim(xaxisL)
-    ax1.set_ylim([-0.3,2.3])
+    ax1.set_ylim([-4,4])
     for i in range(nstates):
         thing=yss[i]
         rea = np.real(thing)+(i/2)
