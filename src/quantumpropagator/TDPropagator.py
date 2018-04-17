@@ -3,7 +3,7 @@
 import numpy as np
 import os
 from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_input_to_AU,
-         makeJustAnother2Dgraph, warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
+         warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder,
          makeJustAnother2DgraphComplexALLS)
@@ -17,7 +17,7 @@ def propagate3D(dataDict, inputDict):
     printDictKeys(dataDict)
     printDictKeys(inputDict)
 
-    startState = inputDict['states']
+    #startState = inputDict['states']
     _, _, _, nstates = dataDict['potCube'].shape
     phiL, gamL, theL, natoms, _ = dataDict['geoCUBE'].shape
     print('{} {} {} {} {}'.format(phiL, gamL, theL, nstates, natoms))
@@ -43,9 +43,6 @@ def propagate3D(dataDict, inputDict):
     fulltime = 20
     deltasGraph = 50
 
-
-    # LOG Purposes
-    counterP = '{:04}'.format(counter)
 
     inp = { 'h'      : h,
             'phiL'   : phiL,
@@ -212,16 +209,16 @@ def initialCondition3d(wf,dataDict):
     print('cm-1: {} {} {}'.format(fromHartreetoCmMin1(w_phi),
                                   fromHartreetoCmMin1(w_gam),
                                   fromHartreetoCmMin1(w_the)))
-    wf_phi_line = wf[:,gsm_gam_ind,gsm_the_ind]
-    wf_gam_line = wf[gsm_phi_ind,:,gsm_the_ind]
-    wf_the_line = wf[gsm_phi_ind,gsm_gam_ind,:]
+    #wf_phi_line = wf[:,gsm_gam_ind,gsm_the_ind]
+    #wf_gam_line = wf[gsm_phi_ind,:,gsm_the_ind]
+    #wf_the_line = wf[gsm_phi_ind,gsm_gam_ind,:]
 
     #mja2gc = makeJustAnother2DgraphComplex
     #mja2gc(phis,wf_phi_line,'gau_phi','phi')
     #mja2gc(gams,wf_gam_line,'gau_gam','gam')
     #mja2gc(thes,wf_the_line,'gau_the','the')
 
-    ##graph these parabolas 
+    ##graph these parabolas
     #mja2g = makeJustAnother2Dgraph
     #mja2g('par1','phi',parabola1)
     #mja2g('par2','gamma',parabola2)

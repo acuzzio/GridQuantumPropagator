@@ -68,7 +68,7 @@ def makeJustAnother2DgraphMULTI(xs,yss,fn,labl,lw=None):
     my_dpi    = 150
     ratio     = (16, 9)
     _, ax1  = plt.subplots(figsize=ratio)
-    (dime,nstates) = yss.shape
+    (_,nstates) = yss.shape
     for ind in np.arange(nstates):
         labThis = labl + " " + str(ind)
         plt.plot(xs, yss[:,ind],linewidth=lw,label=labThis)
@@ -106,7 +106,7 @@ def grapPulse(totaltime, dt, Ed, omega, sigma, phi, t0, fn):
     transp = False
     my_dpi = 150
     ratio = (16, 9)
-    fig, ax1 = plt.subplots(figsize=ratio)
+    _ , ax1 = plt.subplots(figsize=ratio)
     ax1.set_ylabel('E A.U. (Hartree)')
     ax1.set_xlabel('Time A.U.')
     plt.plot(timesArray, gaus, linewidth=2.0, label="Envelope")

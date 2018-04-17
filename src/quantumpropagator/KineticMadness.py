@@ -1,6 +1,6 @@
 ''' This module precompute along a 3x3 grid the Jacobian to use in the podolsky form of the Kinetic energy operator'''
 
-from numpy import (dot,cos,sin,sqrt,array,stack,deg2rad)
+from numpy import (dot,cos,sin,sqrt,array,deg2rad)
 #from numpy import (dot,cos,sin,sqrt,sum,array,stack,deg2rad)
 #from numpy.linalg import norm
 
@@ -137,7 +137,7 @@ def calc_g_G(phi,gam,the):
     Tpp0 = 0
 
     # first order derivative coefficients -> the cross terms 3/8 + 1/8 adds up to 1/2! So even if in the latex formulas they appear in two
-    #                                        different term, we pack them togheter in this calculation, so the Ttot matrix is still 3x9!! 
+    # different term, we pack them togheter in this calculation, so the Ttot matrix is still 3x9!
     Tgg1 = - (hb * dgGggs)/(2 * det_g) + (    hb * G_gg * dgdet_g)/(2 * det_g**2)
     Ttt1 = - (hb * dtGtts)/(2 * det_g) + (    hb * G_tt * dtdet_g)/(2 * det_g**2)
     Tgt1 = - (hb * dgGgts)/(2 * det_g) + (    hb * G_gt * dgdet_g)/(2 * det_g**2)
@@ -159,7 +159,7 @@ def calc_g_G(phi,gam,the):
     Tpt2 = - (hb * G_pt)/(2 * det_g)
     Tpp2 = - (hb * G_pp)/(2 * det_g)
 
-    # until here the order is the same as the Latex document (from hard gg to easy pp). 
+    # until here the order is the same as the Latex document (from hard gg to easy pp).
     # But here we need to reorder as it is in the main matrix
     Ttot = array([[Tpp0,Tpp1,Tpp2],
                   [Tpg0,Tpg1,Tpg2],
