@@ -4,7 +4,8 @@ import numpy as np
 import os
 from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_input_to_AU,
          makeJustAnother2Dgraph, warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
-         fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,good,asyncFun,
+         fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
+         good, asyncFun, derivative1dGam, create_enumerated_folder,
          makeJustAnother2DgraphComplexALLS)
 
 def propagate3D(dataDict, inputDict):
@@ -39,7 +40,7 @@ def propagate3D(dataDict, inputDict):
     h = inputDict['dt']
     t = 0
     counter  = 0
-    fulltime = 5000
+    fulltime = 20
     deltasGraph = 50
 
 
@@ -75,13 +76,24 @@ def propagate3D(dataDict, inputDict):
     #norm_wf = np.linalg.norm(wf)
     #wf = wf / norm_wf
 
+    inp['potCube'] = dataDict['potCube'] - np.amin(dataDict['potCube'])
     norm_wf = np.linalg.norm(wf)
     good('starting NORM deviation : {}'.format(1-norm_wf))
+
     counter = 0
+
     nameRoot = inputDict['outFol']
+    folder = create_enumerated_folder(nameRoot)
+    inputDict['outFol'] = folder
+
     for ii in range(fulltime):
         # propagation in phi only
         #wf = rk4Ene3d(derivative1dPhi,t,wf,inp)
+
+        # propagation in gam only
+        #wf = rk4Ene3d(derivative1dGam,t,wf,inp)
+
+        # propagation in 3d
         wf = rk4Ene3d(derivative3d,t,wf,inp)
         #print('WF: {}'.format(wf))
         norm_wf = np.linalg.norm(wf)
@@ -89,7 +101,7 @@ def propagate3D(dataDict, inputDict):
         if (ii % deltasGraph) == 0:
             name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
             counter += 1
-            asyncFun(makeJustAnother2DgraphComplexALLS, phis, np.array([wf]), name,"gauss " + '{:8.5f}'.format(t/41.5), xaxisL=[-10,10])
+            #asyncFun(makeJustAnother2DgraphComplexALLS, phis, np.array([wf]), name,"gauss " + '{:8.5f}'.format(t/41.5), xaxisL=[-10,10])
 
 
     print('\n\n\n')
@@ -241,4 +253,6 @@ if __name__ == "__main__":
     inputDict = bring_input_to_AU(loadInputYAML(fn1))
     dataDict = np.load(fn2) # this is a numpy wrapper, for this we use [()]
     propagate3D(dataDict[()], inputDict)
+
+
 

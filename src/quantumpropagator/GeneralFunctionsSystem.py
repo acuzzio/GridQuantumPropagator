@@ -16,6 +16,21 @@ def cd(newdir):
     finally:
         os.chdir(prevdir)
 
+def create_enumerated_folder(fn):
+    '''
+    this will create an incrementing folder.
+    '''
+    cont = 0
+    while True:
+        folder_path = '{}_{:04}'.format(fn,cont)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            break
+        else:
+            cont += 1
+
+    return folder_path
+
 def ensure_dir_Secure(folder_path):
     '''
     if the folder in folder_path does not exists it creates one

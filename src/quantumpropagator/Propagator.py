@@ -16,6 +16,13 @@ def rk4Ene3d(f, t, y, inp):
     k4 = h * f(t + h, y + k3, inp)
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
+def derivative1dGam(t,GRID,inp):
+    '''
+    Propagator 1d on Gamma
+    '''
+    new = np.empty_like(GRID)
+    return(new)
+
 def derivative1dPhi(t,GRID,inp):
     '''
     ORA SI BALLA
@@ -79,8 +86,8 @@ def derivative3d(t,GRID,inp):
          for g in np.arange(inp['gamL']-4)+2:
             for t in np.arange(inp['theL']-4)+2:
                 G = GRID[p,g,t]
-                V = inp['potCube'][p,g,t,0]
-                K = inp['kinCube'][p,g,t]
+                V = inp['potCube'][p-2,g-2,t-2,0] # when we use PAD everything is shifted
+                K = inp['kinCube'][p-2,g-2,t-2] # when we use PAD everything is shifted
                 # derivatives in phi
                 dG_dp   = (GRID[p+1,g,t]-GRID[p-1,g,t]) / (2 * inp['dphi'])
                 d2G_dp2 = (-GRID[p+2,g,t]+16*GRID[p+1,g,t]-30*GRID[p,g,t]+16*GRID[p-1,g,t]-GRID[p-2,g,t]) / (12 * inp['dphi']**2)
@@ -101,7 +108,7 @@ def derivative3d(t,GRID,inp):
                 d2G_dtp = d2G_dpt
                 d2G_dtg = d2G_dgt
 
-                # WARNING Tpp
+                # T elements
                 Tpp =                               K[0,2] * d2G_dp2
                 Tpg =              K[1,1] * dG_dp + K[1,2] * d2G_dpg
                 Tpt =              K[2,1] * dG_dp + K[2,2] * d2G_dpt
@@ -123,7 +130,7 @@ def derivative3d(t,GRID,inp):
                 #print('({},{},{})    Ttot: {}      Vtot: {}   elem: {}'.format(p,g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
                 new[p,g,t] = -1j * (Ttot+Vtot)
-    return new[2:-2,2:-2,2:-2]
+    return new[2:-2, 2:-2, 2:-2]
 
 
 def rk4Ene1dSLOW(f, t, y, h, pulse, ene, dipo, NAC, Gele, nstates,gridN,kaxisR,reducedMass,absorbPot):

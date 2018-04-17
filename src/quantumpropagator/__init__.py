@@ -16,7 +16,7 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                stringTransformation3d, loadInputYAML,
                                createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
                                bring_input_to_AU, printDictKeys, printProgressBar)
-from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir)
+from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir, create_enumerated_folder)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,
                     makeJustAnother2DgraphComplexALLS, makeJustAnother2DgraphComplexSINGLE,
@@ -40,7 +40,7 @@ from .molcas import (launchSPfromGeom, writeRassiLiHInput, LiHxyz, WaterXyz,
 from .Propagator import (rk4Ene1dSLOW, rk4Ene3d, derivative3d, derivative1d, HamiltonianEle1d,
                          NuclearKinetic1d, doubleDeronK, singleDerOnK,
                          createXaxisReciprocalspace1d, divideByTwo, calculateTotal,
-                         rk6Ene1dSLOW, EULER1d,derivative1dPhi)
+                         rk6Ene1dSLOW, EULER1d,derivative1dPhi, derivative1dGam)
 from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, component,
                       envel, pulse)
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
