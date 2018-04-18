@@ -6,7 +6,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder,
-         makeJustAnother2DgraphComplexALLS)
+         makeJustAnother2DgraphComplexALLS, derivative2dGamThe, writeH5file)
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -36,15 +36,8 @@ def propagate3D(dataDict, inputDict):
     dgam = gams[0] - gams[1]
     dthe = thes[0] - thes[1]
 
-    # INITIAL DYNAMICS VALUES
-    h = inputDict['dt']
-    t = 0
-    counter  = 0
-    fulltime = 20
-    deltasGraph = 50
 
-
-    inp = { 'h'      : h,
+    inp = { 'h'      : inputDict['dt'],
             'phiL'   : phiL,
             'gamL'   : gamL,
             'theL'   : theL,
@@ -73,15 +66,33 @@ def propagate3D(dataDict, inputDict):
     #norm_wf = np.linalg.norm(wf)
     #wf = wf / norm_wf
 
+
     inp['potCube'] = dataDict['potCube'] - np.amin(dataDict['potCube'])
     norm_wf = np.linalg.norm(wf)
     good('starting NORM deviation : {}'.format(1-norm_wf))
 
     counter = 0
 
-    nameRoot = inputDict['outFol']
-    folder = create_enumerated_folder(nameRoot)
-    inputDict['outFol'] = folder
+    nameRoot = create_enumerated_folder(inputDict['outFol'])
+    inputDict['outFol'] = nameRoot
+
+    ## REDUCE THE PROBLEM IN 2d THE GAM
+    ## Take equilibrium points
+    gsm_phi_ind = dataDict['phis'].index('P000-000')
+    gsm_gam_ind = dataDict['gams'].index('P016-211')
+    gsm_the_ind = dataDict['thes'].index('P114-719')
+
+    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
+    inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
+    wf =                         wf[gsm_phi_ind,:,:]
+
+
+    # INITIAL DYNAMICS VALUES
+    h = inp['h']
+    t = 0
+    counter  = 0
+    fulltime = 2000
+    deltasGraph = 20
 
     for ii in range(fulltime):
         # propagation in phi only
@@ -90,17 +101,25 @@ def propagate3D(dataDict, inputDict):
         # propagation in gam only
         #wf = rk4Ene3d(derivative1dGam,t,wf,inp)
 
+        # propagation in Gam The
+        wf = rk4Ene3d(derivative2dGamThe,t,wf,inp)
+
         # propagation in 3d
-        wf = rk4Ene3d(derivative3d,t,wf,inp)
+        #wf = rk4Ene3d(derivative3d,t,wf,inp)
         #print('WF: {}'.format(wf))
+
+        t     = t + h
         norm_wf = np.linalg.norm(wf)
         good('NORM deviation : {}'.format(1-norm_wf))
+
         if (ii % deltasGraph) == 0:
             name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
             counter += 1
-            #asyncFun(makeJustAnother2DgraphComplexALLS, phis, np.array([wf]), name,"gauss " + '{:8.5f}'.format(t/41.5), xaxisL=[-10,10])
+            h5name = name + ".h5"
+            asyncFun(writeH5file,h5name,[("WF", wf),("Time", [t/41.5,t])])
+            #writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
 
-
+    good('{} {}'.format(gsm_gam_ind,gsm_the_ind))
     print('\n\n\n')
 
 def forcehere(vec,ind,h=None):

@@ -7,7 +7,7 @@ import os
 from argparse import ArgumentParser
 from collections import namedtuple
 from quantumpropagator import (fromFsToAu,
-        ensure_dir,printDict,stringTransformation3d,retrieve_hdf5_data,
+        printDict,stringTransformation3d,retrieve_hdf5_data,
         loadInputYAML, readDirectionFile, err, good, propagate3D, bring_input_to_AU,
         printProgressBar)
 
@@ -94,7 +94,6 @@ def main():
         # create subfolder with yml file name
         filename, file_extension = os.path.splitext(fn)
         projfolder = os.path.join(inputAU['outFol'],filename)
-        ensure_dir(projfolder)
         inputAU['outFol'] = projfolder
         print('\nNEW 3D PROPAGATION')
         # is there a data file?
