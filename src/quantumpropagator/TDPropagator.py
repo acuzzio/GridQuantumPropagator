@@ -6,7 +6,8 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder,
-         makeJustAnother2DgraphComplexALLS, derivative2dGamThe, writeH5file)
+         makeJustAnother2DgraphComplexALLS, derivative2dGamThe, derivative2dGamThe2,
+         writeH5file)
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -91,8 +92,8 @@ def propagate3D(dataDict, inputDict):
     h = inp['h']
     t = 0
     counter  = 0
-    fulltime = 2000
-    deltasGraph = 20
+    fulltime = 20000
+    deltasGraph = 50
 
     for ii in range(fulltime):
         # propagation in phi only
@@ -102,7 +103,7 @@ def propagate3D(dataDict, inputDict):
         #wf = rk4Ene3d(derivative1dGam,t,wf,inp)
 
         # propagation in Gam The
-        wf = rk4Ene3d(derivative2dGamThe,t,wf,inp)
+        wf = rk4Ene3d(derivative2dGamThe2,t,wf,inp)
 
         # propagation in 3d
         #wf = rk4Ene3d(derivative3d,t,wf,inp)
@@ -117,7 +118,6 @@ def propagate3D(dataDict, inputDict):
             counter += 1
             h5name = name + ".h5"
             asyncFun(writeH5file,h5name,[("WF", wf),("Time", [t/41.5,t])])
-            #writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
 
     good('{} {}'.format(gsm_gam_ind,gsm_the_ind))
     print('\n\n\n')

@@ -36,6 +36,7 @@ def derivative1dPhi(t,GRID,inp):
         # derivatives in phi
         if p == 0:
             d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]) / (12 * inp['dphi']**2)
+
         elif p == 1:
             d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]) / (12 * inp['dphi']**2)
 
@@ -84,7 +85,7 @@ def derivative2dGamThe(t,GRID,inp):
            d2G_dg2 = (-GRID[g+2,t]+16*GRID[g+1,t]-30*GRID[g,t]+16*GRID[g-1,t]-GRID[g-2,t]) / (12 * inp['dgam']**2)
 
            # derivatives in the
-           dG_dt   = (GRID[g,t-1]-GRID[g,t-1]) / (2 * inp['dthe'])
+           dG_dt   = (GRID[g,t+1]-GRID[g,t-1]) / (2 * inp['dthe'])
            d2G_dt2 = (-GRID[g,t+2]+16*GRID[g,t+1]-30*GRID[g,t]+16*GRID[g,t-1]-GRID[g,t-2]) / (12 * inp['dthe']**2)
 
            # cross terms: they're 2?
@@ -111,6 +112,108 @@ def derivative2dGamThe(t,GRID,inp):
 
            new[g,t] = -1j * (Ttot+Vtot)
     return new[2:-2, 2:-2]
+
+def derivative2dGamThe2(t,GRID,inp):
+    '''
+    derivative done for a 2d Grid on the angles
+    '''
+
+    new = np.empty_like(GRID)
+    for g in np.arange(inp['gamL']):
+       for t in np.arange(inp['theL']):
+           G = GRID[g,t]
+           V = inp['potCube'][g,t,0]
+           K = inp['kinCube'][g,t]
+
+           # derivatives in gam
+           if g == 0:
+               dG_dg   = (GRID[g+1,t]) / (2 * inp['dgam'])
+               d2G_dg2 = (-GRID[g+2,t]+16*GRID[g+1,t]-30*GRID[g,t]) / (12 * inp['dgam']**2)
+               d2G_dgt_numerator_g = -GRID[g+1,t]
+
+           elif g == 1:
+               dG_dg   = (GRID[g+1,t]-GRID[g-1,t]) / (2 * inp['dgam'])
+               d2G_dg2 = (-GRID[g+2,t]+16*GRID[g+1,t]-30*GRID[g,t]+16*GRID[g-1,t]) / (12 * inp['dgam']**2)
+               d2G_dgt_numerator_g = -GRID[g+1,t] -GRID[g-1,t]
+
+           elif g == inp['gamL']-2:
+               dG_dg   = (GRID[g+1,t]-GRID[g-1,t]) / (2 * inp['dgam'])
+               d2G_dg2 = (+16*GRID[g+1,t]-30*GRID[g,t]+16*GRID[g-1,t]-GRID[g-2,t]) / (12 * inp['dgam']**2)
+               d2G_dgt_numerator_g = -GRID[g+1,t] -GRID[g-1,t]
+
+           elif g == inp['gamL']-1:
+               dG_dg   = (-GRID[g-1,t]) / (2 * inp['dgam'])
+               d2G_dg2 = (-30*GRID[g,t]+16*GRID[g-1,t]-GRID[g-2,t]) / (12 * inp['dgam']**2)
+               d2G_dgt_numerator_g = -GRID[g-1,t]
+
+           else:
+               dG_dg   = (GRID[g+1,t]-GRID[g-1,t]) / (2 * inp['dgam'])
+               d2G_dg2 = (-GRID[g+2,t]+16*GRID[g+1,t]-30*GRID[g,t]+16*GRID[g-1,t]-GRID[g-2,t]) / (12 * inp['dgam']**2)
+               d2G_dgt_numerator_g = -GRID[g+1,t] -GRID[g-1,t]
+
+           # derivatives in the
+           if t == 0:
+               dG_dt   = (GRID[g,t+1]) / (2 * inp['dthe'])
+               d2G_dt2 = (-GRID[g,t+2]+16*GRID[g,t+1]-30*GRID[g,t]) / (12 * inp['dthe']**2)
+               d2G_dgt_numerator_t = -GRID[g,t+1]
+
+           elif t == 1:
+               dG_dt   = (GRID[g,t+1]-GRID[g,t-1]) / (2 * inp['dthe'])
+               d2G_dt2 = (-GRID[g,t+2]+16*GRID[g,t+1]-30*GRID[g,t]+16*GRID[g,t-1]) / (12 * inp['dthe']**2)
+               d2G_dgt_numerator_t = -GRID[g,t+1] -GRID[g,t-1]
+
+           elif t == inp['theL']-2:
+               dG_dt   = (GRID[g,t+1]-GRID[g,t-1]) / (2 * inp['dthe'])
+               d2G_dt2 = (+16*GRID[g,t+1]-30*GRID[g,t]+16*GRID[g,t-1]-GRID[g,t-2]) / (12 * inp['dthe']**2)
+               d2G_dgt_numerator_t = -GRID[g,t+1] -GRID[g,t-1]
+
+           elif t == inp['theL']-1:
+               dG_dt   = (-GRID[g,t-1]) / (2 * inp['dthe'])
+               d2G_dt2 = (-30*GRID[g,t]+16*GRID[g,t-1]-GRID[g,t-2]) / (12 * inp['dthe']**2)
+               d2G_dgt_numerator_t = -GRID[g,t-1]
+
+           else:
+               dG_dt   = (GRID[g,t+1]-GRID[g,t-1]) / (2 * inp['dthe'])
+               d2G_dt2 = (-GRID[g,t+2]+16*GRID[g,t+1]-30*GRID[g,t]+16*GRID[g,t-1]-GRID[g,t-2]) / (12 * inp['dthe']**2)
+               d2G_dgt_numerator_t = -GRID[g,t+1] -GRID[g,t-1]
+
+
+           # cross terms: they're 2?
+           if g == 0 or t == 0:
+               d2G_dgt_numerator_cross_1 = 0
+           else:
+               d2G_dgt_numerator_cross_1 = +GRID[g-1,t-1]
+
+           if g == inp['gamL']-1 or t == inp['theL']-1:
+               d2G_dgt_numerator_cross_2 = 0
+           else:
+               d2G_dgt_numerator_cross_2 = +GRID[g+1,t+1]
+
+
+           d2G_dgt_numerator = d2G_dgt_numerator_g + d2G_dgt_numerator_t + d2G_dgt_numerator_cross_1 + d2G_dgt_numerator_cross_2 + 2*G
+           d2G_dgt = d2G_dgt_numerator/(2*inp['dgam']*inp['dthe'])
+           d2G_dtg = d2G_dgt
+
+           # T elements
+           Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
+           Tgt = K[5,0] * G + K[5,1] * dG_dg + K[5,2] * d2G_dgt
+           Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
+           Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
+
+           Ttot = Tgg + Tgt + Ttg + Ttt
+           Vtot = V * G
+
+           prr = False
+           if prr == True:
+               print()
+               print(K)
+               print('d1: {} {}'.format(dG_dg,dG_dt))
+               print('d2: {} {}'.format(d2G_dg2,d2G_dt2))
+               print('T: {} {} {} {}'.format(Tgg, Tgt, Ttg, Ttt))
+               print('({},{})    Ttot: {}      Vtot: {}   elem: {}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+           new[g,t] = -1j * (Ttot+Vtot)
+    return new
 
 def derivative3d(t,GRID,inp):
     '''
@@ -141,7 +244,7 @@ def derivative3d(t,GRID,inp):
                 d2G_dg2 = (-GRID[p,g+2,t]+16*GRID[p,g+1,t]-30*GRID[p,g,t]+16*GRID[p,g-1,t]-GRID[p,g-2,t]) / (12 * inp['dgam']**2)
 
                 # derivatives in the
-                dG_dt   = (GRID[p,g,t-1]-GRID[p,g,t-1]) / (2 * inp['dthe'])
+                dG_dt   = (GRID[p,g,t+1]-GRID[p,g,t-1]) / (2 * inp['dthe'])
                 d2G_dt2 = (-GRID[p,g,t+2]+16*GRID[p,g,t+1]-30*GRID[p,g,t]+16*GRID[p,g,t-1]-GRID[p,g,t-2]) / (12 * inp['dthe']**2)
 
                 # cross terms: they're 6
