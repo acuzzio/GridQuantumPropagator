@@ -5,7 +5,7 @@ import os
 from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_input_to_AU,
          warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
-         good, asyncFun, derivative1dGam, create_enumerated_folder,
+         good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, derivative2dGamThe2,
          writeH5file)
 
@@ -25,7 +25,7 @@ def propagate3D(dataDict, inputDict):
 
     # INITIAL WF
     wf = np.zeros((phiL, gamL, theL), dtype=complex)
-    wf = initialCondition3d(wf,dataDict)
+    wf = initialCondition3d(wf,dataDict,5000)
 
     # Take values array from labels
     phis = labTranformA(dataDict['phis'])
@@ -92,8 +92,8 @@ def propagate3D(dataDict, inputDict):
     h = inp['h']
     t = 0
     counter  = 0
-    fulltime = 20000
-    deltasGraph = 50
+    fulltime = 2
+    deltasGraph = 1
 
     for ii in range(fulltime):
         # propagation in phi only
@@ -110,16 +110,17 @@ def propagate3D(dataDict, inputDict):
         #print('WF: {}'.format(wf))
 
         t     = t + h
-        norm_wf = np.linalg.norm(wf)
-        good('NORM deviation : {}'.format(1-norm_wf))
 
         if (ii % deltasGraph) == 0:
             name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
             counter += 1
             h5name = name + ".h5"
             asyncFun(writeH5file,h5name,[("WF", wf),("Time", [t/41.5,t])])
+            deri = derivative2dGamThe2(t,wf,inp)
+            tot = np.real(np.vdot(deri,wf))
+            norm_wf = np.linalg.norm(wf)
+            print('NORM deviation : {:7.5f}    Total energy: {:7.5e}'.format(1-norm_wf,tot))
 
-    good('{} {}'.format(gsm_gam_ind,gsm_the_ind))
     print('\n\n\n')
 
 def forcehere(vec,ind,h=None):
@@ -136,7 +137,7 @@ def forcehere(vec,ind,h=None):
     return(num/denom)
 
 
-def initialCondition3d(wf,dataDict):
+def initialCondition3d(wf,dataDict,factor=None):
     '''
     calculates the initial condition WV
     wf :: np.array(phiL,gamL,theL)  Complex
@@ -187,7 +188,7 @@ def initialCondition3d(wf,dataDict):
     G_the = 1 / ( -2 * coe_the )
 
     # factor is just to wide the gaussian a little bit leave it to one.
-    factor = 1
+    factor = factor or 1
     if factor != 1:
         warning('You have a factor of {} enabled on initial condition'.format(factor))
     G_phi = G_phi/factor
@@ -228,6 +229,10 @@ def initialCondition3d(wf,dataDict):
     print('cm-1: {} {} {}'.format(fromHartreetoCmMin1(w_phi),
                                   fromHartreetoCmMin1(w_gam),
                                   fromHartreetoCmMin1(w_the)))
+    print('fs: {} {} {}'.format(fromCmMin1toFs(w_phi),
+                                fromCmMin1toFs(w_gam),
+                                fromCmMin1toFs(w_the)))
+
     #wf_phi_line = wf[:,gsm_gam_ind,gsm_the_ind]
     #wf_gam_line = wf[gsm_phi_ind,:,gsm_the_ind]
     #wf_the_line = wf[gsm_phi_ind,gsm_gam_ind,:]

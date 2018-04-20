@@ -261,6 +261,9 @@ def fromHartreetoCmMin1(n):
     ''' from hartree to cm-1 conversion - n :: Double '''
     return (n/4.5563e-06)
 
+def fromCmMin1toFs(n):
+    ''' from hartree to cm-1 conversion - n :: Double '''
+    return((n/4.5563e-06)*33356.41)
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 # https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/

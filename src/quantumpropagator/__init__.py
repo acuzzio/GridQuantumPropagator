@@ -15,7 +15,7 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                printMatrix2D, readGeometry, labTranform, labTranformA,
                                stringTransformation3d, loadInputYAML,
                                createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
-                               bring_input_to_AU, printDictKeys, printProgressBar)
+                               bring_input_to_AU, printDictKeys, printProgressBar, fromCmMin1toFs)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir, create_enumerated_folder)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,

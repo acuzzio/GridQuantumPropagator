@@ -67,6 +67,8 @@ def derivative1dPhi(t,GRID,inp):
 def derivative2dGamThe(t,GRID,inp):
     '''
     derivative done for a 2d Grid on the angles
+
+    THIS IS THE PAD VERSION AND IT IS ACTUALLY A LITTLE WRONG...
     '''
 
     npad = (2,2)
@@ -203,7 +205,7 @@ def derivative2dGamThe2(t,GRID,inp):
            Ttot = Tgg + Tgt + Ttg + Ttt
            Vtot = V * G
 
-           prr = False
+           prr = True
            if prr == True:
                print()
                print(K)
