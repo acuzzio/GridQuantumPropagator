@@ -90,6 +90,7 @@ def propagate3D(dataDict, inputDict):
     # take a wf from file (and not from initial condition)
     warning('we are taking initial wf from file')
     wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/Gaussian0001.h5'
+    print(wffn)
     wf_not_norm = retrieve_hdf5_data(wffn,'WF')
     wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
@@ -102,6 +103,11 @@ def propagate3D(dataDict, inputDict):
     deltasGraph = inputDict['deltasGraph']
     print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL, nstates, natoms))
     print('I will do {} steps.'.format(fulltimeSteps))
+    outputFile = os.path.join(nameRoot, 'output')
+
+    header = '  step N   |      fs   |      NORM     | Total Energy'
+    bar = ('-' * (len(header)))
+    print('{}\n{}\n{}'.format(bar,header,bar))
 
     for ii in range(fulltimeSteps):
         # propagation in phi only
@@ -119,6 +125,7 @@ def propagate3D(dataDict, inputDict):
 
         t     = t + h
 
+
         if (ii % deltasGraph) == 0:
             name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
             counter += 1
@@ -128,7 +135,11 @@ def propagate3D(dataDict, inputDict):
             tot = derivative2dGamThe(t,wf,inp) * 1j
             total = np.vdot(wf,tot)
             norm_wf = np.linalg.norm(wf)
-            print('{} {:.2f} -> NORM deviation : {:+e}    Total energy: {:+7.5e}'.format(ii,t/41,3,1-norm_wf,total.real))
+            outputStringS = '{:10d} |{:10.2f} | {:+e} | {:+7.5e}'
+            outputString = outputStringS.format(ii,t/41.3,1-norm_wf,total.real)
+            print(outputString)
+            with open(outputFile, "a") as oof:
+                oof.write(outputString + '\n')
 
     print('\n\n\n')
 
