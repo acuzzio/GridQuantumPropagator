@@ -43,7 +43,8 @@ outFol : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results
 # propagation details in fs.
 dt : 0.01
 states : 8
-fullTime : 5
+fullTime : 200
+deltasGraph : 20
 
 # PULSE SPECIFICATIONS
 # E :: intensities

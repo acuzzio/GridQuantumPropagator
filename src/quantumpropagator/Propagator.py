@@ -63,64 +63,14 @@ def derivative1dPhi(t,GRID,inp):
         new[p] = -1j * (Ttot+Vtot)
     return new
 
-
 def derivative2dGamThe(t,GRID,inp):
     '''
     derivative done for a 2d Grid on the angles
-
-    THIS IS THE PAD VERSION AND IT IS ACTUALLY A LITTLE WRONG...
-    '''
-
-    npad = (2,2)
-    GRID = np.pad(GRID, pad_width=npad, mode='constant', constant_values=0)
-    new = np.empty_like(GRID)
-    # I want to loop through all point that are 2 points far away from the border.
-    # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
-    for g in np.arange(inp['gamL']-4)+2:
-       for t in np.arange(inp['theL']-4)+2:
-           G = GRID[g,t]
-           V = inp['potCube'][g-2,t-2,0] # when we use PAD everything is shifted
-           K = inp['kinCube'][g-2,t-2] # when we use PAD everything is shifted
-
-           # derivatives in gam
-           dG_dg   = (GRID[g+1,t]-GRID[g-1,t]) / (2 * inp['dgam'])
-           d2G_dg2 = (-GRID[g+2,t]+16*GRID[g+1,t]-30*GRID[g,t]+16*GRID[g-1,t]-GRID[g-2,t]) / (12 * inp['dgam']**2)
-
-           # derivatives in the
-           dG_dt   = (GRID[g,t+1]-GRID[g,t-1]) / (2 * inp['dthe'])
-           d2G_dt2 = (-GRID[g,t+2]+16*GRID[g,t+1]-30*GRID[g,t]+16*GRID[g,t-1]-GRID[g,t-2]) / (12 * inp['dthe']**2)
-
-           # cross terms: they're 2?
-           d2G_dgt = - (GRID[g+1,t]+GRID[g-1,t]+GRID[g,t+1]+GRID[g,t-1]-2*G-GRID[g+1,t+1]-GRID[g-1,t-1])/(2*inp['dgam']*inp['dthe'])
-           d2G_dtg = d2G_dgt
-
-           # T elements
-           Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
-           Tgt = K[5,0] * G + K[5,1] * dG_dg + K[5,2] * d2G_dgt
-           Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
-           Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
-
-           Ttot = Tgg + Tgt + Ttg + Ttt
-           Vtot = V * G
-
-           prr = False
-           if prr == True:
-               print()
-               print(K)
-               print('d1: {} {}'.format(dG_dg,dG_dt))
-               print('d2: {} {}'.format(d2G_dg2,d2G_dt2))
-               print('T: {} {} {} {}'.format(Tgg, Tgt, Ttg, Ttt))
-               print('({},{})    Ttot: {}      Vtot: {}   elem: {}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
-
-           new[g,t] = -1j * (Ttot+Vtot)
-    return new[2:-2, 2:-2]
-
-def derivative2dGamThe2(t,GRID,inp):
-    '''
-    derivative done for a 2d Grid on the angles
     '''
 
     new = np.empty_like(GRID)
+    kintotSum = 0
+    pottotSum = 0
     for g in np.arange(inp['gamL']):
        for t in np.arange(inp['theL']):
            G = GRID[g,t]
@@ -204,17 +154,20 @@ def derivative2dGamThe2(t,GRID,inp):
 
            Ttot = Tgg + Tgt + Ttg + Ttt
            Vtot = V * G
+           kintotSum += Ttot
+           pottotSum += Vtot
 
-           prr = True
+           prr = False
            if prr == True:
                print()
                print(K)
-               print('d1: {} {}'.format(dG_dg,dG_dt))
-               print('d2: {} {}'.format(d2G_dg2,d2G_dt2))
-               print('T: {} {} {} {}'.format(Tgg, Tgt, Ttg, Ttt))
-               print('({},{})    Ttot: {}      Vtot: {}   elem: {}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+               print('d1: {:e} {:e}'.format(dG_dg,dG_dt))
+               print('d2: {:e} {:e}'.format(d2G_dg2,d2G_dt2))
+               print('T: {:e} {:e} {:e} {:e}'.format(Tgg, Tgt, Ttg, Ttt))
+               print('({},{})    Ttot: {:.2f}      Vtot: {:.2f}   elem: {:.2f}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
            new[g,t] = -1j * (Ttot+Vtot)
+    #print('Sum on the grid -> Kin {:e} {:+e} i ###  Pot {:e} {:+e} i'.format(kintotSum.real,kintotSum.imag, pottotSum.real, pottotSum.imag))
     return new
 
 def derivative3d(t,GRID,inp):
@@ -474,3 +427,54 @@ def HamiltonianEle(Ici,Icj,matV,matMu,pulseV):
     secondterm = np.dot(pulseV,muij)
     return iH0j - secondterm
 
+#def derivative2dGamThe(t,GRID,inp):
+#    '''
+#    derivative done for a 2d Grid on the angles
+#
+#    THIS IS THE PAD VERSION AND IT IS ACTUALLY A LITTLE WRONG...
+#    '''
+#
+#    npad = (2,2)
+#    GRID = np.pad(GRID, pad_width=npad, mode='constant', constant_values=0)
+#    new = np.empty_like(GRID)
+#    # I want to loop through all point that are 2 points far away from the border.
+#    # np.arange(10-4)+2 -> [2, 3, 4, 5, 6, 7]
+#    for g in np.arange(inp['gamL']-4)+2:
+#       for t in np.arange(inp['theL']-4)+2:
+#           G = GRID[g,t]
+#           V = inp['potCube'][g-2,t-2,0] # when we use PAD everything is shifted
+#           K = inp['kinCube'][g-2,t-2] # when we use PAD everything is shifted
+#
+#           # derivatives in gam
+#           dG_dg   = (GRID[g+1,t]-GRID[g-1,t]) / (2 * inp['dgam'])
+#           d2G_dg2 = (-GRID[g+2,t]+16*GRID[g+1,t]-30*GRID[g,t]+16*GRID[g-1,t]-GRID[g-2,t]) / (12 * inp['dgam']**2)
+#
+#           # derivatives in the
+#           dG_dt   = (GRID[g,t+1]-GRID[g,t-1]) / (2 * inp['dthe'])
+#           d2G_dt2 = (-GRID[g,t+2]+16*GRID[g,t+1]-30*GRID[g,t]+16*GRID[g,t-1]-GRID[g,t-2]) / (12 * inp['dthe']**2)
+#
+#           # cross terms: they're 2?
+#           d2G_dgt = - (GRID[g+1,t]+GRID[g-1,t]+GRID[g,t+1]+GRID[g,t-1]-2*G-GRID[g+1,t+1]-GRID[g-1,t-1])/(2*inp['dgam']*inp['dthe'])
+#           d2G_dtg = d2G_dgt
+#
+#           # T elements
+#           Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
+#           Tgt = K[5,0] * G + K[5,1] * dG_dg + K[5,2] * d2G_dgt
+#           Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
+#           Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
+#
+#           Ttot = Tgg + Tgt + Ttg + Ttt
+#           Vtot = V * G
+#
+#           prr = False
+#           if prr == True:
+#               print()
+#               print(K)
+#               print('d1: {} {}'.format(dG_dg,dG_dt))
+#               print('d2: {} {}'.format(d2G_dg2,d2G_dt2))
+#               print('T: {} {} {} {}'.format(Tgg, Tgt, Ttg, Ttt))
+#               print('({},{})    Ttot: {}      Vtot: {}   elem: {}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+#
+#           new[g,t] = -1j * (Ttot+Vtot)
+#    return new[2:-2, 2:-2]
+#

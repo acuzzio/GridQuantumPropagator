@@ -6,7 +6,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
-         makeJustAnother2DgraphComplexALLS, derivative2dGamThe, derivative2dGamThe2,
+         makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file)
 
 def propagate3D(dataDict, inputDict):
@@ -21,7 +21,6 @@ def propagate3D(dataDict, inputDict):
     #startState = inputDict['states']
     _, _, _, nstates = dataDict['potCube'].shape
     phiL, gamL, theL, natoms, _ = dataDict['geoCUBE'].shape
-    print('{} {} {} {} {}'.format(phiL, gamL, theL, nstates, natoms))
 
     # INITIAL WF
     wf = np.zeros((phiL, gamL, theL), dtype=complex)
@@ -38,19 +37,20 @@ def propagate3D(dataDict, inputDict):
     dthe = thes[0] - thes[1]
 
 
-    inp = { 'h'      : inputDict['dt'],
-            'phiL'   : phiL,
-            'gamL'   : gamL,
-            'theL'   : theL,
-            'natoms' : natoms,
-            'phis'   : phis,
-            'gams'   : gams,
-            'thes'   : thes,
-            'dphi'   : dphi,
-            'dgam'   : dgam,
-            'dthe'   : dthe,
-            'potCube': dataDict['potCube'],
-            'kinCube': dataDict['kinCube'],
+    inp = { 'h'        : inputDict['dt'],
+            'fullTime' : inputDict['fullTime'],
+            'phiL'     : phiL,
+            'gamL'     : gamL,
+            'theL'     : theL,
+            'natoms'   : natoms,
+            'phis'     : phis,
+            'gams'     : gams,
+            'thes'     : thes,
+            'dphi'     : dphi,
+            'dgam'     : dgam,
+            'dthe'     : dthe,
+            'potCube'  : dataDict['potCube'],
+            'kinCube'  : dataDict['kinCube'],
             }
 
     ## REDUCE THE PROBLEM IN 1D 1 state
@@ -87,15 +87,23 @@ def propagate3D(dataDict, inputDict):
     inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
     wf =                         wf[gsm_phi_ind,:,:]
 
+    # take a wf from file (and not from initial condition)
+    warning('we are taking initial wf from file')
+    wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/Gaussian0001.h5'
+    wf_not_norm = retrieve_hdf5_data(wffn,'WF')
+    wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
     # INITIAL DYNAMICS VALUES
     h = inp['h']
     t = 0
     counter  = 0
-    fulltime = 2
-    deltasGraph = 1
+    fulltime = inp['fullTime']
+    fulltimeSteps = int(fulltime/h)
+    deltasGraph = inputDict['deltasGraph']
+    print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL, nstates, natoms))
+    print('I will do {} steps.'.format(fulltimeSteps))
 
-    for ii in range(fulltime):
+    for ii in range(fulltimeSteps):
         # propagation in phi only
         #wf = rk4Ene3d(derivative1dPhi,t,wf,inp)
 
@@ -103,7 +111,7 @@ def propagate3D(dataDict, inputDict):
         #wf = rk4Ene3d(derivative1dGam,t,wf,inp)
 
         # propagation in Gam The
-        wf = rk4Ene3d(derivative2dGamThe2,t,wf,inp)
+        wf = rk4Ene3d(derivative2dGamThe,t,wf,inp)
 
         # propagation in 3d
         #wf = rk4Ene3d(derivative3d,t,wf,inp)
@@ -116,10 +124,11 @@ def propagate3D(dataDict, inputDict):
             counter += 1
             h5name = name + ".h5"
             asyncFun(writeH5file,h5name,[("WF", wf),("Time", [t/41.5,t])])
-            deri = derivative2dGamThe2(t,wf,inp)
-            tot = np.real(np.vdot(deri,wf))
+            #print('Here I calculate total energy:')
+            tot = derivative2dGamThe(t,wf,inp) * 1j
+            total = np.vdot(wf,tot)
             norm_wf = np.linalg.norm(wf)
-            print('NORM deviation : {:7.5f}    Total energy: {:7.5e}'.format(1-norm_wf,tot))
+            print('{} {:.2f} -> NORM deviation : {:+e}    Total energy: {:+7.5e}'.format(ii,t/41,3,1-norm_wf,total.real))
 
     print('\n\n\n')
 
@@ -143,6 +152,7 @@ def initialCondition3d(wf,dataDict,factor=None):
     wf :: np.array(phiL,gamL,theL)  Complex
     datadict :: Dictionary {}
     '''
+    good('Initial condition printing')
 
     # Take equilibrium points
     gsm_phi_ind = dataDict['phis'].index('P000-000')
@@ -159,7 +169,6 @@ def initialCondition3d(wf,dataDict,factor=None):
     dgam = gams[0] - gams[1]
     dthe = thes[0] - thes[1]
 
-    print('{} {} {}'.format(dphi,dgam,dthe))
 
     # slice out the parabolas at equilibrium geometry
     pot = dataDict['potCube']
@@ -171,8 +180,6 @@ def initialCondition3d(wf,dataDict,factor=None):
     force_phi = forcehere(parabola_phi, gsm_phi_ind, h=dphi)
     force_gam = forcehere(parabola_gam, gsm_gam_ind, h=dgam)
     force_the = forcehere(parabola_the, gsm_the_ind, h=dthe)
-
-    print('{} {} {}'.format(force_phi,force_gam,force_the))
 
     # Now, I want the coefficients of the second derivative of the kinetic energy jacobian
     # for the equilibrium geometry, so that I can calculate the gaussian.
@@ -218,18 +225,19 @@ def initialCondition3d(wf,dataDict,factor=None):
                 wf[p,g,t] = phiV * gamV * theV
 
     norm_wf = np.linalg.norm(wf)
-    print('NORM: {}'.format(norm_wf))
+    print('NORM before normalization: {:e}'.format(norm_wf))
+    print('Steps: phi({:.3f}) gam({:.3f}) the({:.3f})'.format(dphi,dgam,dthe))
     wf = wf / norm_wf
     print(wf.shape)
-    print('\n\nk: {} {} {}'.format(force_phi,force_gam,force_the))
-    print('coe: {} {} {}'.format(coe_phi,coe_gam,coe_the))
-    print('G: {} {} {}'.format(G_phi,G_gam,G_the))
-    print('Gw: {} {} {}'.format(Gw_phi,Gw_gam,Gw_the))
-    print('w: {} {} {}'.format(w_phi,w_gam,w_the))
-    print('cm-1: {} {} {}'.format(fromHartreetoCmMin1(w_phi),
+    print('\n\nparabola force constant: {:e} {:e} {:e}'.format(force_phi,force_gam,force_the))
+    print('values on Jacobian 2nd derivative: {:e} {:e} {:e}'.format(coe_phi,coe_gam,coe_the))
+    print('G: {:e} {:e} {:e}'.format(G_phi,G_gam,G_the))
+    print('Gw: {:e} {:e} {:e}'.format(Gw_phi,Gw_gam,Gw_the))
+    print('w: {:e} {:e} {:e}'.format(w_phi,w_gam,w_the))
+    print('cm-1: {:e} {:e} {:e}'.format(fromHartreetoCmMin1(w_phi),
                                   fromHartreetoCmMin1(w_gam),
                                   fromHartreetoCmMin1(w_the)))
-    print('fs: {} {} {}'.format(fromCmMin1toFs(w_phi),
+    print('fs: {:e} {:e} {:e}'.format(fromCmMin1toFs(w_phi),
                                 fromCmMin1toFs(w_gam),
                                 fromCmMin1toFs(w_the)))
 
