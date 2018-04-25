@@ -25,6 +25,7 @@ def Cderivative2dGamThe(t,GRID,inp):
 cdef extern from "complex.h":
         double complex cexp(double complex)
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
@@ -39,7 +40,9 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
         double complex dG_dg, d2G_dg2, d2G_dgt_numerator_g, d2G_dgt_numerator_t, dG_dt, d2G_dt2
         double complex d2G_dgt_numerator_cross_1, d2G_dgt_numerator_cross_2, d2G_dgt_numerator, G
         double complex d2G_dgt, d2G_dtg, Tgg,Tgt,Ttg,Ttt,Ttot,Vtot
-        double [:,:] V,K,new
+        double [:,:] V,K
+        double complex [:,:] new
+        double complex I = -1j
 
     new = np.empty_like(GRID)
     #kintotSum = 0
@@ -140,6 +143,6 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
            #    print('T: {:e} {:e} {:e} {:e}'.format(Tgg, Tgt, Ttg, Ttt))
            #    print('({},{})    Ttot: {:.2f}      Vtot: {:.2f}   elem: {:.2f}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
-           new[g,t] = -1j * (Ttot+Vtot)
+           new[g,t] = I * (Ttot+Vtot)
     #print('Sum on the grid -> Kin {:e} {:+e} i ###  Pot {:e} {:+e} i'.format(kintotSum.real,kintotSum.imag, pottotSum.real, pottotSum.imag))
     return new
