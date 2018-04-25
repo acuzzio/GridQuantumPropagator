@@ -117,4 +117,5 @@ Ene.png
 build/
 *.out
 *.png
+*.html
 

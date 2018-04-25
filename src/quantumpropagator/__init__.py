@@ -48,3 +48,4 @@ from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
 from .KineticMadness import calc_g_G
 from .TDPropagator import propagate3D
+from .CPropagator import (Cderivative2dGamThe)

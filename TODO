@@ -1,2 +1,5 @@
- 0) Track the C in case og Abs potential along the simulation
- 1) IL PULSE DEVE CAMBIARE DENTRO IL RUNGE KUTTA !!
+1) interpolate grid
+2) expand grid
+3) total angular momentum
+4) go for multistate
+5) go 3d

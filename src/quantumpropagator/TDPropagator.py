@@ -8,6 +8,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file)
+from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -102,44 +103,40 @@ def propagate3D(dataDict, inputDict):
     fulltimeSteps = int(fulltime/h)
     deltasGraph = inputDict['deltasGraph']
     print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL, nstates, natoms))
-    print('I will do {} steps.'.format(fulltimeSteps))
+    print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
 
-    header = '  step N   |      fs   |      NORM     | Total Energy'
+    header = '  step N   |      fs   |      NORM     | Total Energy | Tot deviation'
     bar = ('-' * (len(header)))
     print('{}\n{}\n{}'.format(bar,header,bar))
 
     for ii in range(fulltimeSteps):
-        # propagation in phi only
-        #wf = rk4Ene3d(derivative1dPhi,t,wf,inp)
-
-        # propagation in gam only
-        #wf = rk4Ene3d(derivative1dGam,t,wf,inp)
+        dPsiDt = Cderivative2dGamThe
 
         # propagation in Gam The
-        wf = rk4Ene3d(derivative2dGamThe,t,wf,inp)
-
-        # propagation in 3d
-        #wf = rk4Ene3d(derivative3d,t,wf,inp)
-        #print('WF: {}'.format(wf))
-
-        t     = t + h
 
 
-        if (ii % deltasGraph) == 0:
+        if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
             counter += 1
             h5name = name + ".h5"
             asyncFun(writeH5file,h5name,[("WF", wf),("Time", [t/41.5,t])])
             #print('Here I calculate total energy:')
-            tot = derivative2dGamThe(t,wf,inp) * 1j
+            tot = dPsiDt(t,wf,inp) * 1j
             total = np.vdot(wf,tot)
+            if ii == 0:
+                initialTotal = total.real
             norm_wf = np.linalg.norm(wf)
-            outputStringS = '{:10d} |{:10.2f} | {:+e} | {:+7.5e}'
-            outputString = outputStringS.format(ii,t/41.3,1-norm_wf,total.real)
+            outputStringS = '{:10d} |{:10.4f} | {:+e} | {:+7.5e} | {:+7.5e}'
+            outputString = outputStringS.format(ii,t/41.3,1-norm_wf,total.real,initialTotal - total.real)
             print(outputString)
             with open(outputFile, "a") as oof:
-                oof.write(outputString + '\n')
+                outputStringS2 = '{} {} {} {} {}'
+                outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,total.real,initialTotal - total.real)
+                oof.write(outputString2 + '\n')
+
+        wf = rk4Ene3d(dPsiDt,t,wf,inp)
+        t  = t + h
 
     print('\n\n\n')
 

@@ -3,7 +3,7 @@ My setup !
 '''
 
 from setuptools import setup
-
+from Cython.Build import cythonize
 
 setup(
     name='quantumpropagator',
@@ -31,6 +31,7 @@ setup(
      'Scripts/generateGeomsAroundConical.py',
      'Scripts/ThreeDPropagator.py',
      'Scripts/PostProcessing3dData.py'],
-    install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib', 'pyyaml'],
-    extras_require={'test': ['nose', 'coverage']}
+    install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib', 'pyyaml','cython'],
+    extras_require={'test': ['nose', 'coverage']},
+    ext_modules=cythonize('src/quantumpropagator/CPropagator.pyx')
 )
