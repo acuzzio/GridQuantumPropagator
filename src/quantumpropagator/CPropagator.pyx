@@ -38,7 +38,8 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
         double dgam = inp['dgam'], dthe = inp['dthe']
         double complex dG_dg, d2G_dg2, d2G_dgt_numerator_g, d2G_dgt_numerator_t, dG_dt, d2G_dt2
         double complex d2G_dgt_numerator_cross_1, d2G_dgt_numerator_cross_2, d2G_dgt_numerator, G
-        double complex d2G_dgt, d2G_dtg
+        double complex d2G_dgt, d2G_dtg, Tgg,Tgt,Ttg,Ttt,Ttot,Vtot
+        double [:,:] V,K,new
 
     new = np.empty_like(GRID)
     #kintotSum = 0
@@ -125,7 +126,8 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
            Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
 
            Ttot = Tgg + Tgt + Ttg + Ttt
-           Vtot = V * G
+           ## RIGUARDARE QUESTO PLEASE
+           Vtot = V[g,t] * G
            #kintotSum += Ttot
            #pottotSum += Vtot
 
