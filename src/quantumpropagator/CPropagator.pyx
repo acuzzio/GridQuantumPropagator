@@ -1,6 +1,8 @@
 import numpy as np
-import quantumpropagator.EMPulse as pp
+cimport numpy as np
+#import quantumpropagator.EMPulse as pp
 cimport cython
+
 #import pyximport; pyximport.install()
 
 def Crk4Ene3d(f, t, y, inp):
@@ -20,7 +22,7 @@ def Crk4Ene3d(f, t, y, inp):
 
 def Cderivative2dGamThe(t,GRID,inp):
     '''wrapper'''
-    return Cderivative2dGamTheC(t,GRID,inp)
+    return np.asarray(Cderivative2dGamTheC(t,GRID,inp))
 
 cdef extern from "complex.h":
         double complex cexp(double complex)
@@ -36,11 +38,11 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
 
     cdef:
         int g,t,gamL=inp['gamL'],theL=inp['theL']
-        double dgam = inp['dgam'], dthe = inp['dthe']
+        double dgam = inp['dgam'], dthe = inp['dthe'], V
         double complex dG_dg, d2G_dg2, d2G_dgt_numerator_g, d2G_dgt_numerator_t, dG_dt, d2G_dt2
         double complex d2G_dgt_numerator_cross_1, d2G_dgt_numerator_cross_2, d2G_dgt_numerator, G
         double complex d2G_dgt, d2G_dtg, Tgg,Tgt,Ttg,Ttt,Ttot,Vtot
-        double [:,:] V,K
+        double [:,:] K
         double complex [:,:] new
         double complex I = -1j
 
@@ -129,8 +131,7 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
            Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
 
            Ttot = Tgg + Tgt + Ttg + Ttt
-           ## RIGUARDARE QUESTO PLEASE
-           Vtot = V[g,t] * G
+           Vtot = V * G
            #kintotSum += Ttot
            #pottotSum += Vtot
 
