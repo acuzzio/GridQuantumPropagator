@@ -4,6 +4,7 @@ My setup !
 
 from setuptools import setup
 from Cython.Build import cythonize
+import numpy
 
 setup(
     name='quantumpropagator',
@@ -33,5 +34,5 @@ setup(
      'Scripts/PostProcessing3dData.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib', 'pyyaml','cython'],
     extras_require={'test': ['nose', 'coverage']},
-    ext_modules=cythonize('src/quantumpropagator/CPropagator.pyx',include_dirs=[numpy.get_include()])
+    ext_modules=cythonize('src/quantumpropagator/CPropagator.pyx')
 )
