@@ -43,6 +43,8 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
         double complex d2G_dgt_numerator_cross_1, d2G_dgt_numerator_cross_2, d2G_dgt_numerator, G
         double complex d2G_dgt, d2G_dtg, Tgg,Tgt,Ttg,Ttt,Ttot,Vtot
         double [:,:] K
+        double [:,:,:] Vm = inp['potCube']
+        double [:,:,:,:] Km = inp['kinCube']
         double complex [:,:] new
         double complex I = -1j
 
@@ -52,8 +54,8 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
     for g in range(gamL):
        for t in range(theL):
            G = GRID[g,t]
-           V = inp['potCube'][g,t,0]
-           K = inp['kinCube'][g,t]
+           V = Vm[g,t,0]
+           K = Km[g,t]
 
            # derivatives in gam
            if g == 0:
