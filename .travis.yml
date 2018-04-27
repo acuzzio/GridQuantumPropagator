@@ -23,6 +23,8 @@ install:
   - source activate quantumpropagator
 
   # Install quantumpropagator package
+  - locate core
+  - export CFLAGS="-I /usr/local/lib/python2.7/dist-packages/numpy/core/include $CFLAGS"
   - python setup.py develop
     #  - pip install .
   

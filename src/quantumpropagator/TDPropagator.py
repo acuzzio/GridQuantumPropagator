@@ -24,8 +24,9 @@ def propagate3D(dataDict, inputDict):
     phiL, gamL, theL, natoms, _ = dataDict['geoCUBE'].shape
 
     # INITIAL WF
+    factor = 500
     wf = np.zeros((phiL, gamL, theL), dtype=complex)
-    wf = initialCondition3d(wf,dataDict,5000)
+    wf = initialCondition3d(wf,dataDict,factor)
 
     # Take values array from labels
     phis = labTranformA(dataDict['phis'])
@@ -89,11 +90,14 @@ def propagate3D(dataDict, inputDict):
     wf =                         wf[gsm_phi_ind,:,:]
 
     # take a wf from file (and not from initial condition)
-    warning('we are taking initial wf from file')
-    wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/Gaussian0001.h5'
-    print(wffn)
-    wf_not_norm = retrieve_hdf5_data(wffn,'WF')
-    wf = wf_not_norm/np.linalg.norm(wf_not_norm)
+    externalFile = True
+    if externalFile:
+        warning('we are taking initial wf from file')
+        wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/GaussianMoved.h5'
+        #wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/Gaussian0001.h5'
+        print(wffn)
+        wf_not_norm = retrieve_hdf5_data(wffn,'WF')
+        wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
     # INITIAL DYNAMICS VALUES
     h = inp['h']
@@ -218,9 +222,16 @@ def initialCondition3d(wf,dataDict,factor=None):
     w_gam = np.sqrt(force_gam/G_gam)
     w_the = np.sqrt(force_the/G_the)
 
-    phi0 = phis[gsm_phi_ind]
-    gam0 = gams[gsm_gam_ind]
-    the0 = thes[gsm_the_ind]
+    # displacements from equilibrium geometry
+    displPhi = 0
+    displGam = -5
+    displThe = 9
+    if displPhi != 0 or displGam != 0 or displThe != 0:
+       warning('Some displacements activated | Phi {} | Gam {} | The {}'.format(displPhi,displGam,displThe))
+
+    phi0 = phis[gsm_phi_ind + displPhi]
+    gam0 = gams[gsm_gam_ind + displGam]
+    the0 = thes[gsm_the_ind + displThe]
 
     for p, phi in enumerate(phis):
         phiV = gaussian2(phi, phi0, Gw_phi)
