@@ -7,7 +7,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
-         writeH5file)
+         writeH5file, writeH5fileDict)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def propagate3D(dataDict, inputDict):
@@ -109,6 +109,10 @@ def propagate3D(dataDict, inputDict):
     print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL, nstates, natoms))
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
+
+    # saving input data in h5 file
+    dataH5filename = os.path.join(nameRoot, 'allInput.h5')
+    writeH5fileDict(dataH5filename,inp)
 
     header = '  step N   |      fs   |      NORM     | Total Energy | Tot deviation'
     bar = ('-' * (len(header)))
