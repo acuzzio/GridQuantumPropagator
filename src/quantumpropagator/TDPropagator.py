@@ -24,7 +24,7 @@ def propagate3D(dataDict, inputDict):
     phiL, gamL, theL, natoms, _ = dataDict['geoCUBE'].shape
 
     # INITIAL WF
-    factor = 500
+    factor = 2000
     wf = np.zeros((phiL, gamL, theL), dtype=complex)
     wf = initialCondition3d(wf,dataDict,factor)
 
@@ -86,16 +86,19 @@ def propagate3D(dataDict, inputDict):
     gsm_the_ind = dataDict['thes'].index('P114-719')
 
     inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
+    #zero the potCube
+    inp['potCube'] = np.zeros_like(inp['potCube'])
+    warning('no ptential')
     inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
     wf =                         wf[gsm_phi_ind,:,:]
 
     # take a wf from file (and not from initial condition)
-    externalFile = True
-    if externalFile:
+    if 'initialFile' in inputDict:
         warning('we are taking initial wf from file')
-        wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/GaussianMoved.h5'
+        wffn = inputDict['initialFile']
+        #wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/GaussianMoved.h5'
         #wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/Gaussian0001.h5'
-        print(wffn)
+        print('File -> {}'.format(wffn))
         wf_not_norm = retrieve_hdf5_data(wffn,'WF')
         wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
@@ -114,36 +117,35 @@ def propagate3D(dataDict, inputDict):
     dataH5filename = os.path.join(nameRoot, 'allInput.h5')
     writeH5fileDict(dataH5filename,inp)
 
-    header = '  step N   |      fs   |      NORM     | Total Energy | Tot deviation'
+    header = '  step N   |      fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |'
     bar = ('-' * (len(header)))
     print('{}\n{}\n{}'.format(bar,header,bar))
 
     for ii in range(fulltimeSteps):
-        dPsiDt = Cderivative2dGamThe
-
-        # propagation in Gam The
-
+        dPsiDt = derivative2dGamThe
+        CdPsiDt = Cderivative2dGamThe
 
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
             counter += 1
             h5name = name + ".h5"
-            asyncFun(writeH5file,h5name,[("WF", wf),("Time", [t/41.5,t])])
-            #print('Here I calculate total energy:')
-            tot = dPsiDt(t,wf,inp) * 1j
-            total = np.vdot(wf,tot)
+            writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
+            kin, pot = dPsiDt(t,wf,inp,printZ=True)
+            kinetic = np.vdot(wf,kin)
+            potential = np.vdot(wf,pot)
+            total = kinetic + potential
             if ii == 0:
                 initialTotal = total.real
             norm_wf = np.linalg.norm(wf)
-            outputStringS = '{:10d} |{:10.4f} | {:+e} | {:+7.5e} | {:+7.5e}'
-            outputString = outputStringS.format(ii,t/41.3,1-norm_wf,total.real,initialTotal - total.real)
+            outputStringS = '{:10d} |{:10.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e}'
+            outputString = outputStringS.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
             print(outputString)
             with open(outputFile, "a") as oof:
-                outputStringS2 = '{} {} {} {} {}'
-                outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,total.real,initialTotal - total.real)
+                outputStringS2 = '{} {} {} {} {} {} {}'
+                outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
                 oof.write(outputString2 + '\n')
 
-        wf = rk4Ene3d(dPsiDt,t,wf,inp)
+        wf = rk4Ene3d(CdPsiDt,t,wf,inp)
         t  = t + h
 
     print('\n\n\n')
@@ -228,8 +230,8 @@ def initialCondition3d(wf,dataDict,factor=None):
 
     # displacements from equilibrium geometry
     displPhi = 0
-    displGam = -5
-    displThe = 9
+    displGam = -3
+    displThe = 10
     if displPhi != 0 or displGam != 0 or displThe != 0:
        warning('Some displacements activated | Phi {} | Gam {} | The {}'.format(displPhi,displGam,displThe))
 

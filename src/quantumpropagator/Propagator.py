@@ -1,5 +1,4 @@
 import numpy as np
-import quantumpropagator.EMPulse as pp
 
 def rk4Ene3d(f, t, y, inp):
     '''
@@ -63,14 +62,17 @@ def derivative1dPhi(t,GRID,inp):
         new[p] = -1j * (Ttot+Vtot)
     return new
 
-def derivative2dGamThe(t,GRID,inp):
+def derivative2dGamThe(t,GRID,inp,printZ=None):
     '''
     derivative done for a 2d Grid on the angles
     '''
+    printZ = printZ or False
+    if printZ:
+        kinS = np.empty_like(GRID)
+        potS = np.empty_like(GRID)
+    else:
+        new = np.empty_like(GRID)
 
-    new = np.empty_like(GRID)
-    kintotSum = 0
-    pottotSum = 0
     for g in np.arange(inp['gamL']):
        for t in np.arange(inp['theL']):
            G = GRID[g,t]
@@ -152,10 +154,8 @@ def derivative2dGamThe(t,GRID,inp):
            Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
            Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
 
-           Ttot = Tgg + Tgt + Ttg + Ttt
+           Ttot = (Tgg + Tgt + Ttg + Ttt)*10000
            Vtot = V * G
-           kintotSum += Ttot
-           pottotSum += Vtot
 
            prr = False
            if prr == True:
@@ -166,9 +166,15 @@ def derivative2dGamThe(t,GRID,inp):
                print('T: {:e} {:e} {:e} {:e}'.format(Tgg, Tgt, Ttg, Ttt))
                print('({},{})    Ttot: {:.2f}      Vtot: {:.2f}   elem: {:.2f}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
-           new[g,t] = -1j * (Ttot+Vtot)
-    #print('Sum on the grid -> Kin {:e} {:+e} i ###  Pot {:e} {:+e} i'.format(kintotSum.real,kintotSum.imag, pottotSum.real, pottotSum.imag))
-    return new
+           if printZ:
+               kinS[g,t] = Ttot
+               potS[g,t] = Vtot
+           else:
+               new[g,t] = -1j * (Ttot+Vtot)
+    if printZ:
+        return(kinS,potS)
+    else:
+        return(new)
 
 def derivative3d(t,GRID,inp):
     '''
@@ -229,7 +235,7 @@ def derivative3d(t,GRID,inp):
                 #print('d1: {} {} {}'.format(dG_dp,dG_dg,dG_dt))
                 #print('d2: {} {} {}'.format(d2G_dp2,d2G_dg2,d2G_dt2))
                 #print('T: {} {} {} {} {} {} {} {} {}'.format(Tpp, Tpg, Tpt, Tgp, Tgg, Tgt, Ttp, Ttg, Ttt))
-                #print('({},{},{})    Ttot: {}      Vtot: {}   elem: {}'.format(p,g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+                print('({},{},{})    Ttot: {}      Vtot: {}   elem: {}'.format(p,g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
                 new[p,g,t] = -1j * (Ttot+Vtot)
     return new[2:-2, 2:-2, 2:-2]

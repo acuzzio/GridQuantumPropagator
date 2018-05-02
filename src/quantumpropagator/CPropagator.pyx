@@ -131,8 +131,12 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
            Tgt = K[5,0] * G + K[5,1] * dG_dg + K[5,2] * d2G_dgt
            Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
            Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
+           #Tgg =  K[4,2] * d2G_dg2
+           #Tgt =  K[5,2] * d2G_dgt
+           #Ttg =  K[7,2] * d2G_dtg
+           #Ttt =  K[8,2] * d2G_dt2
 
-           Ttot = Tgg + Tgt + Ttg + Ttt
+           Ttot = (Tgg + Tgt + Ttg + Ttt)
            Vtot = V * G
            #kintotSum += Ttot
            #pottotSum += Vtot
