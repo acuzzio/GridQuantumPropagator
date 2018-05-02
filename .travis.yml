@@ -24,6 +24,7 @@ install:
 
   # Install quantumpropagator package
   - python -c 'import numpy as np; np.get_include()'  
+  - python -c 'import numpy.core; print(numpy.core.__file__)'
   - pip install .
   
 script:
