@@ -96,8 +96,6 @@ def propagate3D(dataDict, inputDict):
     if 'initialFile' in inputDict:
         warning('we are taking initial wf from file')
         wffn = inputDict['initialFile']
-        #wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/GaussianMoved.h5'
-        #wffn = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/Gaussian0001.h5'
         print('File -> {}'.format(wffn))
         wf_not_norm = retrieve_hdf5_data(wffn,'WF')
         wf = wf_not_norm/np.linalg.norm(wf_not_norm)
@@ -121,34 +119,44 @@ def propagate3D(dataDict, inputDict):
     bar = ('-' * (len(header)))
     print('{}\n{}\n{}'.format(bar,header,bar))
 
-    for ii in range(fulltimeSteps):
-        dPsiDt = derivative2dGamThe
-        CdPsiDt = Cderivative2dGamThe
+    dPsiDt = derivative2dGamThe
+    CdPsiDt = Cderivative2dGamThe
+    # calculating initial total/potential/kinetic
+    kin, pot = derivative2dGamThe(t,wf,inp,printZ=True)
+    kinetic = np.vdot(wf,kin)
+    potential = np.vdot(wf,pot)
+    initialTotal = kinetic + potential
+    inp['initialTotal'] = initialTotal.real
 
+    for ii in range(fulltimeSteps):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
-            name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
+            #  async is awesome
+            #doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile)
+            asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile)
             counter += 1
-            h5name = name + ".h5"
-            writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
-            kin, pot = dPsiDt(t,wf,inp,printZ=True)
-            kinetic = np.vdot(wf,kin)
-            potential = np.vdot(wf,pot)
-            total = kinetic + potential
-            if ii == 0:
-                initialTotal = total.real
-            norm_wf = np.linalg.norm(wf)
-            outputStringS = '{:10d} |{:10.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e}'
-            outputString = outputStringS.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
-            print(outputString)
-            with open(outputFile, "a") as oof:
-                outputStringS2 = '{} {} {} {} {} {} {}'
-                outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
-                oof.write(outputString2 + '\n')
 
         wf = rk4Ene3d(CdPsiDt,t,wf,inp)
         t  = t + h
 
-    print('\n\n\n')
+
+def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile):
+    nameRoot = inputDict['outFol']
+    name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
+    h5name = name + ".h5"
+    writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
+    kin, pot = derivative2dGamThe(t,wf,inp,printZ=True)
+    kinetic = np.vdot(wf,kin)
+    potential = np.vdot(wf,pot)
+    total = kinetic + potential
+    initialTotal = inp['initialTotal']
+    norm_wf = np.linalg.norm(wf)
+    outputStringS = '{:10d} |{:10.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e}'
+    outputString = outputStringS.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
+    print(outputString)
+    with open(outputFile, "a") as oof:
+        outputStringS2 = '{} {} {} {} {} {} {}'
+        outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
+        oof.write(outputString2 + '\n')
 
 def forcehere(vec,ind,h=None):
     '''

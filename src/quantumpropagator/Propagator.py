@@ -154,7 +154,7 @@ def derivative2dGamThe(t,GRID,inp,printZ=None):
            Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
            Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
 
-           Ttot = (Tgg + Tgt + Ttg + Ttt)*10000
+           Ttot = (Tgg + Tgt + Ttg + Ttt)
            Vtot = V * G
 
            prr = False
