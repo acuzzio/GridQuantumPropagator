@@ -7,7 +7,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
-         writeH5file, writeH5fileDict)
+         writeH5file, writeH5fileDict, heatMap2dWavefunction)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def propagate3D(dataDict, inputDict):
@@ -85,12 +85,22 @@ def propagate3D(dataDict, inputDict):
     gsm_gam_ind = dataDict['gams'].index('P016-211')
     gsm_the_ind = dataDict['thes'].index('P114-719')
 
+    # slice the grid
     inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
-    #zero the potCube
-    inp['potCube'] = np.zeros_like(inp['potCube'])
-    warning('no ptential')
     inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
     wf =                         wf[gsm_phi_ind,:,:]
+
+    # zero the potCube
+    eneIf = False
+    if eneIf:
+        inp['potCube'] = np.zeros_like(inp['potCube'])
+        warning('no potential used')
+
+    # constant the kinCube
+    kinK = False
+    if kinK:
+        inp['kinCube'] = np.ones_like(inp['kinCube'])/10000
+        warning('no kinCube used, just ones')
 
     # take a wf from file (and not from initial condition)
     if 'initialFile' in inputDict:
@@ -157,6 +167,9 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile):
         outputStringS2 = '{} {} {} {} {} {} {}'
         outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
         oof.write(outputString2 + '\n')
+    if 'graphs' in inputDict:
+        graphFileName = name + ".png"
+        heatMap2dWavefunction(wf,graphFileName,t)
 
 def forcehere(vec,ind,h=None):
     '''

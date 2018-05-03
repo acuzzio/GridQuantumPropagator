@@ -24,7 +24,7 @@ from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makePulseSinglePointGraph, createHeatMapfromH5, createSingleHeatmap,
                     createCoherenceHeatMapfromH5, ccmu, createHistogram,
                     makeMultiLineDipoleGraph, makeJustAnother2DgraphMULTI,
-                    mathematicaListGenerator, gnuSplotCircle)
+                    mathematicaListGenerator, gnuSplotCircle, heatMap2dWavefunction)
 from .GridIntegrator import (grid1DIntegrationAstrid)
 from .h5Reader import (retrieve_hdf5_keys, retrieve_hdf5_data, readAllhdf51D,
                        writeH5file, correctSignThem, correctSignFromRelativeToAbsolute,
