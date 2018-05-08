@@ -93,16 +93,28 @@ def propagate3D(dataDict, inputDict):
     nameRoot = create_enumerated_folder(inputDict['outFol'])
     inputDict['outFol'] = nameRoot
 
-    ## REDUCE THE PROBLEM IN 2d THE GAM
-    ## Take equilibrium points
+    # REDUCE THE PROBLEM IN 1d GAM
+    # Take equilibrium points
     gsm_phi_ind = dataDict['phis'].index('P000-000')
     gsm_gam_ind = dataDict['gams'].index('P016-923')
     gsm_the_ind = dataDict['thes'].index('P114-804')
 
     # slice the grid
-    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
-    inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
-    wf =                         wf[gsm_phi_ind,:,:]
+    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,gsm_the_ind,0]
+    inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,gsm_the_ind]
+    wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
+
+
+    ## REDUCE THE PROBLEM IN 2d THE GAM
+    ## Take equilibrium points
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-923')
+    #gsm_the_ind = dataDict['thes'].index('P114-804')
+
+    ## slice the grid
+    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
+    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
+    #wf =                         wf[gsm_phi_ind,:,:]
 
     # magnify the potcube
     if 'enePot' in inputDict:
@@ -119,7 +131,7 @@ def propagate3D(dataDict, inputDict):
     kinK = False
     if kinK:
         inp['kinCube'] = np.ones_like(inp['kinCube'])/10000
-        warning('no kinCube used, just ones')
+        warning('no kinCube used, just constant {}'.format(inp['kinCube']))
 
     # take a wf from file (and not from initial condition)
     if 'initialFile' in inputDict:
@@ -146,16 +158,18 @@ def propagate3D(dataDict, inputDict):
 
     header = '  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |'
     bar = ('-' * (len(header)))
-    print('{}\n{}\n{}'.format(bar,header,bar))
+    print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
-    dPsiDt = derivative2dGamThe
-    CdPsiDt = Cderivative2dGamThe
+    dPsiDt = derivative1dGam
+    CdPsiDt = derivative1dGam
+
     # calculating initial total/potential/kinetic
-    kin, pot = derivative2dGamThe(t,wf,inp,printZ=True)
+    kin, pot = dPsiDt(t,wf,inp,printZ=True)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     initialTotal = kinetic + potential
     inp['initialTotal'] = initialTotal.real
+
     # to give the graph a nice range
     inp['vmax_value'] = abs2(wf).max()
 
@@ -175,14 +189,14 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile):
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
-    kin, pot = derivative2dGamThe(t,wf,inp,printZ=True)
+    kin, pot = derivative1dGam(t,wf,inp,printZ=True)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     total = kinetic + potential
     initialTotal = inp['initialTotal']
     norm_wf = np.linalg.norm(wf)
     outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e}'
-    outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),initialTotal - total.real)
+    outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real))
     print(outputString)
     with open(outputFile, "a") as oof:
         outputStringS2 = '{} {} {} {} {} {} {}'

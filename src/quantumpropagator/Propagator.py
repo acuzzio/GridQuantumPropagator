@@ -15,12 +15,65 @@ def rk4Ene3d(f, t, y, inp):
     k4 = h * f(t + h, y + k3, inp)
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
-def derivative1dGam(t,GRID,inp):
+def derivative1dGam(t,GRID,inp,printZ=None):
     '''
     Propagator 1d on Gamma
     '''
-    new = np.empty_like(GRID)
-    return(new)
+    printZ = printZ or False
+    if printZ:
+        kinS = np.empty_like(GRID)
+        potS = np.empty_like(GRID)
+    else:
+        new = np.empty_like(GRID)
+
+    for g in np.arange(inp['gamL']):
+        G = GRID[g]
+        V = inp['potCube'][g]
+        K = inp['kinCube'][g]
+        # derivatives in gam
+        if g == 0:
+            dG_dg   = (GRID[g+1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]) / (12 * inp['dgam']**2)
+
+        elif g == 1:
+            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]) / (12 * inp['dgam']**2)
+
+        elif g == inp['gamL']-2:
+            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
+
+        elif g == inp['gamL']-1:
+            dG_dg   = (-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
+
+        else:
+            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
+
+        Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
+        Ttot = Tgg
+        Vtot = V * G
+
+        prr = False
+        if prr == True:
+            print()
+            print('K:\n{}'.format(K))
+            print('V:\n{}'.format(V))
+            print('G:\n{}'.format(G))
+            print('d2: {}'.format(d2G_dg2))
+            print('T: {}'.format(Tgg))
+            print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(g,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+        if printZ:
+            kinS[g] = Ttot
+            potS[g] = Vtot
+        else:
+            new[g] = -1j * (Ttot+Vtot)
+    if printZ:
+        return(kinS,potS)
+    else:
+        return(new)
 
 def derivative1dPhi(t,GRID,inp):
     '''
@@ -51,13 +104,6 @@ def derivative1dPhi(t,GRID,inp):
         Tpp = K[0,2] * d2G_dp2
         Ttot = Tpp
         Vtot = V * G
-
-        #print()
-        #print('K:\n{}'.format(K))
-        #print('G:\n{}'.format(G))
-        #print('d2: {}'.format(d2G_dp2))
-        #print('T: {}'.format(Tpp))
-        #print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(p,Ttot,Vtot, (-1j * (Ttot+Vtot))))
 
         new[p] = -1j * (Ttot+Vtot)
     return new
@@ -157,7 +203,7 @@ def derivative2dGamThe(t,GRID,inp,printZ=None):
            Ttot = (Tgg + Tgt + Ttg + Ttt)
            Vtot = V * G
 
-           prr = False
+           prr = True
            if prr == True:
                print()
                print(K)
