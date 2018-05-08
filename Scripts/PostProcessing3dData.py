@@ -92,17 +92,15 @@ def createOutputFile(tupleI):
         [overlap] = retrieve_hdf5_data(h5rassi,
                            ['ORIGINAL_OVERLAPS'])
         nstates = ener.size
+        nstatesNAC = 8 # states for nac are actually 8
         natoms = aType.size
         # I want to save only the low left corner of overlap
-        #NAC = parseNAC(h5out,nstates,natoms)
+        if True:
+            NAC = parseNAC(h5out,nstatesNAC,natoms)
+        else:
+            warning("NAC PARSING TURNED OFF")
+            NAC = np.zeros((nstatesNAC,nstatesNAC,natoms,3))
 
-        #############################
-        # HERE WARNING WARNING HERE # NAC parsing is deactivated !!!
-        #############################
-
-        warning("NAC PARSING TURNED OFF")
-
-        NAC = np.zeros((nstates,nstates,natoms,3))
         outfile = oroot + '.all.h5'
         outTuple = [('CENTER_COORDINATES', geom),
                     ('CENTER_LABELS', aType),
@@ -139,8 +137,12 @@ def parseNAC(fileN,nstates,natoms):
     (output, err) = p.communicate()
     #  I am reading a list of lists(triplets) in bytes. I need to separate them
 
-    outputO = np.array([list(map(float, x.split(b' '))) for x in output.split(b'\n')
-        if x != b''])
+    # this parser need to filter out the b'' objects that forms from the function split.
+    # also, there is a problem with numbers not separated in molcas outputs, that is why we replace '-'
+    # with ' -'
+
+    outputO2 =  [(x.replace(b'-',b' -')).split(b' ') for x in output.split(b'\n') if x != b'']
+    outputO = np.array([[ float(y)  for y in x if y != b''] for x in outputO2])
     outputDivided = list(chunksOf(outputO,natoms))
 
     # I need to fill the NAC matrix with the elements I have...
@@ -204,8 +206,8 @@ def directionRead(folderO,folderE):
     This function is the corrector that follows the direction files...
     suuuuper problem bound
     '''
-    fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/m-biggerScanEnergies2ways/directions1'
-    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/m-biggerScanEnergies2ways/directions2'
+    fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions1'
+    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions2'
     phis1,gammas1,thetas1 = readDirectionFile(fn1)
     phis2,gammas2,thetas2 = readDirectionFile(fn2)
     #phis = phis[0:3]
@@ -221,7 +223,7 @@ def directionRead(folderO,folderE):
     graph6,revgraph6,_ = makeCubeGraph(phis2,gammas1,thetas2)
     graph7,revgraph7,_ = makeCubeGraph(phis1,gammas2,thetas2)
     graph8,revgraph8,_ = makeCubeGraph(phis2,gammas2,thetas2)
-    cutAt = 14
+    cutAt = 8
     # correct first point here - True means "I am the first"
     print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(cutAt))
     newsign = np.ones(cutAt)
@@ -260,12 +262,12 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
                                       sign changed in LAST CALCULATION
     '''
     first = first or False
-    dataToGet = ['OVERLAP', 'DIPOLES', 'NAC']
+    dataToGet = ['ROOT_ENERGIES','OVERLAP', 'DIPOLES', 'NAC']
     fileN = rootNameO + elem + '.all.h5'
     # I add a string LOL in front of elem to make it equal to a normal file name, but elem here
     # is just the three labels (small dirty fix)
     phiA,_,gammaA,_,thetA,_ = stringTransformation3d("LOL_" + elem)
-    [overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
+    [enerAll, overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
     if first:
         (_, nstates, _) = dipolesAll.shape
         overlapsAll = np.identity(nstates)
@@ -274,6 +276,7 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
         overlapsAll = overlapsM # leave this here for now
 
     # let's cut something
+    energies = enerAll[:cutAt]
     dipoles = dipolesAll[:, :cutAt, :cutAt]
     overlaps = overlapsAll[:cutAt, :cutAt]
     nacs = nacAll[:cutAt, :cutAt]
@@ -319,6 +322,7 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     allValues['ABS_CORRECTOR'] = correctionArray1DABS
     allValues['OVERLAPONEZERO'] = overlap_one_zero
     allValues['KINETIC_COEFFICIENTS'] = calc_g_G(phiA,gammaA,thetA/2)
+    allValues['ROOT_ENERGIES'] = energies
     writeH5fileDict(corrFNO,allValues)
     print('\n\nfile {} written'.format(corrFNO))
 
@@ -370,6 +374,8 @@ stringOutput1 = '''
 
 finished -> {}
 problems -> {}
+
+file report written
 '''
 
 

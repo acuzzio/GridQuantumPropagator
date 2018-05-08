@@ -115,7 +115,7 @@ def grapPulse(totaltime, dt, Ed, omega, sigma, phi, t0, fn):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
     plt.close('all')
 
-def heatMap2dWavefunction(wf,name,time):
+def heatMap2dWavefunction(wf,name,time,vmaxV=None):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     fig = plt.figure(figsize=(15, 8), dpi= 80, facecolor='w', edgecolor='k')
     plt.title('Time = {:10.5f} fs'.format(time))
@@ -124,7 +124,8 @@ def heatMap2dWavefunction(wf,name,time):
 
     # this is to get a nice colorbar on the side
     ax = plt.gca()
-    im = ax.imshow(gf.abs2(wf), cmap='hot', vmax=0.1)
+    vmaxV = vmaxV or 0.1
+    im = ax.imshow(gf.abs2(wf), cmap='hot', vmax=vmaxV)
     #im = ax.imshow(qp.abs2(wf), cmap='PuBu_r', vmax=0.4)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)

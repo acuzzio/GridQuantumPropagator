@@ -60,6 +60,14 @@ pulseZ : [0.0,0.0,0.0,0.0,0.0]
 directions1 : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/directions1
 directions2 : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/directions2
 
+# dataFile : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/datainput.npy
+# initialFile : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/GauNew.h5
+# graphs : True
+# enePot : 1 # to multiply the potential energy
+# factor : 1 # to widen initial gaussian
+# displ : (0,0,0) # to move initial gaussian
+# init_mom : (0,0,0) # to give initial momentum
+
 '''
 
 def revListString(a):

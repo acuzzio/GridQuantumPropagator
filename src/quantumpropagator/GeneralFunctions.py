@@ -185,15 +185,17 @@ def gaussian(x, mu, sig):
     return (np.exp(-np.power((x - mu)/sig, 2.)/2)) + (0j)
 
 
-def gaussian2(x, x0, gw):
+def gaussian2(x, x0, gw, moment=None):
     '''
     It calculates the gaussian value at point x. This gaussian is not normalized because
     in this problem the normalization is done at the end.
     x :: Double - the x point
     x0 :: Double - the displacement on the x axis
     gw :: Double - the value of the gw factor in front of the equation
+    moment :: Double - the initial moment given to the WF
     '''
-    return np.exp((- gw * (x - x0)**2) / 2) + 0j
+    moment = moment or 0
+    return np.exp((- gw * (x - x0)**2) / 2) * np.exp(1j*moment*(x - x0))
 
 
 def saveComplex(fn,array):
