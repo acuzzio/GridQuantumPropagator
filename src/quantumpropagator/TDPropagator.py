@@ -7,7 +7,8 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
-         writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv)
+         writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
+         makeJustAnother2DgraphComplexSINGLE)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def propagate3D(dataDict, inputDict):
@@ -23,7 +24,7 @@ def propagate3D(dataDict, inputDict):
     _, _, _, nstates = dataDict['potCube'].shape
     phiL, gamL, theL, natoms, _ = dataDict['geoCUBE'].shape
 
-    # INITIAL WF
+    # INITIAL WF default values
     if 'factor' in inputDict:
         factor = inputDict['factor']
     else:
@@ -44,8 +45,8 @@ def propagate3D(dataDict, inputDict):
 
     # Take values array from labels
     phis = labTranformA(dataDict['phis'])
-    gams = labTranformA(dataDict['gams'])
-    thes = labTranformA(dataDict['thes'])
+    gams = np.deg2rad(labTranformA(dataDict['gams']))
+    thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
 
     # take step
     dphi = phis[0] - phis[1]
@@ -93,28 +94,30 @@ def propagate3D(dataDict, inputDict):
     nameRoot = create_enumerated_folder(inputDict['outFol'])
     inputDict['outFol'] = nameRoot
 
-    # REDUCE THE PROBLEM IN 1d GAM
+    ## REDUCE THE PROBLEM IN 1d GAM
+    ## Take equilibrium points
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-923')
+    #gsm_the_ind = dataDict['thes'].index('P114-804')
+
+    ##print(inp['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind])
+
+    ## slice the grid
+    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,gsm_the_ind,0]
+    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,gsm_the_ind]
+    #wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
+
+
+    # REDUCE THE PROBLEM IN 2d THE GAM
     # Take equilibrium points
     gsm_phi_ind = dataDict['phis'].index('P000-000')
     gsm_gam_ind = dataDict['gams'].index('P016-923')
     gsm_the_ind = dataDict['thes'].index('P114-804')
 
     # slice the grid
-    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,gsm_the_ind,0]
-    inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,gsm_the_ind]
-    wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
-
-
-    ## REDUCE THE PROBLEM IN 2d THE GAM
-    ## Take equilibrium points
-    #gsm_phi_ind = dataDict['phis'].index('P000-000')
-    #gsm_gam_ind = dataDict['gams'].index('P016-923')
-    #gsm_the_ind = dataDict['thes'].index('P114-804')
-
-    ## slice the grid
-    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
-    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
-    #wf =                         wf[gsm_phi_ind,:,:]
+    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
+    inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
+    wf =                         wf[gsm_phi_ind,:,:]
 
     # magnify the potcube
     if 'enePot' in inputDict:
@@ -130,8 +133,9 @@ def propagate3D(dataDict, inputDict):
     # constant the kinCube
     kinK = False
     if kinK:
-        inp['kinCube'] = np.ones_like(inp['kinCube'])/10000
-        warning('no kinCube used, just constant {}'.format(inp['kinCube']))
+        kokoko = 1000
+        inp['kinCube'] = inp['kinCube']*kokoko
+        warning('kincube divided by {}'.format(kokoko))
 
     # take a wf from file (and not from initial condition)
     if 'initialFile' in inputDict:
@@ -160,8 +164,8 @@ def propagate3D(dataDict, inputDict):
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
-    dPsiDt = derivative1dGam
-    CdPsiDt = derivative1dGam
+    dPsiDt = derivative2dGamThe
+    CdPsiDt = derivative2dGamThe
 
     # calculating initial total/potential/kinetic
     kin, pot = dPsiDt(t,wf,inp,printZ=True)
@@ -189,7 +193,7 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile):
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
-    kin, pot = derivative1dGam(t,wf,inp,printZ=True)
+    kin, pot = derivative2dGamThe(t,wf,inp,printZ=True)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     total = kinetic + potential
@@ -205,7 +209,12 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile):
     if 'graphs' in inputDict:
         graphFileName = name + ".png"
         vmaxV = inp['vmax_value']
-        heatMap2dWavefunction(wf,graphFileName,t/41.3,vmaxV)
+        oneD = False
+        if oneD:
+            makeJustAnother2DgraphComplexSINGLE(inp['gams'],wf,graphFileName,'Porc')
+        twoD = True
+        if twoD:
+            heatMap2dWavefunction(wf,graphFileName,t/41.3,vmaxV)
 
 def forcehere(vec,ind,h=None):
     '''
@@ -236,8 +245,8 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
 
     # Take values array from labels
     phis = labTranformA(dataDict['phis'])
-    gams = labTranformA(dataDict['gams'])
-    thes = labTranformA(dataDict['thes'])
+    gams = np.deg2rad(labTranformA(dataDict['gams']))
+    thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
 
     # take step
     dphi = phis[0] - phis[1]
@@ -251,7 +260,7 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     parabola_gam = pot[gsm_phi_ind,:,gsm_the_ind,0]
     parabola_the = pot[gsm_phi_ind,gsm_gam_ind,:,0]
 
-    # calculate force with finite difference
+    # calculate force with finite difference  # WATCH OUT RADIANS AND ANGLES HERE 
     force_phi = forcehere(parabola_phi, gsm_phi_ind, h=dphi)
     force_gam = forcehere(parabola_gam, gsm_gam_ind, h=dgam)
     force_the = forcehere(parabola_the, gsm_the_ind, h=dthe)

@@ -7,7 +7,7 @@ from numpy import (dot,cos,sin,sqrt,array,deg2rad)
 def calc_g_G(phi,gam,the,verbose=None):
     verbose = verbose or False
     gam = deg2rad(gam)
-    the = deg2rad(the)
+    the = deg2rad(the/2)
     ang2boh = 1.889725988
     umass = 1836
 
@@ -191,7 +191,7 @@ def all_of_them():
         for gam in gammas:
             for phi in phis:
                 print(the,gam,phi)
-                calc_g_G(phi,gam,the/2)
+                calc_g_G(phi,gam,the)
 
 if __name__ == "__main__":
     calc_g_G(2.0,15,50)

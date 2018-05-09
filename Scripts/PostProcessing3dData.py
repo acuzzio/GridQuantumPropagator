@@ -321,7 +321,7 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     allValues['NAC'] = new_nacs
     allValues['ABS_CORRECTOR'] = correctionArray1DABS
     allValues['OVERLAPONEZERO'] = overlap_one_zero
-    allValues['KINETIC_COEFFICIENTS'] = calc_g_G(phiA,gammaA,thetA/2)
+    allValues['KINETIC_COEFFICIENTS'] = calc_g_G(phiA,gammaA,thetA)
     allValues['ROOT_ENERGIES'] = energies
     writeH5fileDict(corrFNO,allValues)
     print('\n\nfile {} written'.format(corrFNO))

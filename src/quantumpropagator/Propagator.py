@@ -203,7 +203,7 @@ def derivative2dGamThe(t,GRID,inp,printZ=None):
            Ttot = (Tgg + Tgt + Ttg + Ttt)
            Vtot = V * G
 
-           prr = True
+           prr = False
            if prr == True:
                print()
                print(K)

@@ -172,7 +172,7 @@ def makeJustAnother2DgraphComplexALLS(xs, yss, fn, labl, xaxisL=None):
     plt.close('all')
 
 
-def makeJustAnother2DgraphComplexSINGLE(xs, ys, fn, labl, xaxisL):
+def makeJustAnother2DgraphComplexSINGLE(xs, ys, fn, labl):
     transp = False
     my_dpi = 150
     ratio = (16, 9)
@@ -181,7 +181,7 @@ def makeJustAnother2DgraphComplexSINGLE(xs, ys, fn, labl, xaxisL):
     sqrL = labl + r" $|\Psi|^2$"
     fig, ax1 = plt.subplots(figsize=ratio)
     ax1.set_ylim([-1,1])
-    ax1.set_xlim(xaxisL)
+    #ax1.set_xlim(xaxisL)
     plt.plot(xs, np.real(ys),linewidth=0.5,label=reaL,ls='--')
     plt.plot(xs, np.imag(ys),linewidth=0.5,label=imgL,ls='--')
     plt.plot(xs, gf.abs2(ys),linewidth=2.0,label=sqrL,ls='-')
