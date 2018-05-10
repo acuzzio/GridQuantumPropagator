@@ -5,9 +5,12 @@ from numpy import (dot,cos,sin,sqrt,array,deg2rad)
 #from numpy.linalg import norm
 
 def calc_g_G(phi,gam,the,verbose=None):
+    '''
+    phi :: Double - values of phi
+    gam :: Double - values of gam in RADIANS
+    the :: Double - values of the in RADIANS
+    '''
     verbose = verbose or False
-    gam = deg2rad(gam)
-    the = deg2rad(the/2)
     ang2boh = 1.889725988
     umass = 1836
 

@@ -15,99 +15,6 @@ def rk4Ene3d(f, t, y, inp):
     k4 = h * f(t + h, y + k3, inp)
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
-def derivative1dGam(t,GRID,inp,printZ=None):
-    '''
-    Propagator 1d on Gamma
-    '''
-    printZ = printZ or False
-    if printZ:
-        kinS = np.empty_like(GRID)
-        potS = np.empty_like(GRID)
-    else:
-        new = np.empty_like(GRID)
-
-    for g in np.arange(inp['gamL']):
-        G = GRID[g]
-        V = inp['potCube'][g]
-        K = inp['kinCube'][g]
-        # derivatives in gam
-        if g == 0:
-            dG_dg   = (GRID[g+1]) / (2 * inp['dgam'])
-            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]) / (12 * inp['dgam']**2)
-
-        elif g == 1:
-            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
-            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]) / (12 * inp['dgam']**2)
-
-        elif g == inp['gamL']-2:
-            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
-            d2G_dg2 = (+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
-
-        elif g == inp['gamL']-1:
-            dG_dg   = (-GRID[g-1]) / (2 * inp['dgam'])
-            d2G_dg2 = (-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
-
-        else:
-            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
-            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
-
-        Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
-        Ttot = Tgg
-        Vtot = V * G
-
-        prr = False
-        if prr == True:
-            print()
-            print('K:\n{}'.format(K))
-            print('V:\n{}'.format(V))
-            print('G:\n{}'.format(G))
-            print('d2: {}'.format(d2G_dg2))
-            print('T: {}'.format(Tgg))
-            print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(g,Ttot,Vtot, (-1j * (Ttot+Vtot))))
-
-        if printZ:
-            kinS[g] = Ttot
-            potS[g] = Vtot
-        else:
-            new[g] = -1j * (Ttot+Vtot)
-    if printZ:
-        return(kinS,potS)
-    else:
-        return(new)
-
-def derivative1dPhi(t,GRID,inp):
-    '''
-    ORA SI BALLA
-    Propagator 1d to have some fun
-    '''
-    new = np.empty_like(GRID)
-    for p in np.arange(inp['phiL']):
-        G = GRID[p]
-        V = inp['potCube'][p]
-        K = inp['kinCube'][p]
-        # derivatives in phi
-        if p == 0:
-            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]) / (12 * inp['dphi']**2)
-
-        elif p == 1:
-            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]) / (12 * inp['dphi']**2)
-
-        elif p == inp['phiL']-2:
-            d2G_dp2 = (+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
-
-        elif p == inp['phiL']-1:
-            d2G_dp2 = (-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
-
-        else:
-            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
-
-        Tpp = K[0,2] * d2G_dp2
-        Ttot = Tpp
-        Vtot = V * G
-
-        new[p] = -1j * (Ttot+Vtot)
-    return new
-
 def derivative2dGamThe(t,GRID,inp,printZ=None):
     '''
     derivative done for a 2d Grid on the angles
@@ -221,6 +128,99 @@ def derivative2dGamThe(t,GRID,inp,printZ=None):
         return(kinS,potS)
     else:
         return(new)
+
+def derivative1dGam(t,GRID,inp,printZ=None):
+    '''
+    Propagator 1d on Gamma
+    '''
+    printZ = printZ or False
+    if printZ:
+        kinS = np.empty_like(GRID)
+        potS = np.empty_like(GRID)
+    else:
+        new = np.empty_like(GRID)
+
+    for g in np.arange(inp['gamL']):
+        G = GRID[g]
+        V = inp['potCube'][g]
+        K = inp['kinCube'][g]
+        # derivatives in gam
+        if g == 0:
+            dG_dg   = (GRID[g+1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]) / (12 * inp['dgam']**2)
+
+        elif g == 1:
+            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]) / (12 * inp['dgam']**2)
+
+        elif g == inp['gamL']-2:
+            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
+
+        elif g == inp['gamL']-1:
+            dG_dg   = (-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
+
+        else:
+            dG_dg   = (GRID[g+1]-GRID[g-1]) / (2 * inp['dgam'])
+            d2G_dg2 = (-GRID[g+2]+16*GRID[g+1]-30*GRID[g]+16*GRID[g-1]-GRID[g-2]) / (12 * inp['dgam']**2)
+
+        Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
+        Ttot = Tgg
+        Vtot = V * G
+
+        prr = False
+        if prr == True:
+            print()
+            print('K:\n{}'.format(K))
+            print('V:\n{}'.format(V))
+            print('G:\n{}'.format(G))
+            print('d2: {}'.format(d2G_dg2))
+            print('T: {}'.format(Tgg))
+            print('({})    Ttot: {}      Vtot: {}   elem: {}'.format(g,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+        if printZ:
+            kinS[g] = Ttot
+            potS[g] = Vtot
+        else:
+            new[g] = -1j * (Ttot+Vtot)
+    if printZ:
+        return(kinS,potS)
+    else:
+        return(new)
+
+def derivative1dPhi(t,GRID,inp):
+    '''
+    ORA SI BALLA
+    Propagator 1d to have some fun
+    '''
+    new = np.empty_like(GRID)
+    for p in np.arange(inp['phiL']):
+        G = GRID[p]
+        V = inp['potCube'][p]
+        K = inp['kinCube'][p]
+        # derivatives in phi
+        if p == 0:
+            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]) / (12 * inp['dphi']**2)
+
+        elif p == 1:
+            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]) / (12 * inp['dphi']**2)
+
+        elif p == inp['phiL']-2:
+            d2G_dp2 = (+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
+
+        elif p == inp['phiL']-1:
+            d2G_dp2 = (-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
+
+        else:
+            d2G_dp2 = (-GRID[p+2]+16*GRID[p+1]-30*GRID[p]+16*GRID[p-1]-GRID[p-2]) / (12 * inp['dphi']**2)
+
+        Tpp = K[0,2] * d2G_dp2
+        Ttot = Tpp
+        Vtot = V * G
+
+        new[p] = -1j * (Ttot+Vtot)
+    return new
 
 def derivative3d(t,GRID,inp):
     '''

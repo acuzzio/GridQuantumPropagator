@@ -8,7 +8,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
-         makeJustAnother2DgraphComplexSINGLE)
+         makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def propagate3D(dataDict, inputDict):
@@ -44,9 +44,7 @@ def propagate3D(dataDict, inputDict):
     wf = initialCondition3d(wf,dataDict,factor,displ,init_mom)
 
     # Take values array from labels
-    phis = labTranformA(dataDict['phis'])
-    gams = np.deg2rad(labTranformA(dataDict['gams']))
-    thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
+    phis,gams,thes = fromLabelsToFloats(dataDict)
 
     # take step
     dphi = phis[0] - phis[1]
@@ -94,7 +92,7 @@ def propagate3D(dataDict, inputDict):
     nameRoot = create_enumerated_folder(inputDict['outFol'])
     inputDict['outFol'] = nameRoot
 
-    ## REDUCE THE PROBLEM IN 1d GAM
+    ## REDUCE THE PROBLEM IN 1d GAM 1 state 
     ## Take equilibrium points
     #gsm_phi_ind = dataDict['phis'].index('P000-000')
     #gsm_gam_ind = dataDict['gams'].index('P016-923')
@@ -108,7 +106,7 @@ def propagate3D(dataDict, inputDict):
     #wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
 
 
-    # REDUCE THE PROBLEM IN 2d THE GAM
+    # REDUCE THE PROBLEM IN 2d THE GAM 1 state
     # Take equilibrium points
     gsm_phi_ind = dataDict['phis'].index('P000-000')
     gsm_gam_ind = dataDict['gams'].index('P016-923')
@@ -181,19 +179,19 @@ def propagate3D(dataDict, inputDict):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             #  async is awesome
             #doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile)
-            asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile)
+            asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,dPsiDt)
             counter += 1
 
         wf = rk4Ene3d(CdPsiDt,t,wf,inp)
         t  = t + h
 
 
-def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile):
+def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,dPsiDt):
     nameRoot = inputDict['outFol']
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
-    kin, pot = derivative2dGamThe(t,wf,inp,printZ=True)
+    kin, pot = dPsiDt(t,wf,inp,printZ=True)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     total = kinetic + potential
@@ -244,9 +242,7 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     gsm_the_ind = dataDict['thes'].index('P114-804')
 
     # Take values array from labels
-    phis = labTranformA(dataDict['phis'])
-    gams = np.deg2rad(labTranformA(dataDict['gams']))
-    thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
+    phis,gams,thes = fromLabelsToFloats(dataDict)
 
     # take step
     dphi = phis[0] - phis[1]
@@ -273,7 +269,9 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,4,2]
     coe_the = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,8,2]
 
-    # they need to be multiplied by (-2 * hbar**2), where hbar is 1. And inverted
+    # they need to be multiplied by (-2 * hbar**2), where hbar is 1. And inverted, because the MASS
+    # is at denominator, and we kind of want the mass...
+    warning('control here things')
     G_phi = 1 / ( -2 * coe_phi )
     G_gam = 1 / ( -2 * coe_gam )
     G_the = 1 / ( -2 * coe_the )

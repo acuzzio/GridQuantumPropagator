@@ -12,6 +12,17 @@ import sys
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+
+def fromLabelsToFloats(dataDict):
+    '''
+    takes the datadict and returns the three arrays of coordinates values
+    '''
+    phis = labTranformA(dataDict['phis'])
+    gams = np.deg2rad(labTranformA(dataDict['gams']))
+    thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
+    return(phis,gams,thes)
+
+
 def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, bar_length=60):
     """
     Call in a loop to create terminal progress bar
@@ -452,6 +463,12 @@ def stringTransformation3d(fn):
     [axis1,axis2,axis3] = [
             labTranform(x) for x in
             [str1,str2,str3]]
+    # phi are invariate
+    axis1 = axis1
+    # gamma are converted to radians
+    axis2 = np.deg2rad(axis2)
+    # theta are divided by 2 and converted to radians
+    axis3 = np.deg2rad(axis3/2)
     return(axis1,str1,axis2,str2,axis3,str3)
 
 

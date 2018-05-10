@@ -17,7 +17,6 @@ from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        writeH5fileDict, readWholeH5toDict, chunksOf, err, good, warning,
                        printDict, stringTransformation3d, calc_g_G, readDirectionFile)
 
-
 def read_single_arguments(single_inputs):
     '''
      This funcion reads the command line arguments
@@ -264,9 +263,12 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     first = first or False
     dataToGet = ['ROOT_ENERGIES','OVERLAP', 'DIPOLES', 'NAC']
     fileN = rootNameO + elem + '.all.h5'
+
     # I add a string LOL in front of elem to make it equal to a normal file name, but elem here
     # is just the three labels (small dirty fix)
+    # stringTransformation3d changes the UNITS of the labels, it is not anymore a simple tofloat
     phiA,_,gammaA,_,thetA,_ = stringTransformation3d("LOL_" + elem)
+
     [enerAll, overlapsM, dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
     if first:
         (_, nstates, _) = dipolesAll.shape
