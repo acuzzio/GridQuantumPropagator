@@ -11,6 +11,9 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
+def expandcube(inp):
+    return inp
+
 def propagate3D(dataDict, inputDict):
     '''
     Two dictionaries, one from data file and one from input file
@@ -43,7 +46,7 @@ def propagate3D(dataDict, inputDict):
     wf = np.zeros((phiL, gamL, theL), dtype=complex)
     wf = initialCondition3d(wf,dataDict,factor,displ,init_mom)
 
-    # Take values array from labels
+    # Take values array from labels (radians already)
     phis,gams,thes = fromLabelsToFloats(dataDict)
 
     # take step
@@ -67,6 +70,8 @@ def propagate3D(dataDict, inputDict):
             'potCube'  : dataDict['potCube'],
             'kinCube'  : dataDict['kinCube'],
             }
+
+    inp = expandcube(inp)
 
     ## REDUCE THE PROBLEM IN 1D 1 state
     ## Take equilibrium points
@@ -116,6 +121,7 @@ def propagate3D(dataDict, inputDict):
     inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
     inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
     wf =                         wf[gsm_phi_ind,:,:]
+    wf = wf/np.linalg.norm(wf)
 
     # magnify the potcube
     if 'enePot' in inputDict:
@@ -271,7 +277,6 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
 
     # they need to be multiplied by (-2 * hbar**2), where hbar is 1. And inverted, because the MASS
     # is at denominator, and we kind of want the mass...
-    warning('control here things')
     G_phi = 1 / ( -2 * coe_phi )
     G_gam = 1 / ( -2 * coe_gam )
     G_the = 1 / ( -2 * coe_the )

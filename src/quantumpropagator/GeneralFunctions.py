@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import yaml
 import sys
+from quantumpropagator import warning
 
 #Debug time
 #import pdb
@@ -275,8 +276,9 @@ def fromHartreetoCmMin1(n):
     return (n/4.5563e-06)
 
 def fromCmMin1toFs(n):
-    ''' from hartree to cm-1 conversion - n :: Double '''
-    return((n/4.5563e-06)*33356.41)
+    ''' from cm-1 to fs conversion - n :: Double '''
+    warning('this still does not work')
+    return 1/(fromHartreetoCmMin1(n)*1.88365157e-4)
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 # https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/
