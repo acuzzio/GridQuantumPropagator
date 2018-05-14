@@ -69,6 +69,11 @@ def propagate3D(dataDict, inputDict):
             'dthe'     : dthe,
             'potCube'  : dataDict['potCube'],
             'kinCube'  : dataDict['kinCube'],
+            'dipCube'  : dataDict['dipCUBE'],
+            'pulseX'   : inputDict['pulseX'],
+            'pulseY'   : inputDict['pulseY'],
+            'pulseZ'   : inputDict['pulseZ'],
+            'nstates'  : nstates
             }
 
     inp = expandcube(inp)
@@ -169,7 +174,7 @@ def propagate3D(dataDict, inputDict):
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
     dPsiDt = derivative2dGamThe
-    CdPsiDt = derivative2dGamThe
+    CdPsiDt = Cderivative2dGamThe
 
     # calculating initial total/potential/kinetic
     kin, pot = dPsiDt(t,wf,inp,printZ=True)

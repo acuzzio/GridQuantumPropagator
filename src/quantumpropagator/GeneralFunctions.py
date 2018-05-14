@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import yaml
 import sys
-from quantumpropagator import warning
 
 #Debug time
 #import pdb
@@ -277,7 +276,6 @@ def fromHartreetoCmMin1(n):
 
 def fromCmMin1toFs(n):
     ''' from cm-1 to fs conversion - n :: Double '''
-    warning('this still does not work')
     return 1/(fromHartreetoCmMin1(n)*1.88365157e-4)
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
