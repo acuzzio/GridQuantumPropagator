@@ -22,7 +22,7 @@ def pulZe(t, param_Pulse):
     if (den == 0):
         result = 0.0
     else:
-        result = Ed * (np.cos(omega*t+phi)) * np.exp(-num/den)
+        result = Ed * (np.cos(omega*t+phase)) * np.exp(-num/den)
     return result
 
 def derivative2dGamTheMu(t,GRID,inp,printZ=None):
@@ -41,7 +41,7 @@ def derivative2dGamTheMu(t,GRID,inp,printZ=None):
     gamL = inp['gamL']
     theL = inp['theL']
     nstates = inp['nstates']
-    pulseV = [ pulZe(t, inp('pulseX')), pulZe(t, inp('pulseY')), pulZe(t,inp('pulseZ')) ]
+    pulseV = [ pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) ]
 
     for s in np.arange(nstates):
         for g in np.arange(gamL):
@@ -133,7 +133,7 @@ def derivative2dGamTheMu(t,GRID,inp,printZ=None):
                Mtot = 0
                for d in np.arange(nstates):
                    for carte in np.arange(2):
-                       Mtot += -(pulseV[carte] * D[s,d,carte] ) * GRID[g,t,d]
+                       Mtot += -(pulseV[carte] * D[carte,s,d] ) * GRID[g,t,d]
 
                prr = False
                if prr == True:

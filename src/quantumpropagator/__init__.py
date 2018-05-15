@@ -42,7 +42,7 @@ from .Propagator import (rk4Ene1dSLOW, rk4Ene3d, derivative3d, derivative1d, Ham
                          NuclearKinetic1d, doubleDeronK, singleDerOnK,
                          createXaxisReciprocalspace1d, divideByTwo, calculateTotal,
                          rk6Ene1dSLOW, EULER1d,derivative1dPhi, derivative1dGam,
-                         derivative2dGamThe)
+                         derivative2dGamThe, derivative2dGamTheMu, pulZe)
 from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, component,
                       envel, pulse)
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)

@@ -8,7 +8,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
-         makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats)
+         makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu, pulZe)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def expandcube(inp):
@@ -43,8 +43,9 @@ def propagate3D(dataDict, inputDict):
     else:
         init_mom = (0,0,0)
 
-    wf = np.zeros((phiL, gamL, theL), dtype=complex)
-    wf = initialCondition3d(wf,dataDict,factor,displ,init_mom)
+    wf = np.zeros((phiL, gamL, theL, nstates), dtype=complex)
+    wf[:,:,:,0] = initialCondition3d(wf[:,:,:,0],dataDict,factor,displ,init_mom)
+    print(wf.shape)
 
     # Take values array from labels (radians already)
     phis,gams,thes = fromLabelsToFloats(dataDict)
@@ -75,6 +76,12 @@ def propagate3D(dataDict, inputDict):
             'pulseZ'   : inputDict['pulseZ'],
             'nstates'  : nstates
             }
+
+    print(inp['dipCube'].shape)
+
+    #########################################
+    # Here the cube expansion/interpolation #
+    #########################################
 
     inp = expandcube(inp)
 
@@ -123,10 +130,15 @@ def propagate3D(dataDict, inputDict):
     gsm_the_ind = dataDict['thes'].index('P114-804')
 
     # slice the grid
-    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:]
+    numStates = inputDict['states']
+    inp['nstates'] = numStates
+    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:,:numStates]
     inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
-    wf =                         wf[gsm_phi_ind,:,:]
+    inp['dipCube'] = inp['dipCube'][gsm_phi_ind,:,:,:,:numStates,:numStates]
+    wf =                         wf[gsm_phi_ind,:,:,:numStates]
     wf = wf/np.linalg.norm(wf)
+    str111 = 'potCube: {}\nkinCube: {}\ndipCube: {}\nwf:      {}'
+    print(str111.format(inp['potCube'].shape,inp['kinCube'].shape,inp['dipCube'].shape,wf.shape))
 
     # magnify the potcube
     if 'enePot' in inputDict:
@@ -161,7 +173,7 @@ def propagate3D(dataDict, inputDict):
     fulltime = inp['fullTime']
     fulltimeSteps = int(fulltime/h)
     deltasGraph = inputDict['deltasGraph']
-    print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL, nstates, natoms))
+    print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL,numStates, natoms))
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
 
@@ -169,12 +181,14 @@ def propagate3D(dataDict, inputDict):
     dataH5filename = os.path.join(nameRoot, 'allInput.h5')
     writeH5fileDict(dataH5filename,inp)
 
-    header = '  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |'
+    header = '  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |   Pulse X    |   Pulse Y    |   Pulse Z    |'
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
+    # INTEGRATOR SELECTION HERE
     dPsiDt = derivative2dGamThe
-    CdPsiDt = Cderivative2dGamThe
+    #CdPsiDt = Cderivative2dGamThe
+    CdPsiDt = derivative2dGamTheMu
 
     # calculating initial total/potential/kinetic
     kin, pot = dPsiDt(t,wf,inp,printZ=True)
@@ -208,12 +222,18 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,dPsiDt):
     total = kinetic + potential
     initialTotal = inp['initialTotal']
     norm_wf = np.linalg.norm(wf)
-    outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e}'
-    outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real))
+
+    ##  you wanted to print the header when the table goes off screen... this is why you get the rows number
+    #rows, _ = os.popen('stty size', 'r').read().split()
+    #if int(rows) // counter == 0:
+    #    print('zero')
+
+    outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} |'
+    outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
     print(outputString)
     with open(outputFile, "a") as oof:
-        outputStringS2 = '{} {} {} {} {} {} {}'
-        outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,kinetic.real,potential.real,total.real,initialTotal - total.real)
+        outputStringS2 = '{} {} {} {} {} {} {} {} {} {}'
+        outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']))
         oof.write(outputString2 + '\n')
     if 'graphs' in inputDict:
         graphFileName = name + ".png"
