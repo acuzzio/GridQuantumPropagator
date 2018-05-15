@@ -148,7 +148,7 @@ def derivative2dGamTheMu(t,GRID,inp,printZ=None):
                    kinS[g,t,s] = Ttot
                    potS[g,t,s] = Vtot
                else:
-                   new[g,t,s] = -1j * (Ttot+Vtot)
+                   new[g,t,s] = -1j * (Ttot+Vtot+Mtot)
     if printZ:
         return(kinS,potS)
     else:
