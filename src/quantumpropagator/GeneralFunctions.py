@@ -54,12 +54,12 @@ def bring_input_to_AU(iDic):
     iDic['dt'] = fromFsToAu(iDic['dt'])
     iDic['fullTime'] = fromFsToAu(iDic['fullTime'])
     # change sigmas and T_0s
-    iDic['pulseX'][2] = fromFsToAu(iDic['pulseX'][2])
-    iDic['pulseX'][4] = fromFsToAu(iDic['pulseX'][4])
-    iDic['pulseY'][2] = fromFsToAu(iDic['pulseY'][2])
-    iDic['pulseY'][4] = fromFsToAu(iDic['pulseY'][4])
-    iDic['pulseZ'][2] = fromFsToAu(iDic['pulseZ'][2])
-    iDic['pulseZ'][4] = fromFsToAu(iDic['pulseZ'][4])
+    #iDic['pulseX'][2] = fromFsToAu(iDic['pulseX'][2])
+    #iDic['pulseX'][4] = fromFsToAu(iDic['pulseX'][4])
+    #iDic['pulseY'][2] = fromFsToAu(iDic['pulseY'][2])
+    #iDic['pulseY'][4] = fromFsToAu(iDic['pulseY'][4])
+    #iDic['pulseZ'][2] = fromFsToAu(iDic['pulseZ'][2])
+    #iDic['pulseZ'][4] = fromFsToAu(iDic['pulseZ'][4])
     return (iDic)
 
 

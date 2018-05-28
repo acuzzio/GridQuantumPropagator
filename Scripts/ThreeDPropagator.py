@@ -48,10 +48,10 @@ deltasGraph : 20
 
 # PULSE SPECIFICATIONS
 # E :: intensities
-# omega ::
-# sigma :: length in fs
-# phi ::
-# T_0 :: center of the packet in fs
+# omega :: the frequency in AU
+# sigma :: length in AU
+# phi :: the phase in AU
+# T_0 :: center of the packet in AU
 
 pulseX : [0.0,0.0,0.0,0.0,0.0]
 pulseY : [0.0,0.0,0.0,0.0,0.0]

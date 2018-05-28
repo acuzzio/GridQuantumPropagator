@@ -6,6 +6,7 @@ import numpy as np
 #import matplotlib as mpl
 #mpl.use('Agg')
 import matplotlib.pyplot as plt
+import os
 
 import quantumpropagator.h5Reader as h5
 import quantumpropagator.GeneralFunctions as gf
@@ -95,6 +96,31 @@ def makeJustAnother2Dgraph(fn,labl,ys,xs=None):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
     plt.close('all')
 
+def graphic_Pulse(dic):
+    '''
+    This takes the input dictionary and makes a graph of the pulse
+    '''
+    totaltime = dic['fullTime']
+    fn = os.path.join(dic['outFol'],'A_graph_pulse.png')
+
+    timesArray = np.arange(totaltime)
+    transp = False
+    my_dpi = 150
+    ratio = (16, 9)
+    _ , ax1 = plt.subplots(figsize=ratio)
+    ax1.set_ylabel('E A.U. (Hartree)')
+    ax1.set_xlabel('Time A.U.')
+    for i in ['X','Y','Z']:
+        Ed,omega,sigma,phi,t0 = dic['pulse' + i]
+        gaus = np.apply_along_axis(pp.envel,0,timesArray,Ed,sigma,t0)
+        puls = np.apply_along_axis(pp.pulse,0,timesArray,Ed,omega,sigma,phi,t0)
+        plt.plot(timesArray, gaus, linewidth=2.0, label="Envelope"+i)
+        plt.plot(timesArray, puls, linewidth=2.0, label="Pulse"+i)
+
+    ax1.legend(loc='upper right')
+    plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
+    plt.close('all')
+
 
 def grapPulse(totaltime, dt, Ed, omega, sigma, phi, t0, fn):
     '''
@@ -115,17 +141,21 @@ def grapPulse(totaltime, dt, Ed, omega, sigma, phi, t0, fn):
     plt.savefig(fn, bbox_inches='tight', dpi=my_dpi, transparent=transp)
     plt.close('all')
 
-def heatMap2dWavefunction(wf,name,time,vmaxV=None):
+def heatMap2dWavefunction(wf1, wf2, name,time,vmaxV=None):
+    '''
+    This is a heatmap, but done to draw coherence also
+    '''
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     fig = plt.figure(figsize=(15, 8), dpi= 80, facecolor='w', edgecolor='k')
-    plt.title('Time = {:10.5f} fs'.format(time))
+    plt.title('{} Time = {:10.5f} fs'.format(name,time))
     plt.ylabel('Gamma')
     plt.xlabel('Theta')
 
     # this is to get a nice colorbar on the side
     ax = plt.gca()
     vmaxV = vmaxV or 0.1
-    im = ax.imshow(gf.abs2(wf), cmap='hot', vmax=vmaxV)
+    wf = 2 * np.real(np.conj(wf1) * wf2)
+    im = ax.imshow(wf, cmap='hot', vmax=vmaxV, vmin=-vmaxV)
     #im = ax.imshow(qp.abs2(wf), cmap='PuBu_r', vmax=0.4)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)

@@ -8,7 +8,8 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          good, asyncFun, derivative1dGam, create_enumerated_folder, fromCmMin1toFs,
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
-         makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu, pulZe)
+         makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu, pulZe,
+         graphic_Pulse)
 from quantumpropagator.CPropagator import Cderivative2dGamThe
 
 def expandcube(inp):
@@ -74,7 +75,7 @@ def propagate3D(dataDict, inputDict):
             'pulseX'   : inputDict['pulseX'],
             'pulseY'   : inputDict['pulseY'],
             'pulseZ'   : inputDict['pulseZ'],
-            'nstates'  : nstates
+            'nstates'  : nstates,
             }
 
     print(inp['dipCube'].shape)
@@ -108,6 +109,7 @@ def propagate3D(dataDict, inputDict):
 
     nameRoot = create_enumerated_folder(inputDict['outFol'])
     inputDict['outFol'] = nameRoot
+    inp['outFol'] = nameRoot
 
     ## REDUCE THE PROBLEM IN 1d GAM 1 state 
     ## Take equilibrium points
@@ -176,6 +178,7 @@ def propagate3D(dataDict, inputDict):
     print('Dimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}'.format(phiL, gamL, theL,numStates, natoms))
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
+    outputFileP = os.path.join(nameRoot, 'outputPopul')
 
     # saving input data in h5 file
     dataH5filename = os.path.join(nameRoot, 'allInput.h5')
@@ -186,7 +189,7 @@ def propagate3D(dataDict, inputDict):
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
     # INTEGRATOR SELECTION HERE
-    dPsiDt = derivative2dGamThe
+    dPsiDt = derivative2dGamTheMu
     #CdPsiDt = Cderivative2dGamThe
     CdPsiDt = derivative2dGamTheMu
 
@@ -200,19 +203,24 @@ def propagate3D(dataDict, inputDict):
     # to give the graph a nice range
     inp['vmax_value'] = abs2(wf).max()
 
+
+    # graph the pulse
+    graphic_Pulse(inp)
+
     for ii in range(fulltimeSteps):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             #  async is awesome
             #doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile)
-            asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,dPsiDt)
+            asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt)
             counter += 1
 
-        wf = rk4Ene3d(CdPsiDt,t,wf,inp)
+        wf = rk4Ene3d(dPsiDt,t,wf,inp)
         t  = t + h
 
 
-def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,dPsiDt):
+def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt):
     nameRoot = inputDict['outFol']
+    nstates = inp['nstates']
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
@@ -231,19 +239,31 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,dPsiDt):
     outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} |'
     outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
     print(outputString)
+
+
+    outputStringSP = "{:11.4f}".format(t/41.3)
+    for i in range(nstates):
+        outputStringSP += " {:+7.5e} ".format(np.linalg.norm(wf[:,:,i])**2)
+
+    with open(outputFileP, "a") as oofP:
+        oofP.write(outputStringSP + '\n')
+
     with open(outputFile, "a") as oof:
         outputStringS2 = '{} {} {} {} {} {} {} {} {} {}'
         outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']))
         oof.write(outputString2 + '\n')
     if 'graphs' in inputDict:
-        graphFileName = name + ".png"
         vmaxV = inp['vmax_value']
         oneD = False
         if oneD:
+            graphFileName = name + ".png"
             makeJustAnother2DgraphComplexSINGLE(inp['gams'],wf,graphFileName,'Porc')
         twoD = True
         if twoD:
-            heatMap2dWavefunction(wf,graphFileName,t/41.3,vmaxV)
+            for i in range(nstates):
+                for j in range(i+1): # In python the handshakes are like this...
+                    graphFileName = '{}_state_{}_{}.png'.format(name,i,j)
+                    heatMap2dWavefunction(wf[:,:,i],wf[:,:,j],graphFileName,t/41.3,vmaxV)
 
 def forcehere(vec,ind,h=None):
     '''

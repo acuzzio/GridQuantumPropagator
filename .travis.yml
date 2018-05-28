@@ -25,11 +25,10 @@ install:
   # Install quantumpropagator package
   - python -c 'import numpy as np; np.get_include()'  
   - python -c 'import numpy.core; print(numpy.core.__file__)'
-  - pip install .
+  - python setup.py develop
   
 script:
   # Run the unitary tests excluding the expensive computations
-  - python setup.py develop
   - nosetests --with-coverage --cover-erase --cover-package=quantumpropagator -v
 
 branches:
