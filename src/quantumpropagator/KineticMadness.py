@@ -1,8 +1,123 @@
 ''' This module precompute along a 3x3 grid the Jacobian to use in the podolsky form of the Kinetic energy operator'''
 
-from numpy import (dot,cos,sin,sqrt,array,deg2rad)
+import numpy as np
+from numpy import (dot,cos,sin,sqrt,array,deg2rad,stack)
+from quantumpropagator import good
 #from numpy import (dot,cos,sin,sqrt,sum,array,stack,deg2rad)
 #from numpy.linalg import norm
+
+
+
+def calc_s_mat(phi,gam,the,verbose=None):
+    '''
+    phi :: Double - values of phi
+    gam :: Double - values of gam in RADIANS
+    the :: Double - values of the in RADIANS
+    '''
+    verbose = verbose or False
+    ang2boh = 1.889725988
+    umass = 1836
+
+    # 
+    # In this part we want to take out masses from the calculations of these coefficients
+    # because we just want to compute the momentum.
+    # 
+
+    cc    = 1.541 * ang2boh
+    ch    = 1.541 * ang2boh
+
+    # derivatives of phi
+    dp_c8x  = (-0.165777 * ang2boh / 6)
+    dp_c8y  = (0.067387  * ang2boh / 6)
+    dp_c8z  = (0.016393  * ang2boh / 6)
+    dp_c9x  = (-0.145170 * ang2boh / 6)
+    dp_c9y  = (-0.096085 * ang2boh / 6)
+    dp_c9z  = (-0.143594 * ang2boh / 6)
+    dp_h12x = (-0.520977 * ang2boh / 6)
+    dp_h12y = (0.086124  * ang2boh / 6)
+    dp_h12z = (0.316644  * ang2boh / 6)
+    dp_h13x = (0.450303  * ang2boh / 6)
+    dp_h13y = (-0.048000 * ang2boh / 6)
+    dp_h13z = (0.245432  * ang2boh / 6)
+
+    dp_phi  = array([ dp_c8x,   dp_c8y,  dp_c8z,
+                      dp_c9x,   dp_c9y,  dp_c9z,
+                     -dp_c8x,  -dp_c8y,  dp_c8z,
+                     -dp_c9x,  -dp_c9y,  dp_c9z,
+                      dp_h12x,  dp_h12y, dp_h12z,
+                      dp_h13x,  dp_h13y, dp_h13z,
+                     -dp_h12x, -dp_h12y, dp_h12z,
+                     -dp_h13x, -dp_h13y, dp_h13z])
+
+    # derivatives of gam
+    dg_c8x  = cc * sin(the) * sin(gam)
+    dg_c8y  = -cc * cos(gam)
+    dg_c8z  = cc * cos(the) * sin(gam)
+    dg_c9x  = -cc * sin(the) * sin(gam)
+    dg_c9y  = -cc * cos(gam)
+    dg_c9z  = cc * cos(the) * sin(gam)
+    dg_h12x = ch * sin(the) * sin(gam)
+    dg_h12y = -ch * cos(gam)
+    dg_h12z = ch * cos(the) * sin(gam)
+    dg_h13x = -ch * sin(the) * sin(gam)
+    dg_h13y = -ch * cos(gam)
+    dg_h13z = ch * cos(the) * sin(gam)
+    dg_gam  = array([ dg_c8x,   dg_c8y,  dg_c8z,
+                      dg_c9x,   dg_c9y,  dg_c9z,
+                     -dg_c8x,  -dg_c8y,  dg_c8z,
+                     -dg_c9x,  -dg_c9y,  dg_c9z,
+                      dg_h12x,  dg_h12y, dg_h12z,
+                      dg_h13x,  dg_h13y, dg_h13z,
+                     -dg_h12x, -dg_h12y, dg_h12z,
+                     -dg_h13x, -dg_h13y, dg_h13z])
+
+    # derivatives of the
+    dt_c8x  = -cc * cos(the) * cos(gam)
+    dt_c8y  =  0
+    dt_c8z  =  cc * sin(the) * cos(gam)
+    dt_c9x  =  cc * cos(the) * cos(gam)
+    dt_c9y  =  0
+    dt_c9z  =  cc * sin(the) * cos(gam)
+    dt_h12x = -ch * cos(the) * cos(gam)
+    dt_h12y =  0
+    dt_h12z =  ch * sin(the) * cos(gam)
+    dt_h13x =  ch * cos(the) * cos(gam)
+    dt_h13y =  0
+    dt_h13z =  ch * sin(the) * cos(gam)
+    dt_the  = array([ dt_c8x,   dt_c8y,  dt_c8z,
+                      dt_c9x,   dt_c9y,  dt_c9z,
+                     -dt_c8x,  -dt_c8y,  dt_c8z,
+                     -dt_c9x,  -dt_c9y,  dt_c9z,
+                      dt_h12x,  dt_h12y, dt_h12z,
+                      dt_h13x,  dt_h13y, dt_h13z,
+                     -dt_h12x, -dt_h12y, dt_h12z,
+                     -dt_h13x, -dt_h13y, dt_h13z])
+
+    # matrix derivative_mat is cartesian by internal, but we want internal by cartesian, thus we
+    # invert. This give the LEFT inverse.
+    dcart_dint_mat = stack((dp_phi,dg_gam,dt_the),axis=1)
+    dint_dcart_mat = np.linalg.pinv(dcart_dint_mat)
+    identity = dint_dcart_mat @ dcart_dint_mat # this must be identity matrix, of course (a@b does NOT)
+
+    good('New Run')
+
+    if verbose:
+        stringZ = '\nCart/int matrix:\n{}\nShape: {}\n\nS (inverted) Matrix:\n{}\n{}'
+        print(stringZ.format(dcart_dint_mat, dcart_dint_mat.shape, dint_dcart_mat, dint_dcart_mat.shape))
+
+    # good('only Z')
+
+    # only_z_mat = dcart_dint_mat[2:24:3] # take only z values
+    # only_z_inverse = np.linalg.pinv(only_z_mat)
+    # identity2 = only_z_inverse @ only_z_mat
+
+    # if verbose:
+    #     stringZ = '\n\n\nCart/int matrix Z :\n{}\nShape: {}\n\nS (Z inverted) Matrix:\n{}\n{}'
+    #     print(stringZ.format(only_z_mat, only_z_mat.shape, only_z_inverse,only_z_inverse.shape))
+    #     print (identity2)
+
+    return(dint_dcart_mat)
+
 
 def calc_g_G(phi,gam,the,verbose=None):
     '''
@@ -193,9 +308,10 @@ def all_of_them():
     for the in thetas:
         for gam in gammas:
             for phi in phis:
-                print(the,gam,phi)
+                #print(the,gam,phi)
                 calc_g_G(phi,gam,the)
+                calc_s_mat(phi,gam,the)
 
 if __name__ == "__main__":
-    calc_g_G(2.0,15,50)
-    #all_of_them()
+    calc_s_mat(2.0,15,50,True)
+    ##all_of_them()
