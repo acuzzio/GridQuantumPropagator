@@ -137,8 +137,8 @@ def parseNAC(fileN,nstates,natoms):
     #  I am reading a list of lists(triplets) in bytes. I need to separate them
 
     # this parser need to filter out the b'' objects that forms from the function split.
-    # also, there is a problem with numbers not separated in molcas outputs, that is why we replace '-'
-    # with ' -'
+    # also, there is a problem with numbers not separated in molcas outputs, 
+    # that is why we replace '-' # with ' -'
 
     outputO2 =  [(x.replace(b'-',b' -')).split(b' ') for x in output.split(b'\n') if x != b'']
     outputO = np.array([[ float(y)  for y in x if y != b''] for x in outputO2])
@@ -200,7 +200,7 @@ def makeCubeGraph(phis,gammas,thetas):
     return(graph,reverseGraph,first)
 
 
-def directionRead(folderO,folderE):
+def correctorFromDirection(folderO,folderE):
     '''
     This function is the corrector that follows the direction files...
     suuuuper problem bound
@@ -399,49 +399,8 @@ def main():
             f.write(results)
         print(results)
     else:
-        directionRead(inp.direction[0],inp.direction[1])
+        correctorFromDirection(inp.direction[0],inp.direction[1])
 
 if __name__ == "__main__":
     main()
-    #phis = ['P000-000', 'P001-000', 'P002-000', 'P003-000', 'P004-000',
-    #  'P005-000', 'P006-000', 'P007-000']
-    #gammas = ['P010-000', 'P010-714', 'P011-429', 'P012-143', 'P012-857',
-    #  'P013-571', 'P014-286', 'P015-000', 'P015-714', 'P016-429', 'P017-143',
-    #  'P017-857', 'P018-571', 'P019-286', 'P020-000']
-    #thetas = ['P120-000', 'P119-184', 'P118-367', 'P117-551', 'P116-735',
-    #  'P115-918', 'P115-102', 'P114-286', 'P113-469', 'P112-653', 'P111-837',
-    #  'P111-020', 'P110-204', 'P109-388', 'P108-571', 'P107-755', 'P106-939',
-    #  'P106-122', 'P105-306', 'P104-490', 'P103-673', 'P102-857', 'P102-041',
-    #  'P101-224', 'P100-408', 'P099-592', 'P098-776', 'P097-959', 'P097-143',
-    #  'P096-327', 'P095-510', 'P094-694', 'P093-878', 'P093-061', 'P092-245',
-    #  'P091-429', 'P090-612', 'P089-796', 'P088-980', 'P088-163', 'P087-347',
-    #  'P086-531', 'P085-714', 'P084-898', 'P084-082', 'P083-265', 'P082-449',
-    #  'P081-633', 'P080-816', 'P080-000']
-    #phis = phis[0:3]
-    #gammas = gammas[0:3]
-    #thetas = thetas[0:3]
-    #graph,revG,first = makeCubeGraph(phis,gammas,thetas)
-    #print(first)
-    #print('')
-    #printDict(graph)
-    #print('')
-    #printDict(revG)
-    #print('')
-
-
-
-
-#    mat = np.array([[1.00e+00,-6.51e-03,2.93e-06,-1.35e-07],
-#    [-4.93e-03, -1.00e+00, -3.68e-05, 3.71e-06],
-#    [ 1.16e-05, 1.83e-06, -3.90e-06, -9.32e-01],
-#    [ 1.93e-05, -2.95e-05, 9.47e-01, -1.30e-04]])
-#    oneDarray = np.array([-1.,-1.,-1.,-1.])
-#    re = compressColumnOverlap(mat,oneDarray)
-#    re2 = createOneAndZeroABS(mat,oneDarray)
-#    re3 = createOneAndZeroABS2(mat,oneDarray)
-#    print('''{}
-#    enter    {}
-#    result 1 {}
-#    result 2 {}
-#    result 3 {}'''.format(mat,oneDarray,re,re2,re3))
 
