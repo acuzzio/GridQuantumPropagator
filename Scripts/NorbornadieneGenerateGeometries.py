@@ -165,9 +165,13 @@ def generateNorbGeometry(phi,gam,the):
 
     newAtoms = np.array([[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
                 [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]])
+    # WARNING, you touched this code on friday night.
     if phi > 0.0:
-        this = ((phi/torsionalCI) * deltasCIP)
-        newCorrectedAtoms = newAtoms - this
+        # With deltasCIP here you get the MIRRORD in PHI scan...
+        # this = ((phi/torsionalCI) * deltasCIP)
+        # newCorrectedAtoms = newAtoms - this
+        this = ((phi/torsionalCI) * deltasCIN)
+        newCorrectedAtoms = newAtoms + this
     else:
         this = ((phi/torsionalCI) * deltasCIN)
         newCorrectedAtoms = newAtoms + this
