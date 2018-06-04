@@ -25,6 +25,203 @@ def pulZe(t, param_Pulse):
         result = Ed * (np.cos(omega*t+phase)) * np.exp(-num/den)
     return result
 
+def derivative3dMu(t,GRID,inp,printZ=None):
+    '''
+    derivative done for a 3d Grid on all the coordinates
+    t :: Double -> time
+    GRID :: np.array[:,:,:,:] <- wavefunction[phis,gams,thes,states]
+    inp :: dictionary of various inputs
+    printZ :: bool -> for the slow version... u calculate kinetic or derivative?
+    '''
+    printZ = printZ or False
+    if printZ:
+        kinS = np.empty_like(GRID)
+        potS = np.empty_like(GRID)
+    else:
+        new = np.empty_like(GRID)
+
+    dphi = inp['dphi']
+    dgam = inp['dgam']
+    dthe = inp['dthe']
+    phiL = inp['phiL']
+    gamL = inp['gamL']
+    theL = inp['theL']
+    nstates = inp['nstates']
+    pulseV = [ pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) ]
+
+    for s in np.arange(nstates):
+        for p in np.arange(phiL):
+            for g in np.arange(gamL):
+               for t in np.arange(theL):
+                   G = GRID[p,g,t,s]
+                   V = inp['potCube'][p,g,t,s]
+                   K = inp['kinCube'][p,g,t] # this is 9x3 matrix
+                   D = inp['dipCube'][p,g,t] # this should be a nstate*nstate*3 matrix
+
+                   # derivatives in phi
+                   if p == 0:
+                       dG_dp   = (GRID[p+1,g,t,s]) / (2 * dphi)
+                       d2G_dp2 = (-GRID[p+2,g,t,s]+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]) / (12 * dphi**2)
+                       d2G_dcross_numerator_p = -GRID[p+1,g,t,s]
+
+                   elif p == 1:
+                       dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       d2G_dp2 = (-GRID[p+2,g,t,s]+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]) / (12 * dphi**2)
+                       d2G_dcross_numerator_p = -GRID[p+1,g,t,s] -GRID[p-1,g,t,s]
+
+                   elif p == phiL-2:
+                       dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       d2G_dp2 = (+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]-GRID[p-2,g,t,s]) / (12 * dphi**2)
+                       d2G_dcross_numerator_p = -GRID[p+1,g,t,s] -GRID[p-1,g,t,s]
+
+                   elif p == phiL-1:
+                       dG_dp   = (-GRID[p-1,g,t,s]) / (2 * dphi)
+                       d2G_dp2 = (-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]-GRID[p-2,g,t,s]) / (12 * dphi**2)
+                       d2G_dcross_numerator_p = -GRID[p-1,g,t,s]
+
+                   else:
+                       dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       d2G_dp2 = (-GRID[p+2,g,t,s]+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]-GRID[p-2,g,t,s]) / (12 * dphi**2)
+                       d2G_dcross_numerator_p = -GRID[p+1,g,t,s] -GRID[p-1,g,t,s]
+
+                   # derivatives in gam
+                   if g == 0:
+                       dG_dg   = (GRID[p,g+1,t,s]) / (2 * dgam)
+                       d2G_dg2 = (-GRID[p,g+2,t,s]+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]) / (12 * dgam**2)
+                       d2G_dcross_numerator_g = -GRID[p,g+1,t,s]
+
+                   elif g == 1:
+                       dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       d2G_dg2 = (-GRID[p,g+2,t,s]+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]) / (12 * dgam**2)
+                       d2G_dcross_numerator_g = -GRID[p,g+1,t,s] -GRID[p,g-1,t,s]
+
+                   elif g == gamL-2:
+                       dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       d2G_dg2 = (+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]-GRID[p,g-2,t,s]) / (12 * dgam**2)
+                       d2G_dcross_numerator_g = -GRID[p,g+1,t,s] -GRID[p,g-1,t,s]
+
+                   elif g == gamL-1:
+                       dG_dg   = (-GRID[p,g-1,t,s]) / (2 * dgam)
+                       d2G_dg2 = (-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]-GRID[p,g-2,t,s]) / (12 * dgam**2)
+                       d2G_dcross_numerator_g = -GRID[p,g-1,t,s]
+
+                   else:
+                       dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       d2G_dg2 = (-GRID[p,g+2,t,s]+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]-GRID[p,g-2,t,s]) / (12 * dgam**2)
+                       d2G_dcross_numerator_g = -GRID[p,g+1,t,s] -GRID[p,g-1,t,s]
+
+                   # derivatives in the
+                   if t == 0:
+                       dG_dt   = (GRID[p,g,t+1,s]) / (2 * dthe)
+                       d2G_dt2 = (-GRID[p,g,t+2,s]+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]) / (12 * dthe**2)
+                       d2G_dcross_numerator_t = -GRID[p,g,t+1,s]
+
+                   elif t == 1:
+                       dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       d2G_dt2 = (-GRID[p,g,t+2,s]+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]) / (12 * dthe**2)
+                       d2G_dcross_numerator_t = -GRID[p,g,t+1,s] -GRID[p,g,t-1,s]
+
+                   elif t == theL-2:
+                       dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       d2G_dt2 = (+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]-GRID[p,g,t-2,s]) / (12 * dthe**2)
+                       d2G_dcross_numerator_t = -GRID[p,g,t+1,s] -GRID[p,g,t-1,s]
+
+                   elif t == theL-1:
+                       dG_dt   = (-GRID[p,g,t-1,s]) / (2 * dthe)
+                       d2G_dt2 = (-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]-GRID[p,g,t-2,s]) / (12 * dthe**2)
+                       d2G_dcross_numerator_t = -GRID[p,g,t-1,s]
+
+                   else:
+                       dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       d2G_dt2 = (-GRID[p,g,t+2,s]+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]-GRID[p,g,t-2,s]) / (12 * dthe**2)
+                       d2G_dcross_numerator_t = -GRID[p,g,t+1,s] -GRID[p,g,t-1,s]
+
+
+                   # cross terms: they're thousands... 
+                   if p == 0 or g == 0:
+                       d2G_dpg_numerator_cross_1 = 0
+                   else:
+                       d2G_dpg_numerator_cross_1 = +GRID[p-1,g-1,t,s]
+                   if p == phiL-1 or g == gamL-1:
+                       d2G_dpg_numerator_cross_2 = 0
+                   else:
+                       d2G_dpg_numerator_cross_2 = +GRID[p+1,g+1,t,s]
+
+                   if p == 0 or t == 0:
+                       d2G_dpt_numerator_cross_1 = 0
+                   else:
+                       d2G_dpt_numerator_cross_1 = +GRID[p-1,g,t-1,s]
+                   if p == phiL-1 or t == theL-1:
+                       d2G_dpt_numerator_cross_2 = 0
+                   else:
+                       d2G_dpt_numerator_cross_2 = +GRID[p+1,g,t+1,s]
+
+                   if g == 0 or t == 0:
+                       d2G_dgt_numerator_cross_1 = 0
+                   else:
+                       d2G_dgt_numerator_cross_1 = +GRID[p,g-1,t-1,s]
+                   if g == gamL-1 or t == theL-1:
+                       d2G_dgt_numerator_cross_2 = 0
+                   else:
+                       d2G_dgt_numerator_cross_2 = +GRID[p,g+1,t+1,s]
+
+                   # triple 0 or triplelast, we DO NOT NEED these term, as ANY of my terms in the kinetic energy depends on displacements along all three 
+                   # coordinates... thus, no special cases where (p ==o or g == 0 or t == 0)
+
+                   d2G_dpg_numerator = d2G_dcross_numerator_p + d2G_dcross_numerator_g + d2G_dpg_numerator_cross_1 + d2G_dpg_numerator_cross_2 + 2*G
+                   d2G_dpt_numerator = d2G_dcross_numerator_p + d2G_dcross_numerator_t + d2G_dpt_numerator_cross_1 + d2G_dpt_numerator_cross_2 + 2*G
+                   d2G_dgt_numerator = d2G_dcross_numerator_g + d2G_dcross_numerator_t + d2G_dgt_numerator_cross_1 + d2G_dgt_numerator_cross_2 + 2*G
+
+                   d2G_dpg = d2G_dpg_numerator/(2*dphi*dgam)
+                   d2G_dpt = d2G_dpt_numerator/(2*dphi*dthe)
+                   d2G_dgt = d2G_dgt_numerator/(2*dgam*dthe)
+                   d2G_dgp = d2G_dpg
+                   d2G_dtp = d2G_dpt
+                   d2G_dtg = d2G_dgt
+
+                   # T elements (9)
+                   Tpp = K[0,0] * G + K[0,1] * dG_dp + K[0,2] * d2G_dp2
+                   Tpg = K[1,0] * G + K[1,1] * dG_dp + K[1,2] * d2G_dpg
+                   Tpt = K[2,0] * G + K[2,1] * dG_dp + K[1,2] * d2G_dpt
+
+                   Tgp = K[3,0] * G + K[3,1] * dG_dg + K[3,2] * d2G_dgp
+                   Tgg = K[4,0] * G + K[4,1] * dG_dg + K[4,2] * d2G_dg2
+                   Tgt = K[5,0] * G + K[5,1] * dG_dg + K[5,2] * d2G_dgt
+
+                   Ttp = K[6,0] * G + K[6,1] * dG_dt + K[6,2] * d2G_dtp
+                   Ttg = K[7,0] * G + K[7,1] * dG_dt + K[7,2] * d2G_dtg
+                   Ttt = K[8,0] * G + K[8,1] * dG_dt + K[8,2] * d2G_dt2
+
+                   Ttot = (Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt)
+                   Vtot = V * G
+
+                   # loop and sum on other states.
+                   Mtot = 0
+
+                   for d in np.arange(nstates): # state s is where the outer loop is, d is where the inner loop is.
+                       for carte in np.arange(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                           Mtot += -(pulseV[carte] * D[carte,s,d] ) * GRID[p,g,t,d]
+
+                   prr = False
+                   if prr == True:
+                       print()
+                       print(K)
+                       print('d1: {:e} {:e}'.format(dG_dg,dG_dt))
+                       print('d2: {:e} {:e}'.format(d2G_dg2,d2G_dt2))
+                       print('T: {:e} {:e} {:e} {:e}'.format(Tgg, Tgt, Ttg, Ttt))
+                       print('({},{})    Ttot: {:.2f}      Vtot: {:.2f}   elem: {:.2f}'.format(g,t,Ttot,Vtot, (-1j * (Ttot+Vtot))))
+
+                   if printZ:
+                       kinS[p,g,t,s] = Ttot
+                       potS[p,g,t,s] = Vtot
+                   else:
+                       new[p,g,t,s] = -1j * (Ttot+Vtot+Mtot)
+    if printZ:
+        return(kinS,potS)
+    else:
+        return(new)
+
+
 def derivative2dGamTheMu(t,GRID,inp,printZ=None):
     '''
     derivative done for a 2d Grid on the angles

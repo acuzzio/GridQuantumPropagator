@@ -9,8 +9,8 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
          makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu, pulZe,
-         graphic_Pulse)
-from quantumpropagator.CPropagator import Cderivative2dGamThe
+         graphic_Pulse,derivative3dMu)
+from quantumpropagator.CPropagator import Cderivative3dMu, CextractEnergy3dMu
 
 def expandcube(inp):
     return inp
@@ -86,19 +86,6 @@ def propagate3D(dataDict, inputDict):
 
     inp = expandcube(inp)
 
-    ## REDUCE THE PROBLEM IN 1D 1 state
-    ## Take equilibrium points
-    #gsm_phi_ind = dataDict['phis'].index('P000-000')
-    #gsm_gam_ind = dataDict['gams'].index('P016-923')
-    #gsm_the_ind = dataDict['thes'].index('P114-804')
-
-    #zero_pot = dataDict['potCube'] - np.amin(dataDict['potCube'])
-    #inp['potCube'] = zero_pot[:,gsm_gam_ind,gsm_the_ind,0]
-    #inp['kinCube'] = dataDict['kinCube'][:,gsm_gam_ind,gsm_the_ind]
-    #wf             =       groundStateWF[:,gsm_gam_ind,gsm_the_ind]
-    #print('shapes: P:{} K:{} W:{} '.format(inp['potCube'].shape,inp['kinCube'].shape,wf.shape))
-    #norm_wf = np.linalg.norm(wf)
-    #wf = wf / norm_wf
 
 
     inp['potCube'] = dataDict['potCube'] - np.amin(dataDict['potCube'])
@@ -111,36 +98,6 @@ def propagate3D(dataDict, inputDict):
     inputDict['outFol'] = nameRoot
     inp['outFol'] = nameRoot
 
-    ## REDUCE THE PROBLEM IN 1d GAM 1 state 
-    ## Take equilibrium points
-    #gsm_phi_ind = dataDict['phis'].index('P000-000')
-    #gsm_gam_ind = dataDict['gams'].index('P016-923')
-    #gsm_the_ind = dataDict['thes'].index('P114-804')
-
-    ##print(inp['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind])
-
-    ## slice the grid
-    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,gsm_the_ind,0]
-    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,gsm_the_ind]
-    #wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
-
-
-    # REDUCE THE PROBLEM IN 2d THE GAM 1 state
-    # Take equilibrium points
-    gsm_phi_ind = dataDict['phis'].index('P000-000')
-    gsm_gam_ind = dataDict['gams'].index('P016-923')
-    gsm_the_ind = dataDict['thes'].index('P114-804')
-
-    # slice the grid
-    numStates = inputDict['states']
-    inp['nstates'] = numStates
-    inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:,:numStates]
-    inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
-    inp['dipCube'] = inp['dipCube'][gsm_phi_ind,:,:,:,:numStates,:numStates]
-    wf =                         wf[gsm_phi_ind,:,:,:numStates]
-    wf = wf/np.linalg.norm(wf)
-    str111 = 'potCube: {}\nkinCube: {}\ndipCube: {}\nwf:      {}'
-    print(str111.format(inp['potCube'].shape,inp['kinCube'].shape,inp['dipCube'].shape,wf.shape))
 
     # magnify the potcube
     if 'enePot' in inputDict:
@@ -168,6 +125,17 @@ def propagate3D(dataDict, inputDict):
         wf_not_norm = retrieve_hdf5_data(wffn,'WF')
         wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
+    ################
+    # slice states #
+    ################
+
+    numStates = inputDict['states']
+    inp['nstates'] = numStates
+    inp['potCube'] = inp['potCube'][:,:,:,:numStates]
+    inp['kinCube'] = inp['kinCube'][:,:,:]
+    inp['dipCube'] = inp['dipCube'][:,:,:,:,:numStates,:numStates]
+    wf =                         wf[:,:,:,:numStates]
+
     # INITIAL DYNAMICS VALUES
     h = inp['h']
     t = 0
@@ -188,13 +156,15 @@ def propagate3D(dataDict, inputDict):
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
-    # INTEGRATOR SELECTION HERE
-    dPsiDt = derivative2dGamTheMu
-    #CdPsiDt = Cderivative2dGamThe
-    CdPsiDt = derivative2dGamTheMu
+    #############################
+    # INTEGRATOR SELECTION HERE #
+    #############################
+
+    dPsiDt = CextractEnergy3dMu
+    CdPsiDt = Cderivative3dMu
 
     # calculating initial total/potential/kinetic
-    kin, pot = dPsiDt(t,wf,inp,printZ=True)
+    kin, pot = dPsiDt(t,wf,inp)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     initialTotal = kinetic + potential
@@ -202,7 +172,6 @@ def propagate3D(dataDict, inputDict):
 
     # to give the graph a nice range
     inp['vmax_value'] = abs2(wf).max()
-
 
     # graph the pulse
     graphic_Pulse(inp)
@@ -214,7 +183,7 @@ def propagate3D(dataDict, inputDict):
             asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt)
             counter += 1
 
-        wf = rk4Ene3d(dPsiDt,t,wf,inp)
+        wf = rk4Ene3d(CdPsiDt,t,wf,inp)
         t  = t + h
 
 
@@ -224,7 +193,11 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt):
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
-    kin, pot = dPsiDt(t,wf,inp,printZ=True)
+    kin, pot = dPsiDt(t,wf,inp)
+
+    #kinetic = np.vdot(wf,kin)
+    #potential = np.vdot(wf,pot)
+
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     total = kinetic + potential
@@ -243,7 +216,7 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt):
 
     outputStringSP = "{:11.4f}".format(t/41.3)
     for i in range(nstates):
-        outputStringSP += " {:+7.5e} ".format(np.linalg.norm(wf[:,:,i])**2)
+        outputStringSP += " {:+7.5e} ".format(np.linalg.norm(wf[:,:,:,i])**2)
 
     with open(outputFileP, "a") as oofP:
         oofP.write(outputStringSP + '\n')
@@ -252,13 +225,18 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt):
         outputStringS2 = '{} {} {} {} {} {} {} {} {} {}'
         outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']))
         oof.write(outputString2 + '\n')
+
+    #####################
+    # on the fly graphs #
+    #####################
+
     if 'graphs' in inputDict:
         vmaxV = inp['vmax_value']
         oneD = False
         if oneD:
             graphFileName = name + ".png"
             makeJustAnother2DgraphComplexSINGLE(inp['gams'],wf,graphFileName,'Porc')
-        twoD = True
+        twoD = False
         if twoD:
             for i in range(nstates):
                 for j in range(i+1): # In python the handshakes are like this...
@@ -429,3 +407,45 @@ if __name__ == "__main__":
 
 
 
+    ## REDUCE THE PROBLEM IN 1D 1 state
+    ## Take equilibrium points
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-923')
+    #gsm_the_ind = dataDict['thes'].index('P114-804')
+
+    #zero_pot = dataDict['potCube'] - np.amin(dataDict['potCube'])
+    #inp['potCube'] = zero_pot[:,gsm_gam_ind,gsm_the_ind,0]
+    #inp['kinCube'] = dataDict['kinCube'][:,gsm_gam_ind,gsm_the_ind]
+    #wf             =       groundStateWF[:,gsm_gam_ind,gsm_the_ind]
+    #print('shapes: P:{} K:{} W:{} '.format(inp['potCube'].shape,inp['kinCube'].shape,wf.shape))
+    #norm_wf = np.linalg.norm(wf)
+    #wf = wf / norm_wf
+
+    ## REDUCE THE PROBLEM IN 1d GAM 1 state 
+    ## Take equilibrium points
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-923')
+    #gsm_the_ind = dataDict['thes'].index('P114-804')
+
+    ##print(inp['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind])
+
+    ## slice the grid
+    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,gsm_the_ind,0]
+    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,gsm_the_ind]
+    #wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
+
+
+    ## REDUCE THE PROBLEM IN 2d THE GAM 1 state
+    ## Take equilibrium points
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-923')
+    #gsm_the_ind = dataDict['thes'].index('P114-804')
+
+    ## slice the grid
+    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:,:numStates]
+    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
+    #inp['dipCube'] = inp['dipCube'][gsm_phi_ind,:,:,:,:numStates,:numStates]
+    #wf =                         wf[gsm_phi_ind,:,:,:numStates]
+    #wf = wf/np.linalg.norm(wf)
+    #str111 = 'potCube: {}\nkinCube: {}\ndipCube: {}\nwf:      {}'
+    #print(str111.format(inp['potCube'].shape,inp['kinCube'].shape,inp['dipCube'].shape,wf.shape))
