@@ -112,8 +112,12 @@ def graphic_Pulse(dic):
     ax1.set_xlabel('Time A.U.')
     for i in ['X','Y','Z']:
         Ed,omega,sigma,phi,t0 = dic['pulse' + i]
-        gaus = np.apply_along_axis(pp.envel,0,timesArray,Ed,sigma,t0)
-        puls = np.apply_along_axis(pp.pulse,0,timesArray,Ed,omega,sigma,phi,t0)
+        if Ed == 0 or sigma == 0:
+            gaus = timesArray * 0
+            puls = timesArray * 0
+        else:
+            gaus = np.apply_along_axis(pp.envel,0,timesArray,Ed,sigma,t0)
+            puls = np.apply_along_axis(pp.pulse,0,timesArray,Ed,omega,sigma,phi,t0)
         plt.plot(timesArray, gaus, linewidth=2.0, label="Envelope"+i)
         plt.plot(timesArray, puls, linewidth=2.0, label="Pulse"+i)
 

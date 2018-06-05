@@ -40,9 +40,15 @@ def component(t):
     return pulse(t,0.014,0.13,30,0,100)
 
 def envel(t,Ed,sigma,t0):
+    '''
+    It returns the value of the gaussian envelope for the pulse at time t
+    '''
     num = (t-t0)**2
     den = 2*(sigma**2)
-    return  Ed * np.exp(-num/den)
+    if den == 0:
+        return 0.0
+    else:
+        return Ed * np.exp(-num/den)
 
 def pulse(t,Ed,omega,sigma,phi,t0):
     '''

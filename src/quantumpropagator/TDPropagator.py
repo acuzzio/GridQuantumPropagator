@@ -78,8 +78,6 @@ def propagate3D(dataDict, inputDict):
             'nstates'  : nstates,
             }
 
-    print(inp['dipCube'].shape)
-
     #########################################
     # Here the cube expansion/interpolation #
     #########################################
@@ -147,12 +145,13 @@ def propagate3D(dataDict, inputDict):
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
+    print('\ntail -f {}\n'.format(outputFileP))
 
     # saving input data in h5 file
     dataH5filename = os.path.join(nameRoot, 'allInput.h5')
     writeH5fileDict(dataH5filename,inp)
 
-    header = '  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |   Pulse X    |   Pulse Y    |   Pulse Z    |'
+    header = '  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |    Pulse X    |    Pulse Y    |    Pulse Z    |'
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
@@ -175,6 +174,7 @@ def propagate3D(dataDict, inputDict):
 
     # graph the pulse
     graphic_Pulse(inp)
+
 
     for ii in range(fulltimeSteps):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
@@ -209,7 +209,7 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,dPsiDt):
     #if int(rows) // counter == 0:
     #    print('zero')
 
-    outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} |'
+    outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+13.5e} | {:+13.5e} | {:+13.5e} |'
     outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
     print(outputString)
 
@@ -310,7 +310,7 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
         warning('You have a factor of {} enabled on initial condition'.format(factor))
     G_phi = G_phi/factor
     G_gam = G_gam/factor
-    G_the = G_the/factor
+    G_the = G_the/(factor/10)
 
     Gw_phi = np.sqrt(force_phi*G_phi)
     Gw_gam = np.sqrt(force_gam*G_gam)
