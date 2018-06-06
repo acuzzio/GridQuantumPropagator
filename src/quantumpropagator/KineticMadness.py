@@ -298,18 +298,6 @@ def calc_g_G(phi,gam,the,verbose=None):
         print('\nT coefficient Matrix:\n',Ttot)
     return(Ttot)
 
-
-
-
-def all_of_them():
-    # 
-    # for the in thetas:
-    #     for gam in gammas:
-    #         for phi in phis:
-    #             #print(the,gam,phi)
-    #             calc_g_G(phi,gam,the)
-    #             calc_s_mat(phi,gam,the)
-
 if __name__ == "__main__":
     calc_s_mat(2.0,15,50,True)
-    ##all_of_them()
+    calc_g_G(2,15,50,True)
