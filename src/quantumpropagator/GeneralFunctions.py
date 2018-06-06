@@ -13,11 +13,32 @@ import sys
 #pdb.set_trace() #to debug h=help
 
 
+def stringTransformation3d(fn):
+    '''
+    transform the string of the form
+    'h5/zNorbornadiene_N006-400_P014-800_P085-500.rassi.h5'
+    into 3 numbers and 3 labels
+    '''
+    fn1 = fn.split('.')[0]  # h5/zNorbornadiene_N006-400_P014-800_P085-500
+    # str1 = 'N006-400' ->  axis1 = -6.4
+    [str1,str2,str3] = fn1.split('_')[1:]
+    [axis1,axis2,axis3] = [
+            labTranform(x) for x in
+            [str1,str2,str3]]
+    # phi are invariate
+    axis1 = axis1
+    # gamma are converted to radians
+    axis2 = np.deg2rad(axis2)
+    # theta are divided by 2 and converted to radians
+    axis3 = np.deg2rad(axis3/2)
+    return(axis1,str1,axis2,str2,axis3,str3)
+
+
 def fromLabelsToFloats(dataDict):
     '''
     takes the datadict and returns the three arrays of coordinates values
     '''
-    phis = labTranformA(dataDict['phis'])/6
+    phis = labTranformA(dataDict['phis'])
     gams = np.deg2rad(labTranformA(dataDict['gams']))
     thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
     return(phis,gams,thes)
@@ -449,27 +470,6 @@ def labTranformA(strings):
     into his +14.8 float type numpy array : D
     '''
     return (np.array([labTranform(a) for a in strings]))
-
-
-def stringTransformation3d(fn):
-    '''
-    transform the string of the form
-    'h5/zNorbornadiene_N006-400_P014-800_P085-500.rassi.h5'
-    into 3 numbers and 3 labels
-    '''
-    fn1 = fn.split('.')[0]  # h5/zNorbornadiene_N006-400_P014-800_P085-500
-    # str1 = 'N006-400' ->  axis1 = -6.4
-    [str1,str2,str3] = fn1.split('_')[1:]
-    [axis1,axis2,axis3] = [
-            labTranform(x) for x in
-            [str1,str2,str3]]
-    # phi are invariate
-    axis1 = axis1 / 6
-    # gamma are converted to radians
-    axis2 = np.deg2rad(axis2)
-    # theta are divided by 2 and converted to radians
-    axis3 = np.deg2rad(axis3/2)
-    return(axis1,str1,axis2,str2,axis3,str3)
 
 
 def loadInputYAML(fn):
