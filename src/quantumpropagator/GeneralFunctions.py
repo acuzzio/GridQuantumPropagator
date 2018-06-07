@@ -43,6 +43,16 @@ def fromLabelsToFloats(dataDict):
     thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
     return(phis,gams,thes)
 
+def fromFloatsToLabels(phis,gams,thes):
+    '''
+    it does the opposite of fromLabelsToFloats
+    phis,gams,thes :: tuple of three np.array(floats)
+    '''
+    phiStrings = labTranformReverseA(phis)
+    gamStrings = labTranformReverseA(np.rad2deg(gams))
+    theStrings = labTranformReverseA(np.rad2deg(thes*2))
+    return phiStrings, gamStrings, theStrings
+
 
 def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, bar_length=60):
     """
@@ -453,6 +463,19 @@ def createTabellineFromArray(arr):
         for kk in np.arange(length):
             mat[ii,kk]=arr[ii]*arr[kk]
     return(mat)
+
+def labTranformReverseA(floArray):
+    '''
+    labTranformReverse applied to an array
+    '''
+    return [ labTranformReverse(x) for x in floArray ]
+
+def labTranformReverse(flo):
+    '''
+    from the float number to the labeling of files used in this project
+    '''
+    flo2 = '{:+08.3f}'.format(flo)
+    return flo2.replace('-','N').replace('.','-').replace('+','P')
 
 def labTranform(string):
     '''

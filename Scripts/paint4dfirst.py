@@ -33,7 +33,7 @@ def fourdThing(fn):
 
 
 def main():
-    fol = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/aaa_input_FinerGrid_0031'
+    fol = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/distort_input_FinerGrid_0009'
     filelist = sorted(glob.glob(fol + '/Gau*.h5'))
     for i in range(len(filelist)):
     #for i in range(10):
