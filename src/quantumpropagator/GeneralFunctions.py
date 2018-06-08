@@ -26,7 +26,7 @@ def stringTransformation3d(fn):
             labTranform(x) for x in
             [str1,str2,str3]]
     # phi are invariate
-    axis1 = axis1
+    axis1 = axis1/100
     # gamma are converted to radians
     axis2 = np.deg2rad(axis2)
     # theta are divided by 2 and converted to radians
@@ -38,7 +38,7 @@ def fromLabelsToFloats(dataDict):
     '''
     takes the datadict and returns the three arrays of coordinates values
     '''
-    phis = labTranformA(dataDict['phis'])
+    phis = labTranformA(dataDict['phis'])/100
     gams = np.deg2rad(labTranformA(dataDict['gams']))
     thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
     return(phis,gams,thes)
@@ -48,7 +48,7 @@ def fromFloatsToLabels(phis,gams,thes):
     it does the opposite of fromLabelsToFloats
     phis,gams,thes :: tuple of three np.array(floats)
     '''
-    phiStrings = labTranformReverseA(phis)
+    phiStrings = labTranformReverseA(phis*100)
     gamStrings = labTranformReverseA(np.rad2deg(gams))
     theStrings = labTranformReverseA(np.rad2deg(thes*2))
     return phiStrings, gamStrings, theStrings

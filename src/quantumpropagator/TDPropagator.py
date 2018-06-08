@@ -85,7 +85,6 @@ def propagate3D(dataDict, inputDict):
     inp = expandcube(inp)
 
 
-
     inp['potCube'] = dataDict['potCube'] - np.amin(dataDict['potCube'])
     norm_wf = np.linalg.norm(wf)
     good('starting NORM deviation : {}'.format(1-norm_wf))

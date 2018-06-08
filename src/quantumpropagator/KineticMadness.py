@@ -128,7 +128,7 @@ def calc_g_G(phi,gam,the,verbose=None):
     verbose = verbose or False
     ang2boh = 1.889725988
     umass = 1836
-
+    phiNumber = 0.06
     # I already controlled that the lack of parentheses gives the result I want
     # Hydrogen has the mass to 1 but it is the C length that controls the
     # derivative
@@ -136,18 +136,18 @@ def calc_g_G(phi,gam,the,verbose=None):
     ch    = 1.541 * ang2boh * sqrt(1  * umass)
 
     # derivatives of phi
-    dp_c8x  = (-0.165777 * ang2boh / 6) * sqrt(12 * umass)
-    dp_c8y  = (0.067387  * ang2boh / 6) * sqrt(12 * umass)
-    dp_c8z  = (0.016393  * ang2boh / 6) * sqrt(12 * umass)
-    dp_c9x  = (-0.145170 * ang2boh / 6) * sqrt(12 * umass)
-    dp_c9y  = (-0.096085 * ang2boh / 6) * sqrt(12 * umass)
-    dp_c9z  = (-0.143594 * ang2boh / 6) * sqrt(12 * umass)
-    dp_h12x = (-0.520977 * ang2boh / 6) * sqrt(1  * umass)
-    dp_h12y = (0.086124  * ang2boh / 6) * sqrt(1  * umass)
-    dp_h12z = (0.316644  * ang2boh / 6) * sqrt(1  * umass)
-    dp_h13x = (0.450303  * ang2boh / 6) * sqrt(1  * umass)
-    dp_h13y = (-0.048000 * ang2boh / 6) * sqrt(1  * umass)
-    dp_h13z = (0.245432  * ang2boh / 6) * sqrt(1  * umass)
+    dp_c8x  = (-0.165777 * ang2boh / phiNumber) * sqrt(12 * umass)
+    dp_c8y  = (0.067387  * ang2boh / phiNumber) * sqrt(12 * umass)
+    dp_c8z  = (0.016393  * ang2boh / phiNumber) * sqrt(12 * umass)
+    dp_c9x  = (-0.145170 * ang2boh / phiNumber) * sqrt(12 * umass)
+    dp_c9y  = (-0.096085 * ang2boh / phiNumber) * sqrt(12 * umass)
+    dp_c9z  = (-0.143594 * ang2boh / phiNumber) * sqrt(12 * umass)
+    dp_h12x = (-0.520977 * ang2boh / phiNumber) * sqrt(1  * umass)
+    dp_h12y = (0.086124  * ang2boh / phiNumber) * sqrt(1  * umass)
+    dp_h12z = (0.316644  * ang2boh / phiNumber) * sqrt(1  * umass)
+    dp_h13x = (0.450303  * ang2boh / phiNumber) * sqrt(1  * umass)
+    dp_h13y = (-0.048000 * ang2boh / phiNumber) * sqrt(1  * umass)
+    dp_h13z = (0.245432  * ang2boh / phiNumber) * sqrt(1  * umass)
     dp_phi  = array([ dp_c8x,   dp_c8y,  dp_c8z,
                       dp_c9x,   dp_c9y,  dp_c9z,
                      -dp_c8x,  -dp_c8y,  dp_c8z,
@@ -299,5 +299,5 @@ def calc_g_G(phi,gam,the,verbose=None):
     return(Ttot)
 
 if __name__ == "__main__":
-    calc_s_mat(2.0,15,50,True)
+    #calc_s_mat(2.0,15,50,True)
     calc_g_G(2,15,50,True)
