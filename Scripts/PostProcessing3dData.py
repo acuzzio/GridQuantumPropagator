@@ -140,8 +140,7 @@ def parseNAC(fileN,nstates,natoms):
     # also, there is a problem with numbers not separated in molcas outputs, 
     # that is why we replace '-' # with ' -'
 
-    outputO2 =  [(x.replace(b'-',b' -')).split(b' ') for x in output.split(b'\n') if x != b'']
-    outputO = np.array([[ float(y)  for y in x if y != b''] for x in outputO2])
+    outputO = np.array([ getThreeNumbers(x) for x in output.split(b'\n') if x != b''])
     outputDivided = list(chunksOf(outputO,natoms))
 
     # I need to fill the NAC matrix with the elements I have...
@@ -153,6 +152,28 @@ def parseNAC(fileN,nstates,natoms):
         # tricky NAC, you're antisymmetric
         emptyMat[ind2, ind1] = -outputDivided[index]
     return(emptyMat)
+
+def getThreeNumbers(bytestr):
+    '''
+    this function exists because Molcas does not always give NAC in a suitable way
+    sometimes the grepped lines are like this
+    9736.8701781410642.89824311 4710.70644771
+    ************** 8777.30913244 474.27759987
+    so I am using a few tricks to convert these values in something big, but still triplets of numbers
+    '''
+    res = (bytestr.replace(b'-',b' -')).split(b' ')
+    noEmpty = [ x for x in res if x != b'' ]
+    if len(noEmpty) < 3:
+        ris = [ 9999, 9999, 9999 ]
+    else:
+        ris = []
+        for elem in noEmpty:
+            try:
+                val = float(elem)
+                ris.append(val)
+            except ValueError:
+                ris.append(9999)
+    return(ris)
 
 
 def unpackThingsFromParallel(listOfval):

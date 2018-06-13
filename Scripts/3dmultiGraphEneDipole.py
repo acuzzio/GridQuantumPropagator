@@ -60,7 +60,10 @@ def matrixApproach(globalExp, proc, processed_states):
         bigArrayLab2[ind] = str2
         bigArrayLab3[ind] = str3
         ind += 1
-    labelsAxis1 = np.unique(bigArrayLab1)
+    labelsAxis1_b = np.unique(bigArrayLab1)
+    # I want ordered phi labels like if they're numbers
+    orderedphi = [ x for x in labelsAxis1_b if x[0]=='N' ][::-1] + [ x for x in labelsAxis1_b if x[0]=='P' ]
+    labelsAxis1 = np.array(orderedphi, dtype=object)
     labelsAxis2 = np.unique(bigArrayLab2)
     labelsAxis3 = np.unique(bigArrayLab3)
     blenderArray = np.empty((labelsAxis1.size,labelsAxis2.size,

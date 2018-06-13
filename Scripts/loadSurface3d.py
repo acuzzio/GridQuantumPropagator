@@ -26,7 +26,7 @@ b = np.fromfile('fullB.txt')
 c = np.fromfile('fullC.txt')
 d = np.fromfile('fullE.txt')
 
-nstates = 14
+nstates = 8
 
 ax1N = a.size
 ax2N = b.size

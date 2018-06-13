@@ -1,7 +1,11 @@
+# distutils: extra_compile_args = -fopenmp
+# distutils: extra_link_args = -fopenmp
+
 import numpy as np
 cimport numpy as np
 #import quantumpropagator.EMPulse as pp
 cimport cython
+from cython.parallel import prange
 
 #import pyximport; pyximport.install()
 
@@ -85,7 +89,8 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
     pulseV[1] = pulZe(time,inp['pulseY'])
     pulseV[2] = pulZe(time,inp['pulseZ'])
 
-    for s in range(nstates):
+    #for s in range(nstates):
+    for s in prange(nstates, nogil=True):
         for p in range(phiL):
             for g in range(gamL):
                for t in range(theL):
@@ -237,7 +242,10 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
                    for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
                        for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                            #Mtot += -(pulseV[carte] * D[carte,s,d] ) * GRID[p,g,t,d]
-                           Mtot += -(pulseV[carte] * Dm[p,g,t,carte,s,d] ) * GRID[p,g,t,d]
+                           # parallel version DOES NOT want += (better, it does not consider += as
+                           # the serial version would. += works on shared reduction
+                           # variables inside of the prange() loop
+                           Mtot = Mtot - ((pulseV[carte] * Dm[p,g,t,carte,s,d] ) * GRID[p,g,t,d])
 
                    if selector == 1:
                        new[p,g,t,s] = I * (Ttot+Vtot+Mtot)
