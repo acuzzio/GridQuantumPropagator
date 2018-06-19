@@ -11,6 +11,7 @@ from itertools import repeat
 import multiprocessing
 import numpy as np
 import os
+from shutil import copy2
 
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
@@ -38,7 +39,13 @@ def read_single_arguments(single_inputs):
                         dest="d",
                         nargs='+',
                         help="Corrector, takes two arguments:\n"
-                        "Expression of h5 files\n"
+                        "Folder of h5 files\n"
+                        "Folder of outputs\n")
+    parser.add_argument("-r", "--refine",
+                        dest="r",
+                        nargs='+',
+                        help="refiner, takes two arguments:\n"
+                        "Folder of not refined h5\n"
                         "Folder of outputs\n")
 
 
@@ -51,6 +58,8 @@ def read_single_arguments(single_inputs):
         single_inputs = single_inputs._replace(proc=args.p)
     if args.d != None:
         single_inputs = single_inputs._replace(direction=args.d)
+    if args.r != None:
+        single_inputs = single_inputs._replace(refine=args.r)
 
     return single_inputs
 
@@ -63,7 +72,7 @@ def createOutputFile(tupleI):
     outFol :: String <- the folder where the output is collected
     '''
     (fold,outFol) = tupleI
-    print('doing ' + fold)
+    #print('doing ' + fold)
     folder = os.path.dirname(fold)
     proj = os.path.basename(fold)
     root = folder +'/' + proj + '/' + proj
@@ -109,6 +118,13 @@ def createOutputFile(tupleI):
                     #('TRANDENS',transDen),
                     ('OVERLAP', overlap[nstates:,:nstates]),
                     ('NAC', NAC)]
+        #print(overlap[nstates:,:nstates][:3,:3])
+        #print(overlap)
+        #try:
+        #    if (overlap[nstates:,:nstates][:3,:3] == np.zeros((3,3))).all():
+        #        log += 'dioK {}\n'.format(outfile)
+        #except:
+        #    err(oroot)
 
         try:
            writeH5file(outfile,outTuple)
@@ -221,13 +237,90 @@ def makeCubeGraph(phis,gammas,thetas):
     return(graph,reverseGraph,first)
 
 
-def correctorFromDirection(folderO,folderE):
+def refineStuffs(folderO,folderE,fn1,fn2):
+    '''
+    this is the old brother of correctorFromDirection
+    I am trying to get a refinement and catch points that suddenly changes sign.
+    '''
+    phis1,gammas1,thetas1 = readDirectionFile(fn1)
+    phis2,gammas2,thetas2 = readDirectionFile(fn2)
+    rootNameO = os.path.join(folderO,'zNorbornadiene_')
+    rootNameE = os.path.join(folderE,'zNorbornadiene_')
+    graph1,revgraph1,first = makeCubeGraph(phis1,gammas1,thetas1)
+    graph2,revgraph2,_ = makeCubeGraph(phis2,gammas1,thetas1)
+    graph3,revgraph3,_ = makeCubeGraph(phis1,gammas2,thetas1)
+    graph4,revgraph4,_ = makeCubeGraph(phis2,gammas2,thetas1)
+    graph5,revgraph5,_ = makeCubeGraph(phis1,gammas1,thetas2)
+    graph6,revgraph6,_ = makeCubeGraph(phis2,gammas1,thetas2)
+    graph7,revgraph7,_ = makeCubeGraph(phis1,gammas2,thetas2)
+    graph8,revgraph8,_ = makeCubeGraph(phis2,gammas2,thetas2)
+    refineThis(first,"",rootNameE,rootNameO,True)
+    revgraphSum = {**revgraph8,
+                   **revgraph7,
+                   **revgraph6,
+                   **revgraph5,
+                   **revgraph4,
+                   **revgraph3,
+                   **revgraph2,
+                   **revgraph1}
+
+    a = 0
+    for key, value in revgraphSum.items():
+        fn = rootNameO + key + '.corrected.h5'
+        fnP = rootNameO + value + '.corrected.h5'
+        #print('\n\n----------THIS IS {} from {}:\n'.format(key,value))
+        if os.path.isfile(fn):
+            refineThis(key,value,rootNameE,rootNameO)
+    #    a += 1
+    #    if a > 300:
+    #       break
+
+    good('Hey, you are using an hardcoded direction file')
+
+def refineThis(elem,elemP,rootNameE,rootNameO,first=None):
+    '''
+    elem -> we are currently watching this
+    elemP -> this is the "previous point" in the grid
+    O -> input
+    E -> output  <-- eeeh why? bough
+    first -> first point handling
+    '''
+    first = first or False
+    dataToGet = ['DIPOLES', 'NAC']
+    fileN = rootNameO + elem + '.corrected.h5'
+    final_name = rootNameE + elem + '.refined.h5'
+    if first:
+        copy2(fileN,final_name)
+    else:
+        [dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
+        fileNP = rootNameO + elemP + '.corrected.h5'
+        [dipolesAllP, nacAllP] = retrieve_hdf5_data(fileNP, dataToGet)
+        _,nstates,_ = dipolesAll.shape
+        #print(dipolesAll[0,0,0],dipolesAllP[0,0,0],elem,elemP,rootNameE,rootNameO)
+        #print(dipolesAll[0,0,0],dipolesAllP[0,0,0])
+        uno = dipolesAll[0,0,0]
+        fro = dipolesAllP[0,0,0]
+        sign1 = np.sign(uno)
+        sign2 = np.sign(fro)
+        if abs(uno) > 10e-4 and abs(fro) > 10e-4:
+            if sign1 != sign2:
+                print(elem,elemP)
+        # file handling
+        #allValues = readWholeH5toDict(fileN)
+        #allValues['DIPOLES'] = new_dipoles
+        #allValues['NAC'] = new_nacs
+        #writeH5fileDict(final_name,allValues)
+        #print('\n\nfile {} written'.format(final_name))
+
+
+
+
+
+def correctorFromDirection(folderO,folderE,fn1,fn2):
     '''
     This function is the corrector that follows the direction files...
     suuuuper problem bound
     '''
-    fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions1'
-    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions2'
     phis1,gammas1,thetas1 = readDirectionFile(fn1)
     phis2,gammas2,thetas2 = readDirectionFile(fn2)
     #phis = phis[0:3]
@@ -267,7 +360,7 @@ def correctorFromDirection(folderO,folderE):
     for key, value in revgraphSum.items():
         fnIn = rootNameO + key + '.all.h5'
         if os.path.isfile(fnIn):
-            print('\n\n----------THIS IS {} -> cut at {}:\n'.format(key,cutAt))
+            print('\n\n----------THIS IS {} from {} -> cut at {}:\n'.format(key,value,cutAt))
             fnE = rootNameE + value + '.corrected.h5'
             newsign = retrieve_hdf5_data(fnE,'ABS_CORRECTOR')
             correctThis(key,newsign,rootNameE,rootNameO,cutAt)
@@ -383,14 +476,21 @@ def createOneAndZero(mat, oneDarray):
 
     booltest = np.all(np.count_nonzero(newMat,axis = 0) == 1)
     # I check if all columns and rows have exactly one one.
-    if not booltest:
-        print('there is an overlap matrix that you should check')
-        printMatrix2D(newMat)
     newcorrVector = oneDarray @ newMat.T
+    if not booltest:
+        print('This is an overlap matrix that you should check')
+        print('entrance matrix')
+        printMatrix2D(mat)
+        print('entrance array:')
+        print(oneDarray)
+        print('exit matrix')
+        printMatrix2D(newMat)
+        print('exit array:')
+        print(newcorrVector)
     return (newcorrVector,newMat)
 
 
-single_inputs = namedtuple("single_input", ("direction","glob","outF","proc"))
+single_inputs = namedtuple("single_input", ("direction","refine","glob","outF","proc"))
 
 stringOutput1 = '''
 {}
@@ -406,9 +506,11 @@ def main():
     '''
     from a grid frolder to a folder ready to be propagated
     '''
-    o_inputs = single_inputs("","","",1)
+    fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions1'
+    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions2'
+    o_inputs = single_inputs("","","","",1)
     inp = read_single_arguments(o_inputs)
-    if inp.direction == "":
+    if inp.direction == "" and inp.refine == "":
         folders = npArrayOfFiles(inp.glob)
         fold = folders[:] # this does nothing, but I use it to try less files at the time
         pool = multiprocessing.Pool(processes = inp.proc)
@@ -419,8 +521,12 @@ def main():
         with open('report','w') as f:
             f.write(results)
         print(results)
+    elif inp.refine != "":
+        # here the code for the refining thing. big stuff...
+        #print(inp.refine[0],inp.refine[1],fn1,fn2)
+        refineStuffs(inp.refine[0],inp.refine[1],fn1,fn2)
     else:
-        correctorFromDirection(inp.direction[0],inp.direction[1])
+        correctorFromDirection(inp.direction[0],inp.direction[1],fn1,fn2)
 
 if __name__ == "__main__":
     main()

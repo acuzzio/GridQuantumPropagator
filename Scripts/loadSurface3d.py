@@ -24,7 +24,8 @@ def setMaterial(ob, mat):
 a = np.fromfile('fullA.txt')
 b = np.fromfile('fullB.txt')
 c = np.fromfile('fullC.txt')
-d = np.fromfile('fullE.txt')
+#d = np.fromfile('fullE.txt')
+d = np.fromfile('fullD_x_0.txt')
 
 nstates = 8
 

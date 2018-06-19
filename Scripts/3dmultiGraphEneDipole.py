@@ -84,7 +84,7 @@ def matrixApproach(globalExp, proc, processed_states):
                 fileNonly = 'zNorbornadiene_' + singleLabel + '.corrected.h5'
                 fileN = folder + '/' + fileNonly
                 exisT = os.path.exists(fileN)
-                print(exisT)
+                #print(exisT)
                 if exisT:
                     energies = retrieve_hdf5_data(fileN,'ROOT_ENERGIES')
                     dipole = retrieve_hdf5_data(fileN,'DIPOLES')

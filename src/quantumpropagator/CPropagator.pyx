@@ -380,3 +380,109 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
 
     return new
 
+#############
+# 1D in phi #
+#############
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef Cderivative1D_Phi_Mu(double time, double complex [:,:] GRID,dict inp, int selector):
+    '''
+    derivative done for a 1D grid in Phi
+    t :: Double -> time
+    GRID :: np.array[:,:] <- wavefunction[phis,states]
+    inp :: dictionary of various inputs
+    '''
+    cdef:
+        int s,p,phiL=inp['phiL'],nstates=inp['nstates']
+        int d,carte
+        double dphi=inp['dphi'],V
+        double [:,:] Vm = inp['potCube']
+        double [:,:,:] Km = inp['kinCube']
+        double [:,:,:,:] Dm = inp['dipCube']
+        #double [:,:] K
+        #double [:,:,:] D
+        double [:] pulseV
+        double complex [:,:] new, kinS, potS
+        double complex I = -1j
+        double complex dG_dp, d2G_dp2, G
+        #double complex d2G_dcross_numerator_p,d2G_dcross_numerator_g,d2G_dcross_numerator_t
+        #double complex d2G_dpg_numerator_cross_1,d2G_dpg_numerator_cross_2,d2G_dpg_numerator
+        #double complex d2G_dpt_numerator_cross_1,d2G_dpt_numerator_cross_2,d2G_dpt_numerator
+        #double complex d2G_dgt_numerator_cross_1,d2G_dgt_numerator_cross_2,d2G_dgt_numerator
+        #double complex d2G_dpg,d2G_dpt,d2G_dgt,d2G_dgp,d2G_dtp,d2G_dtg
+        double complex Tpp
+        double complex Ttot,Vtot,Mtot
+
+    new = np.empty_like(GRID)
+    kinS = np.empty_like(GRID)
+    potS = np.empty_like(GRID)
+
+    #if selector == 1:
+    #    new = np.empty_like(GRID)
+    #else:
+    #    kinS = np.empty_like(GRID)
+    #    potS = np.empty_like(GRID)
+
+    pulseV = np.empty((3))
+
+    pulseV[0] = pulZe(time,inp['pulseX'])
+    pulseV[1] = pulZe(time,inp['pulseY'])
+    pulseV[2] = pulZe(time,inp['pulseZ'])
+
+    #for s in range(nstates):
+    for s in range(nstates):
+        for p in range(phiL):
+           G = GRID[p,s]
+           V = Vm[p,s]
+           #K = Km[p,g,t] # this is 9x3 matrix
+           #D = Dm[p,g,t] # this should be a nstate*nstate*3 matrix
+
+           # derivatives in phi
+           if p == 0:
+               dG_dp   = (GRID[p+1,s]) / (2 * dphi)
+               d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]) / (12 * dphi**2)
+
+           elif p == 1:
+               dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
+               d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]) / (12 * dphi**2)
+
+           elif p == phiL-2:
+               dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
+               d2G_dp2 = (+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
+
+           elif p == phiL-1:
+               dG_dp   = (-GRID[p-1,s]) / (2 * dphi)
+               d2G_dp2 = (-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
+
+           else:
+               dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
+               d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
+
+
+           # T elements (9)
+           Tpp = Km[p,0,0] * G + Km[p,0,1] * dG_dp + Km[p,0,2] * d2G_dp2
+
+           Ttot = Tpp
+           Vtot = V * G
+
+           # loop and sum on other states.
+           Mtot = 0
+
+           for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
+               for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                   Mtot = Mtot - ((pulseV[carte] * Dm[p,carte,s,d] ) * GRID[p,d])
+
+           if selector == 1:
+               new[p,s] = I * (Ttot+Vtot+Mtot)
+           else:
+               kinS[p,s] = Ttot
+               potS[p,s] = Vtot
+    if selector == 1:
+        return(new)
+    else:
+        return(kinS,potS)
+
+
