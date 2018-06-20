@@ -271,9 +271,9 @@ def refineStuffs(folderO,folderE,fn1,fn2):
         #print('\n\n----------THIS IS {} from {}:\n'.format(key,value))
         if os.path.isfile(fn):
             refineThis(key,value,rootNameE,rootNameO)
-    #    a += 1
-    #    if a > 300:
-    #       break
+        #a += 1
+        #if a > 3:
+        #   break
 
     good('Hey, you are using an hardcoded direction file')
 
@@ -298,18 +298,25 @@ def refineThis(elem,elemP,rootNameE,rootNameO,first=None):
         _,nstates,_ = dipolesAll.shape
         #print(dipolesAll[0,0,0],dipolesAllP[0,0,0],elem,elemP,rootNameE,rootNameO)
         #print(dipolesAll[0,0,0],dipolesAllP[0,0,0])
-        uno = dipolesAll[0,0,0]
-        fro = dipolesAllP[0,0,0]
-        sign1 = np.sign(uno)
-        sign2 = np.sign(fro)
-        if abs(uno) > 10e-4 and abs(fro) > 10e-4:
-            if sign1 != sign2:
-                print(elem,elemP)
+        # loop on lower triangule
+        for cart in range(3):
+            for i in range(nstates):
+                for j in range(i):
+                    uno = dipolesAll[cart,i,j]
+                    fro = dipolesAllP[cart,i,j]
+                    sign1 = np.sign(uno)
+                    sign2 = np.sign(fro)
+                    #print('{} {} {}'.format(elem,sign1,sign2))
+                    if abs(uno) > 10e-3 and abs(fro) > 10e-3 and sign1 != sign2:
+                        dipolesAll[cart,i,j] = - uno
+                        dipolesAll[cart,j,i] = - uno
+                        print('change in {} -> {} ({},{},{})'.format(elemP,elem,cart,i,j))
+
         # file handling
-        #allValues = readWholeH5toDict(fileN)
-        #allValues['DIPOLES'] = new_dipoles
+        allValues = readWholeH5toDict(fileN)
+        allValues['DIPOLES'] = dipolesAll
         #allValues['NAC'] = new_nacs
-        #writeH5fileDict(final_name,allValues)
+        writeH5fileDict(final_name,allValues)
         #print('\n\nfile {} written'.format(final_name))
 
 
