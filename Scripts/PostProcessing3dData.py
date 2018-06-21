@@ -241,83 +241,53 @@ def refineStuffs(folderO,folderE,fn1,fn2):
     '''
     this is the old brother of correctorFromDirection
     I am trying to get a refinement and catch points that suddenly changes sign.
+    I am lucky that theta and gamma when Phi=0 seems good, so I try to force out the changes
+    in Phi.
     '''
     phis1,gammas1,thetas1 = readDirectionFile(fn1)
     phis2,gammas2,thetas2 = readDirectionFile(fn2)
-    rootNameO = os.path.join(folderO,'zNorbornadiene_')
-    rootNameE = os.path.join(folderE,'zNorbornadiene_')
-    graph1,revgraph1,first = makeCubeGraph(phis1,gammas1,thetas1)
-    graph2,revgraph2,_ = makeCubeGraph(phis2,gammas1,thetas1)
-    graph3,revgraph3,_ = makeCubeGraph(phis1,gammas2,thetas1)
-    graph4,revgraph4,_ = makeCubeGraph(phis2,gammas2,thetas1)
-    graph5,revgraph5,_ = makeCubeGraph(phis1,gammas1,thetas2)
-    graph6,revgraph6,_ = makeCubeGraph(phis2,gammas1,thetas2)
-    graph7,revgraph7,_ = makeCubeGraph(phis1,gammas2,thetas2)
-    graph8,revgraph8,_ = makeCubeGraph(phis2,gammas2,thetas2)
-    refineThis(first,"",rootNameE,rootNameO,True)
-    revgraphSum = {**revgraph8,
-                   **revgraph7,
-                   **revgraph6,
-                   **revgraph5,
-                   **revgraph4,
-                   **revgraph3,
-                   **revgraph2,
-                   **revgraph1}
+    rootNameO = os.path.join(folderO,'zNorbornadiene')
+    rootNameE = os.path.join(folderE,'zNorbornadiene')
+    flat_range_Gamma = gammas1[::-1]+gammas2[1:]
+    flat_range_Theta = (thetas1[::-1]+thetas2[1:])[::-1]
 
-    a = 0
-    for key, value in revgraphSum.items():
-        fn = rootNameO + key + '.corrected.h5'
-        fnP = rootNameO + value + '.corrected.h5'
-        #print('\n\n----------THIS IS {} from {}:\n'.format(key,value))
-        if os.path.isfile(fn):
-            refineThis(key,value,rootNameE,rootNameO)
-        #a += 1
-        #if a > 3:
-        #   break
-
-    good('Hey, you are using an hardcoded direction file')
-
-def refineThis(elem,elemP,rootNameE,rootNameO,first=None):
-    '''
-    elem -> we are currently watching this
-    elemP -> this is the "previous point" in the grid
-    O -> input
-    E -> output  <-- eeeh why? bough
-    first -> first point handling
-    '''
-    first = first or False
     dataToGet = ['DIPOLES', 'NAC']
-    fileN = rootNameO + elem + '.corrected.h5'
-    final_name = rootNameE + elem + '.refined.h5'
-    if first:
-        copy2(fileN,final_name)
-    else:
-        [dipolesAll, nacAll] = retrieve_hdf5_data(fileN, dataToGet)
-        fileNP = rootNameO + elemP + '.corrected.h5'
-        [dipolesAllP, nacAllP] = retrieve_hdf5_data(fileNP, dataToGet)
-        _,nstates,_ = dipolesAll.shape
-        #print(dipolesAll[0,0,0],dipolesAllP[0,0,0],elem,elemP,rootNameE,rootNameO)
-        #print(dipolesAll[0,0,0],dipolesAllP[0,0,0])
-        # loop on lower triangule
-        for cart in range(3):
-            for i in range(nstates):
-                for j in range(i):
-                    uno = dipolesAll[cart,i,j]
-                    fro = dipolesAllP[cart,i,j]
-                    sign1 = np.sign(uno)
-                    sign2 = np.sign(fro)
-                    #print('{} {} {}'.format(elem,sign1,sign2))
-                    if abs(uno) > 10e-3 and abs(fro) > 10e-3 and sign1 != sign2:
-                        dipolesAll[cart,i,j] = - uno
-                        dipolesAll[cart,j,i] = - uno
-                        print('change in {} -> {} ({},{},{})'.format(elemP,elem,cart,i,j))
 
-        # file handling
-        allValues = readWholeH5toDict(fileN)
-        allValues['DIPOLES'] = dipolesAll
-        #allValues['NAC'] = new_nacs
-        writeH5fileDict(final_name,allValues)
-        #print('\n\nfile {} written'.format(final_name))
+    for gamLab in flat_range_Gamma:
+        for theLab in flat_range_Theta:
+            AbsCorr = np.ones((3,8,8))
+            for p,phiLab in enumerate(phis1[:-1]):
+                elemT = '{}_{}_{}'.format(phiLab,gamLab,theLab)
+                elemN = '{}_{}_{}'.format(phis1[p+1],gamLab,theLab)
+                THIS = '{}_{}.corrected.h5'.format(rootNameO,elemT)
+                NEXT = '{}_{}.corrected.h5'.format(rootNameO,elemN)
+                OUTN = '{}_{}.refined.h5'.format(rootNameE,elemN)
+                if p==0:
+                    OUTT = '{}_{}.refined.h5'.format(rootNameE,elemT)
+                    copy2(THIS,OUTT)
+                [dipolesAllT, nacAllT] = retrieve_hdf5_data(THIS, dataToGet)
+                [dipolesAllN, nacAllN] = retrieve_hdf5_data(NEXT, dataToGet)
+                _,nstates,_ = dipolesAllT.shape
+                # loop on lower triangule
+                for cart in range(3):
+                    for i in range(nstates):
+                        for j in range(i):
+                            uno = dipolesAllT[cart,i,j]
+                            due = dipolesAllN[cart,i,j]
+                            sign1 = np.sign(uno)
+                            sign2 = np.sign(due)
+                            if abs(uno) > 10e-2 and abs(due) > 10e-2 and sign1 != sign2:
+                                AbsCorr[cart,i,j] = -AbsCorr[cart,i,j]
+                                print('change in {} -> {} ({},{},{})'.format(elemT,elemN,cart,i,j))
+                            dipolesAllN[cart,i,j] = due * AbsCorr[cart,i,j]
+                            dipolesAllN[cart,j,i] = due * AbsCorr[cart,i,j]
+
+
+                # file handling
+                allValues = readWholeH5toDict(NEXT)
+                allValues['DIPOLES'] = dipolesAllN
+                #allValues['NAC'] = new_nacs
+                writeH5fileDict(OUTN,allValues)
 
 
 

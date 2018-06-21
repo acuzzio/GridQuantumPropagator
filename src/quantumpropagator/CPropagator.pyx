@@ -6,6 +6,7 @@ cimport numpy as np
 #import quantumpropagator.EMPulse as pp
 cimport cython
 from cython.parallel import prange
+from libc.stdio cimport printf
 
 #import pyximport; pyximport.install()
 
@@ -56,6 +57,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
         int s,p,g,t,phiL=inp['phiL'],gamL=inp['gamL'],theL=inp['theL'],nstates=inp['nstates']
         int d,carte
         double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe'],V
+        #double lol
         double [:,:,:,:] Vm = inp['potCube']
         double [:,:,:,:,:] Km = inp['kinCube']
         double [:,:,:,:,:,:] Dm = inp['dipCube']
@@ -252,6 +254,9 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
                    else:
                        kinS[p,g,t,s] = Ttot
                        potS[p,g,t,s] = Vtot
+                       #lol = Tpp.real * Tpp.real + Tpp.imag * Tpp.imag
+                       #if lol > 0.00001:
+                       #    printf("%i %i %i %i %f\n", p,g,t,s,lol)
     if selector == 1:
         return(new)
     else:
