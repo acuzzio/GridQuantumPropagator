@@ -12,6 +12,19 @@ import sys
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def equilibriumIndex(fn,dataDict):
+    '''
+    given the path of direction file and the dataDict, it gives back the index of equilibrium
+    points in the array
+    fn :: String -> filePath
+    dataDict :: {}
+    '''
+    phis,gams,thes = readDirectionFile(fn)
+    gsm_phi_ind = dataDict['phis'].index(phis[0])
+    gsm_gam_ind = dataDict['gams'].index(gams[0])
+    gsm_the_ind = dataDict['thes'].index(thes[0])
+    print('Equilibrium points found at : ({},{},{})'.format(gsm_phi_ind, gsm_gam_ind, gsm_the_ind))
+    return (gsm_phi_ind, gsm_gam_ind, gsm_the_ind)
 
 def stringTransformation3d(fn):
     '''
@@ -307,7 +320,7 @@ def fromHartreetoCmMin1(n):
 
 def fromCmMin1toFs(n):
     ''' from cm-1 to fs conversion - n :: Double '''
-    return 1/(fromHartreetoCmMin1(n)*1.88365157e-4)
+    return (1/(fromHartreetoCmMin1(n))*1.88365157e+4)
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 # https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/

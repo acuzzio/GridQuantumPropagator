@@ -25,14 +25,6 @@ def Crk4Ene3d(f, t, y, inp):
     k4 = h * f(t + h, y + k3, inp)
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
-def CextractEnergy3dMu(t,GRID,inp):
-    '''wrapper for 3d integrator in Kinetic-Potential mode'''
-    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,0))
-
-def Cderivative3dMu(t,GRID,inp):
-    '''wrapper for 3d integrator'''
-    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,1))
-
 def pulZe(t, param_Pulse):
     Ed,omega,sigma,phase,t0 = param_Pulse
     num = (t-t0)**2
@@ -43,10 +35,20 @@ def pulZe(t, param_Pulse):
         result = Ed * (np.cos(omega*t+phase)) * np.exp(-num/den)
     return result
 
+def CextractEnergy3dMu(t,GRID,inp):
+    '''wrapper for 3d integrator in Kinetic-Potential mode'''
+    #print('ENERGY -> t: {} , wf inside: {}'.format(t,GRID.shape))
+    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,0))
+
+def Cderivative3dMu(t,GRID,inp):
+    '''wrapper for 3d integrator'''
+    #print('PROPAG -> t: {} , wf inside: {}'.format(t,GRID.shape))
+    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,1))
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, int selector):
+cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, int selector):
     '''
     derivative done for a 3d Grid on all the coordinates
     t :: Double -> time
@@ -57,12 +59,9 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
         int s,p,g,t,phiL=inp['phiL'],gamL=inp['gamL'],theL=inp['theL'],nstates=inp['nstates']
         int d,carte
         double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe'],V
-        #double lol
         double [:,:,:,:] Vm = inp['potCube']
         double [:,:,:,:,:] Km = inp['kinCube']
         double [:,:,:,:,:,:] Dm = inp['dipCube']
-        #double [:,:] K
-        #double [:,:,:] D
         double [:] pulseV
         double complex [:,:,:,:] new, kinS, potS
         double complex I = -1j
@@ -79,12 +78,6 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
     kinS = np.empty_like(GRID)
     potS = np.empty_like(GRID)
 
-    #if selector == 1:
-    #    new = np.empty_like(GRID)
-    #else:
-    #    kinS = np.empty_like(GRID)
-    #    potS = np.empty_like(GRID)
-
     pulseV = np.empty((3))
 
     pulseV[0] = pulZe(time,inp['pulseX'])
@@ -98,8 +91,6 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
                for t in range(theL):
                    G = GRID[p,g,t,s]
                    V = Vm[p,g,t,s]
-                   #K = Km[p,g,t] # this is 9x3 matrix
-                   #D = Dm[p,g,t] # this should be a nstate*nstate*3 matrix
 
                    # derivatives in phi
                    if p == 0:
@@ -263,9 +254,9 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID,dict inp, in
         return(kinS,potS)
 
 
-#########################
-# 2D code starting here #
-#########################
+######################################################
+# 2D code starting here OBSOLETE SELECTOR, WATCH OUT #
+######################################################
 
 def Cderivative2dGamThe(t,GRID,inp):
     '''wrapper'''
@@ -389,6 +380,15 @@ cdef Cderivative2dGamTheC(double time,double complex [:,:] GRID,dict inp):
 # 1D in phi #
 #############
 
+def Cenergy_1D_Phi(t,GRID,inp):
+    '''wrapper for 1d in phi'''
+    #print('ENERGY -> t: {} , wf inside: {}'.format(t,GRID.shape))
+    return np.asarray(Cderivative1D_Phi_Mu(t,GRID,inp,0))
+
+def Cderivative_1D_Phi(t,GRID,inp):
+    '''wrapper for 1d in phi'''
+    #print('PROPAG -> t: {} , wf inside: {}'.format(t,GRID.shape))
+    return np.asarray(Cderivative1D_Phi_Mu(t,GRID,inp,1))
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -407,29 +407,16 @@ cdef Cderivative1D_Phi_Mu(double time, double complex [:,:] GRID,dict inp, int s
         double [:,:] Vm = inp['potCube']
         double [:,:,:] Km = inp['kinCube']
         double [:,:,:,:] Dm = inp['dipCube']
-        #double [:,:] K
-        #double [:,:,:] D
         double [:] pulseV
         double complex [:,:] new, kinS, potS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, G
-        #double complex d2G_dcross_numerator_p,d2G_dcross_numerator_g,d2G_dcross_numerator_t
-        #double complex d2G_dpg_numerator_cross_1,d2G_dpg_numerator_cross_2,d2G_dpg_numerator
-        #double complex d2G_dpt_numerator_cross_1,d2G_dpt_numerator_cross_2,d2G_dpt_numerator
-        #double complex d2G_dgt_numerator_cross_1,d2G_dgt_numerator_cross_2,d2G_dgt_numerator
-        #double complex d2G_dpg,d2G_dpt,d2G_dgt,d2G_dgp,d2G_dtp,d2G_dtg
         double complex Tpp
         double complex Ttot,Vtot,Mtot
 
     new = np.empty_like(GRID)
     kinS = np.empty_like(GRID)
     potS = np.empty_like(GRID)
-
-    #if selector == 1:
-    #    new = np.empty_like(GRID)
-    #else:
-    #    kinS = np.empty_like(GRID)
-    #    potS = np.empty_like(GRID)
 
     pulseV = np.empty((3))
 
@@ -440,54 +427,247 @@ cdef Cderivative1D_Phi_Mu(double time, double complex [:,:] GRID,dict inp, int s
     #for s in range(nstates):
     for s in range(nstates):
         for p in range(phiL):
-           G = GRID[p,s]
-           V = Vm[p,s]
-           #K = Km[p,g,t] # this is 9x3 matrix
-           #D = Dm[p,g,t] # this should be a nstate*nstate*3 matrix
+            G = GRID[p,s]
+            V = Vm[p,s]
 
-           # derivatives in phi
-           if p == 0:
-               dG_dp   = (GRID[p+1,s]) / (2 * dphi)
-               d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]) / (12 * dphi**2)
+            # derivatives in phi
+            if p == 0:
+                dG_dp   = (GRID[p+1,s]) / (2 * dphi)
+                d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]) / (12 * dphi**2)
 
-           elif p == 1:
-               dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
-               d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]) / (12 * dphi**2)
+            elif p == 1:
+                dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
+                d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]) / (12 * dphi**2)
 
-           elif p == phiL-2:
-               dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
-               d2G_dp2 = (+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
+            elif p == phiL-2:
+                dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
+                d2G_dp2 = (+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
 
-           elif p == phiL-1:
-               dG_dp   = (-GRID[p-1,s]) / (2 * dphi)
-               d2G_dp2 = (-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
+            elif p == phiL-1:
+                dG_dp   = (-GRID[p-1,s]) / (2 * dphi)
+                d2G_dp2 = (-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
 
-           else:
-               dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
-               d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
+            else:
+                dG_dp   = (GRID[p+1,s]-GRID[p-1,s]) / (2 * dphi)
+                d2G_dp2 = (-GRID[p+2,s]+16*GRID[p+1,s]-30*GRID[p,s]+16*GRID[p-1,s]-GRID[p-2,s]) / (12 * dphi**2)
 
 
-           # T elements (9)
-           Tpp = Km[p,0,0] * G + Km[p,0,1] * dG_dp + Km[p,0,2] * d2G_dp2
+            # T elements (9)
+            Tpp = Km[p,0,0] * G + Km[p,0,1] * dG_dp + Km[p,0,2] * d2G_dp2
 
-           Ttot = Tpp
-           Vtot = V * G
+            Ttot = Tpp
+            Vtot = V * G
 
-           # loop and sum on other states.
-           Mtot = 0
+            # loop and sum on other states.
+            Mtot = 0
 
-           for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
-               for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
-                   Mtot = Mtot - ((pulseV[carte] * Dm[p,carte,s,d] ) * GRID[p,d])
+            for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
+                for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                    Mtot = Mtot - ((pulseV[carte] * Dm[p,carte,s,d] ) * GRID[p,d])
 
-           if selector == 1:
-               new[p,s] = I * (Ttot+Vtot+Mtot)
-           else:
-               kinS[p,s] = Ttot
-               potS[p,s] = Vtot
+            if selector == 1:
+                new[p,s] = I * (Ttot+Vtot+Mtot)
+            else:
+                kinS[p,s] = Ttot
+                potS[p,s] = Vtot
     if selector == 1:
         return(new)
     else:
         return(kinS,potS)
 
+
+#############
+# 1D in gam #
+#############
+
+def Cenergy_1D_Gam(t,GRID,inp):
+    '''wrapper for 1d in gamma'''
+    return np.asarray(Cderivative1D_Gam_Mu(t,GRID,inp,0))
+
+def Cderivative_1D_Gam(t,GRID,inp):
+    '''wrapper for 1d in gamma'''
+    return np.asarray(Cderivative1D_Gam_Mu(t,GRID,inp,1))
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef Cderivative1D_Gam_Mu(double time, double complex [:,:] GRID,dict inp, int selector):
+    '''
+    derivative done for a 1D grid in Gamma
+    t :: Double -> time
+    GRID :: np.array[:,:] <- wavefunction[gams,states]
+    inp :: dictionary of various inputs
+    '''
+    cdef:
+        int s,g,gamL=inp['gamL'],nstates=inp['nstates']
+        int d,carte
+        double dgam=inp['dgam'],V
+        double [:,:] Vm = inp['potCube']
+        double [:,:,:] Km = inp['kinCube']
+        double [:,:,:,:] Dm = inp['dipCube']
+        double [:] pulseV
+        double complex [:,:] new, kinS, potS
+        double complex I = -1j
+        double complex dG_dg, d2G_dg2, G
+        double complex Tgg
+        double complex Ttot,Vtot,Mtot
+
+    new = np.empty_like(GRID)
+    kinS = np.empty_like(GRID)
+    potS = np.empty_like(GRID)
+
+    pulseV = np.empty((3))
+
+    pulseV[0] = pulZe(time,inp['pulseX'])
+    pulseV[1] = pulZe(time,inp['pulseY'])
+    pulseV[2] = pulZe(time,inp['pulseZ'])
+
+    #for s in range(nstates):
+    for s in range(nstates):
+        for g in range(gamL):
+            G = GRID[g,s]
+            V = Vm[g,s]
+
+            # derivatives in gam
+            if g == 0:
+                dG_dg   = (GRID[g+1,s]) / (2 * dgam)
+                d2G_dg2 = (-GRID[g+2,s]+16*GRID[g+1,s]-30*GRID[g,s]) / (12 * dgam**2)
+
+            elif g == 1:
+                dG_dg   = (GRID[g+1,s]-GRID[g-1,s]) / (2 * dgam)
+                d2G_dg2 = (-GRID[g+2,s]+16*GRID[g+1,s]-30*GRID[g,s]+16*GRID[g-1,s]) / (12 * dgam**2)
+
+            elif g == gamL-2:
+                dG_dg   = (GRID[g+1,s]-GRID[g-1,s]) / (2 * dgam)
+                d2G_dg2 = (+16*GRID[g+1,s]-30*GRID[g,s]+16*GRID[g-1,s]-GRID[g-2,s]) / (12 * dgam**2)
+
+            elif g == gamL-1:
+                dG_dg   = (-GRID[g-1,s]) / (2 * dgam)
+                d2G_dg2 = (-30*GRID[g,s]+16*GRID[g-1,s]-GRID[g-2,s]) / (12 * dgam**2)
+
+            else:
+                dG_dg   = (GRID[g+1,s]-GRID[g-1,s]) / (2 * dgam)
+                d2G_dg2 = (-GRID[g+2,s]+16*GRID[g+1,s]-30*GRID[g,s]+16*GRID[g-1,s]-GRID[g-2,s]) / (12 * dgam**2)
+
+
+            # T elements (9)
+            Tgg = Km[g,4,0] * G + Km[g,4,1] * dG_dg + Km[g,4,2] * d2G_dg2
+
+            Ttot = Tgg
+            Vtot = V * G
+
+            # loop and sum on other states.
+            Mtot = 0
+
+            for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
+                for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                    Mtot = Mtot - ((pulseV[carte] * Dm[g,carte,s,d] ) * GRID[g,d])
+
+            if selector == 1:
+                new[g,s] = I * (Ttot+Vtot+Mtot)
+            else:
+                kinS[g,s] = Ttot
+                potS[g,s] = Vtot
+    if selector == 1:
+        return(new)
+    else:
+        return(kinS,potS)
+
+
+#############
+# 1D in the #
+#############
+
+def Cenergy_1D_The(t,GRID,inp):
+    '''wrapper for 1d in theta'''
+    return np.asarray(Cderivative1D_The_Mu(t,GRID,inp,0))
+
+def Cderivative_1D_The(t,GRID,inp):
+    '''wrapper for 1d in theta'''
+    return np.asarray(Cderivative1D_The_Mu(t,GRID,inp,1))
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int selector):
+    '''
+    derivative done for a 1D grid in Theta
+    t :: Double -> time
+    GRID :: np.array[:,:] <- wavefunction[thes,states]
+    inp :: dictionary of various inputs
+    '''
+    cdef:
+        int s,t,theL=inp['theL'],nstates=inp['nstates']
+        int d,carte
+        double dthe=inp['dthe'],V
+        double [:,:] Vm = inp['potCube']
+        double [:,:,:] Km = inp['kinCube']
+        double [:,:,:,:] Dm = inp['dipCube']
+        double [:] pulseV
+        double complex [:,:] new, kinS, potS
+        double complex I = -1j
+        double complex dG_dt, d2G_dt2, G
+        double complex Ttt
+        double complex Ttot,Vtot,Mtot
+
+    new = np.empty_like(GRID)
+    kinS = np.empty_like(GRID)
+    potS = np.empty_like(GRID)
+
+    pulseV = np.empty((3))
+
+    pulseV[0] = pulZe(time,inp['pulseX'])
+    pulseV[1] = pulZe(time,inp['pulseY'])
+    pulseV[2] = pulZe(time,inp['pulseZ'])
+
+    #for s in range(nstates):
+    for s in range(nstates):
+        for t in range(theL):
+            G = GRID[t,s]
+            V = Vm[t,s]
+
+            # derivatives in theta
+            if t == 0:
+                dG_dt   = (GRID[t+1,s]) / (2 * dthe)
+                d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]) / (12 * dthe**2)
+
+            elif t == 1:
+                dG_dt   = (GRID[t+1,s]-GRID[t-1,s]) / (2 * dthe)
+                d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]) / (12 * dthe**2)
+
+            elif t == theL-2:
+                dG_dt   = (GRID[t+1,s]-GRID[t-1,s]) / (2 * dthe)
+                d2G_dt2 = (+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
+
+            elif t == theL-1:
+                dG_dt   = (-GRID[t-1,s]) / (2 * dthe)
+                d2G_dt2 = (-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
+
+            else:
+                dG_dt   = (GRID[t+1,s]-GRID[t-1,s]) / (2 * dthe)
+                d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
+
+
+            # T elements (9)
+            Ttt = Km[t,8,0] * G + Km[t,8,1] * dG_dt + Km[t,8,2] * d2G_dt2
+
+            Ttot = Ttt
+            Vtot = V * G
+
+            # loop and sum on other states.
+            Mtot = 0
+
+            for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
+                for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                    Mtot = Mtot - ((pulseV[carte] * Dm[t,carte,s,d] ) * GRID[t,d])
+
+            if selector == 1:
+                new[t,s] = I * (Ttot+Vtot+Mtot)
+            else:
+                kinS[t,s] = Ttot
+                potS[t,s] = Vtot
+    if selector == 1:
+        return(new)
+    else:
+        return(kinS,potS)
 

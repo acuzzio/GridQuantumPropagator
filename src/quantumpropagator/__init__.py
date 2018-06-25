@@ -17,7 +17,7 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
                                bring_input_to_AU, printDictKeys, printProgressBar, fromCmMin1toFs,
                                fromLabelsToFloats,labTranformReverse,labTranformReverseA,
-                               fromFloatsToLabels)
+                               fromFloatsToLabels,equilibriumIndex)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir, create_enumerated_folder)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,
@@ -50,5 +50,5 @@ from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
 from .KineticMadness import calc_g_G
 from .TDPropagator import propagate3D
-from .CPropagator import (Cderivative2dGamThe,Cderivative3dMu)
+from .CPropagator import *
 from .IpythonJupyter import *

@@ -67,6 +67,7 @@ directions2 : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/direction
 # factor : 1 # to widen initial gaussian
 # displ : (0,0,0) # to move initial gaussian
 # init_mom : (0,0,0) # to give initial momentum
+# kind : Phi  # 3D The Gam TheGam
 
 '''
 
