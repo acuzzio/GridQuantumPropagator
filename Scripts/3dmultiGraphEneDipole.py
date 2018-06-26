@@ -81,8 +81,8 @@ def matrixApproach(globalExp, proc, processed_states):
             for Iax3 in range(labelsAxis3.size):
                 ax3 = labelsAxis3[Iax3]
                 singleLabel = ax1 + '_' + ax2 + '_' + ax3
-                #fileNonly = 'zNorbornadiene_' + singleLabel + '.corrected.h5'
-                fileNonly = 'zNorbornadiene_' + singleLabel + '.refined.h5'
+                fileNonly = 'zNorbornadiene_' + singleLabel + '.corrected.h5'
+                #fileNonly = 'zNorbornadiene_' + singleLabel + '.refined.h5'
                 fileN = folder + '/' + fileNonly
                 exisT = os.path.exists(fileN)
                 #print(exisT)

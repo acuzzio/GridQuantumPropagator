@@ -287,13 +287,14 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
             graphFileName = name + ".png"
             if kind == 'Phi':
                 valuesX = inp['phis']
-                label = 'Phi'
+                label = 'Phi {:11.4f}'.format(t/41.3)
             elif kind == 'Gam':
                 valuesX = inp['gams']
-                label = 'Gam'
+                label = 'Gam {:11.4f}'.format(t/41.3)
+                pot=inp['potCube'][0]
             elif kind == 'The':
                 valuesX = inp['thes']
-                label = 'The'
+                label = 'The {:11.4f}'.format(t/41.3)
             makeJustAnother2DgraphComplexSINGLE(valuesX,wf,graphFileName,label)
         twoD = False
         if twoD:
@@ -337,6 +338,10 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     dgam = gams[0] - gams[1]
     dthe = thes[0] - thes[1]
 
+    # take range
+    range_phi = phis[-1] - phis[0]
+    range_gam = gams[-1] - gams[0]
+    range_the = thes[-1] - thes[0]
 
     # slice out the parabolas at equilibrium geometry
     pot = dataDict['potCube']
@@ -354,7 +359,9 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     # in the diagonal approximation those are the diagonal elements, thus element 0,4,8.
 
     coe_phi = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,0,2]
-    coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,4,2]
+    #coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,4,2]
+    coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,0,2]
+    warning('coe_gam has been changed !!! in initialcondition function')
     coe_the = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,8,2]
 
     # they need to be multiplied by (-2 * hbar**2), where hbar is 1. And inverted, because the MASS
@@ -369,7 +376,7 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
         warning('You have a factor of {} enabled on initial condition'.format(factor))
     G_phi = G_phi/factor
     G_gam = G_gam/factor
-    G_the = G_the/(factor/10)
+    G_the = G_the/factor
 
     Gw_phi = np.sqrt(force_phi*G_phi)
     Gw_gam = np.sqrt(force_gam*G_gam)
@@ -408,6 +415,7 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     norm_wf = np.linalg.norm(wf)
     print('NORM before normalization: {:e}'.format(norm_wf))
     print('Steps: phi({:.3f}) gam({:.3f}) the({:.3f})'.format(dphi,dgam,dthe))
+    print('Range: phi({:.3f}) gam({:.3f}) the({:.3f})'.format(range_phi,range_gam,range_the))
     wf = wf / norm_wf
     print(wf.shape)
     print('\n\nparabola force constant: {:e} {:e} {:e}'.format(force_phi,force_gam,force_the))
