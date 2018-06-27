@@ -551,8 +551,12 @@ cdef Cderivative1D_Gam_Mu(double time, double complex [:,:] GRID,dict inp, int s
 
 
             # T elements (9)
-            #Tgg = Km[g,4,0] * G + Km[g,4,1] * dG_dg + Km[g,4,2] * d2G_dg2
-            Tgg = Km[g,0,2] * d2G_dg2
+            Tgg = Km[g,4,0] * G + Km[g,4,1] * dG_dg + Km[g,4,2] * d2G_dg2
+
+            #Tgg = (Km[g,4,2]/10) * d2G_dg2
+
+            # this is phi*10
+            #Tgg = -8.34365507e-07 * d2G_dg2
 
             Ttot = Tgg
             Vtot = V * G

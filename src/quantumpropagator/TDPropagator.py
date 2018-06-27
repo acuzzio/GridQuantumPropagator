@@ -110,16 +110,7 @@ def propagate3D(dataDict, inputDict):
         inp['kinCube'] = inp['kinCube']*kokoko
         warning('kincube divided by {}'.format(kokoko))
 
-    # take a wf from file (and not from initial condition)
-    if 'initialFile' in inputDict:
-        warning('we are taking initial wf from file')
-        wffn = inputDict['initialFile']
-        print('File -> {}'.format(wffn))
-        wf_not_norm = retrieve_hdf5_data(wffn,'WF')
-        wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
-
-    counter = 0
 
     nameRoot = create_enumerated_folder(inputDict['outFol'])
     inputDict['outFol'] = nameRoot
@@ -175,6 +166,14 @@ def propagate3D(dataDict, inputDict):
         norm_wf = np.linalg.norm(wf)
         wf = wf / norm_wf
 
+    # take a wf from file (and not from initial condition)
+    if 'initialFile' in inputDict:
+        warning('we are taking initial wf from file')
+        wffn = inputDict['initialFile']
+        print('File -> {}'.format(wffn))
+        wf_not_norm = retrieve_hdf5_data(wffn,'WF')
+        wf = wf_not_norm/np.linalg.norm(wf_not_norm)
+
     #############################
     # INTEGRATOR SELECTION HERE #
     #############################
@@ -204,7 +203,7 @@ def propagate3D(dataDict, inputDict):
     writeH5fileDict(dataH5filename,inp)
 
     # print top of table
-    header = '  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |    Pulse X    |    Pulse Y    |    Pulse Z    |'
+    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |    Pulse X    |    Pulse Y    |    Pulse Z    |'
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
@@ -254,8 +253,8 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     #if int(rows) // counter == 0:
     #    print('zero')
 
-    outputStringS = '{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+13.5e} | {:+13.5e} | {:+13.5e} |'
-    outputString = outputStringS.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
+    outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+13.5e} | {:+13.5e} | {:+13.5e} |'
+    outputString = outputStringS.format(counter, ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
     print(outputString)
 
     kind = inp['kind']
@@ -272,8 +271,8 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
         oofP.write(outputStringSP + '\n')
 
     with open(outputFile, "a") as oof:
-        outputStringS2 = '{} {} {} {} {} {} {} {} {} {}'
-        outputString2 = outputStringS2.format(ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']))
+        outputStringS2 = '{} {} {} {} {} {} {} {} {} {} {}'
+        outputString2 = outputStringS2.format(counter,ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']))
         oof.write(outputString2 + '\n')
 
     #####################

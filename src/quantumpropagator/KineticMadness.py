@@ -100,6 +100,7 @@ def calc_s_mat(phi,gam,the,verbose=None):
     identity = dint_dcart_mat @ dcart_dint_mat # this must be identity matrix, of course (a@b does NOT)
 
     good('New Run')
+    print(identity)
 
     if verbose:
         stringZ = '\nCart/int matrix:\n{}\nShape: {}\n\nS (inverted) Matrix:\n{}\n{}'
@@ -299,5 +300,5 @@ def calc_g_G(phi,gam,the,verbose=None):
     return(Ttot)
 
 if __name__ == "__main__":
-    #calc_s_mat(2.0,15,50,True)
-    calc_g_G(2,15,50,True)
+    calc_s_mat(2.0,15,50,True)
+    #calc_g_G(2,15,50,True)
