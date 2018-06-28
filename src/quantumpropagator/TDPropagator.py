@@ -222,9 +222,11 @@ def propagate3D(dataDict, inputDict):
 
     for ii in range(fulltimeSteps):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
-            #  async is awesome
-            doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
-            #asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+            #  async is awesome. But it is not needed in 1d and maybe in 2d.
+            if kind == '3D':
+                asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+            else:
+                doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
             counter += 1
 
         wf = Crk4Ene3d(Cpropagator,t,wf,inp)
