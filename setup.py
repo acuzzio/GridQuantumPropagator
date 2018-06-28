@@ -20,7 +20,6 @@ setup(
         'Intended Audience :: Science/Research',
         'Programming Language :: Python :: 3',
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
     scripts=['Scripts/SinglePointPropagatorLauncher.py',

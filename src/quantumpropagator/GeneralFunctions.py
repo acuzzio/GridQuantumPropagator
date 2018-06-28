@@ -518,20 +518,116 @@ def loadInputYAML(fn):
     return diction
 
 
+def generateNorbGeometry(phi,gam,the, vector_res=None):
+    '''
+    This function generates an xyz given the value of the three angles
+    phi,gam,the :: Double  <- the three angles
+    vector_res :: Boolean <- if false it saves file
+    '''
+    vector_res = vector_res or False
+    fnO = 'zNorbornadiene_{:+08.3f}_{:+08.3f}_{:+08.3f}'.format(phi,gam,the)
+    fn = fnO.replace('-','N').replace('.','-').replace('+','P')
+    atomT = ['C','C','C','H','H','H','H']
+    fixed = np.array([[0.000000, 0.000000, 1.078168],
+             [0.000000, -1.116359, 0.000000],
+             [0.000000, 1.116359, 0.000000],
+             [0.894773, 0.000000, 1.698894],
+             [-0.894773, 0.000000, 1.698894],
+             [0.000000, -2.148889, 0.336566],
+             [0.000000, 2.148889, 0.336566]])
+    rBond = 1.541 # distance of bridge
+    L = 1.116359  # half distance between C2-C3
+    chBond = 1.077194 # distance between moving C and H
+
+    the2 = np.deg2rad(the/2)
+    gam2 = np.deg2rad(gam)
+
+    torsionalCI = 6 # values for phi AT WHICH
+
+    # this is the vector that displaces our 8 moving atoms from the CLOSEST CI I
+    # can reach with the old scan and the real conical intersection
+
+    deltasCIN = np.array([
+                          [-0.165777,  0.067387,  0.016393],
+                          [-0.14517 , -0.096085, -0.143594],
+                          [ 0.165162, -0.067684,  0.015809],
+                          [ 0.145943,  0.095734, -0.143995],
+                          [-0.520977,  0.086124,  0.316644],
+                          [ 0.450303, -0.048   ,  0.245432],
+                          [ 0.520405, -0.086941,  0.316594],
+                          [-0.451602,  0.047331,  0.24554 ],
+])
+
+
+    xC1 = -rBond * np.cos(gam2) * np.sin(the2)
+    yC1 = L + rBond * - np.sin(gam2)
+    zC1 = -rBond * np.cos(the2) * np.cos(gam2)
+
+    xC2 = -rBond * np.cos(gam2) * np.sin(-the2)
+    yC2 = L - rBond * np.sin(gam2)
+    zC2 = -rBond * np.cos(-the2) * np.cos(gam2)
+
+    xC3 = rBond * np.cos(gam2) * np.sin(+the2)
+    yC3 = -L + rBond * np.sin(gam2)
+    zC3 = -rBond * np.cos(+the2) * np.cos(gam2)
+
+    xC4 = rBond * np.cos(gam2) * np.sin(-the2)
+    yC4 = -L + rBond * np.sin(gam2)
+    zC4 = -rBond * np.cos(-the2) * np.cos(gam2)
+
+    # in the end we did this with cartesian... interesting workaround...
+    # desperation?
+    dx = +0.694921
+    dy = +0.661700
+    dz = +0.494206
+
+    xH1 = xC1 - dx
+    yH1 = yC1 + dy
+    zH1 = zC1 - dz
+
+    xH2 = xC2 + dx
+    yH2 = yC2 + dy
+    zH2 = zC2 - dz
+
+    xH3 = xC3 + dx
+    yH3 = yC3 - dy
+    zH3 = zC3 - dz
+
+    xH4 = xC4 - dx
+    yH4 = yC4 - dy
+    zH4 = zC4 - dz
+
+
+    newAtoms = np.array([[xC1,yC1,zC1], [xC2,yC2,zC2], [xC3,yC3,zC3], [xC4,yC4,zC4],
+                [xH1,yH1,zH1], [xH2,yH2,zH2], [xH3,yH3,zH3], [xH4,yH4,zH4]])
+
+    this = ((phi/torsionalCI) * deltasCIN)
+    newCorrectedAtoms = newAtoms + this
+
+    new = np.append(fixed,newCorrectedAtoms,0)
+    atomTN = atomT + ['C', 'C', 'C', 'C', 'H', 'H', 'H', 'H']
+    if vector_res:
+        return(new)
+    else:
+        # saveTraj works on LIST of geometries, that is why the double list brackets
+        saveTraj(np.array([new]),atomTN,fn)
+
+
 if __name__ == "__main__":
-    from time import sleep
+    print(generateNorbGeometry(2,2,2,True))
+    #from time import sleep
 
-    # A List of Items
-    items = list(range(0, 57))
-    l = len(items)
+    ## A List of Items
+    #items = list(range(0, 57))
+    #l = len(items)
 
-    # Initial call to print 0% progress
-    printProgressBar(0, l, prefix = 'Progress:', suffix = 'Complete', bar_length = 50)
-    for i, item in enumerate(items):
-        # Do stuff...
-        sleep(0.1)
-        # Update Progress Bar
-        printProgressBar(i + 1, l, prefix = 'Progress:', suffix = 'Complete', bar_length = 50)
+    ## Initial call to print 0% progress
+    #printProgressBar(0, l, prefix = 'Progress:', suffix = 'Complete', bar_length = 50)
+    #for i, item in enumerate(items):
+    #    # Do stuff...
+    #    sleep(0.1)
+    #    # Update Progress Bar
+    #    printProgressBar(i + 1, l, prefix = 'Progress:', suffix = 'Complete', bar_length = 50)
 
 
 

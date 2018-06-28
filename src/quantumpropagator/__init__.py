@@ -17,7 +17,7 @@ from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                createTabellineFromArray,fromFsToAu, printDict, readDirectionFile,
                                bring_input_to_AU, printDictKeys, printProgressBar, fromCmMin1toFs,
                                fromLabelsToFloats,labTranformReverse,labTranformReverseA,
-                               fromFloatsToLabels,equilibriumIndex)
+                               fromFloatsToLabels,equilibriumIndex,generateNorbGeometry)
 from .GeneralFunctionsSystem import (cd, ensure_dir_Secure, ensure_dir, create_enumerated_folder)
 from .graph import (getLabels, LiHAstLab, LiHLab, createStatesLab,
                     makeJustAnother2Dgraph, grapPulse, makeJustAnother2DgraphComplex,

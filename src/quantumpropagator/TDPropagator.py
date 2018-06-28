@@ -360,9 +360,10 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     # in the diagonal approximation those are the diagonal elements, thus element 0,4,8.
 
     coe_phi = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,0,2]
-    #coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,4,2]
-    coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,0,2]
-    warning('coe_gam has been changed !!! in initialcondition function')
+    coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,4,2]
+    # these three lines are here because we wanted to debug Gamma
+    #coe_gam = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,0,2]
+    #warning('coe_gam has been changed !!! in initialcondition function')
     coe_the = dataDict['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind,8,2]
 
     # they need to be multiplied by (-2 * hbar**2), where hbar is 1. And inverted, because the MASS
