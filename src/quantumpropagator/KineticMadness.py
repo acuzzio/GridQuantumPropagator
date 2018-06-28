@@ -99,10 +99,10 @@ def calc_s_mat(phi,gam,the,verbose=None):
     dint_dcart_mat = np.linalg.pinv(dcart_dint_mat)
     identity = dint_dcart_mat @ dcart_dint_mat # this must be identity matrix, of course (a@b does NOT)
 
-    good('New Run')
-    print(identity)
-
     if verbose:
+        good('New Run')
+        print(identity)
+
         stringZ = '\nCart/int matrix:\n{}\nShape: {}\n\nS (inverted) Matrix:\n{}\n{}'
         print(stringZ.format(dcart_dint_mat, dcart_dint_mat.shape, dint_dcart_mat, dint_dcart_mat.shape))
 

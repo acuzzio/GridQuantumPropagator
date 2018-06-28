@@ -48,7 +48,7 @@ from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, co
                       envel, pulse)
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
-from .KineticMadness import calc_g_G
+from .KineticMadness import (calc_g_G, calc_s_mat)
 from .TDPropagator import propagate3D
 from .CPropagator import *
 from .IpythonJupyter import *
