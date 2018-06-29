@@ -10,7 +10,10 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
          makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu, pulZe,
          graphic_Pulse,derivative3dMu,equilibriumIndex)
-from quantumpropagator.CPropagator import *
+from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
+                                           Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
+                                           Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
+                                           Cderivative_1D_The)
 
 def expandcube(inp):
     return inp
@@ -135,6 +138,16 @@ def propagate3D(dataDict, inputDict):
         wf =                         wf[:,:,:,:numStates]
         good('Propagation in 3D.')
         print('\nDimensions:\nPhi: {}\nGam: {}\nThet: {}\nNstates: {}\nNatoms: {}\n'.format(phiL, gamL, theL,numStates, natoms))
+    elif kind == 'GamThe':
+        inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:,:numStates]
+        inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
+        inp['dipCube'] = inp['dipCube'][gsm_phi_ind,:,:,:,:numStates,:numStates]
+        wf             =             wf[gsm_phi_ind,:,:,:numStates]
+        good('Propagation in GAM-THE with Phi {}'.format(gsm_phi_ind))
+        print('Shapes: P:{} K:{} W:{} D:{}'.format(inp['potCube'].shape, inp['kinCube'].shape, wf.shape, inp['dipCube'].shape))
+        print('\nDimensions:\nGam: {}\nThe: {}\nNstates: {}\nNatoms: {}\n'.format(gamL, theL, numStates, natoms))
+        norm_wf = np.linalg.norm(wf)
+        wf = wf / norm_wf
     elif kind == 'Phi':
         inp['potCube'] = inp['potCube'][:,gsm_gam_ind,gsm_the_ind,:numStates]
         inp['kinCube'] = inp['kinCube'][:,gsm_gam_ind,gsm_the_ind]
@@ -178,13 +191,14 @@ def propagate3D(dataDict, inputDict):
     # INTEGRATOR SELECTION HERE #
     #############################
 
-    integrators = {'3d'  : (CextractEnergy3dMu, Cderivative3dMu),
-                   'Phi' : (Cenergy_1D_Phi, Cderivative_1D_Phi),
-                   'Gam' : (Cenergy_1D_Gam, Cderivative_1D_Gam),
-                   'The' : (Cenergy_1D_The, Cderivative_1D_The),
+    Propagators = {'3d'     : (CextractEnergy3dMu, Cderivative3dMu),
+                   'GamThe' : (Cenergy_2d_GamThe,Cderivative_2d_GamThe),
+                   'Phi'    : (Cenergy_1D_Phi, Cderivative_1D_Phi),
+                   'Gam'    : (Cenergy_1D_Gam, Cderivative_1D_Gam),
+                   'The'    : (Cenergy_1D_The, Cderivative_1D_The),
                   }
 
-    CEnergy, Cpropagator = integrators[kind]
+    CEnergy, Cpropagator = Propagators[kind]
 
     # INITIAL DYNAMICS VALUES
     h = inp['h']
@@ -264,6 +278,8 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     for i in range(nstates):
         if kind == '3d':
             singleStatewf = wf[:,:,:,i]
+        if kind == 'GamThe':
+            singleStatewf = wf[:,:,i]
         elif kind == 'Phi' or kind == 'Gam' or kind == 'The':
             singleStatewf = wf[:,i]
         outputStringSP += " {:+7.5e} ".format(np.linalg.norm(singleStatewf)**2)
@@ -283,22 +299,22 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
 
     if 'graphs' in inputDict:
         vmaxV = inp['vmax_value']
-        oneD = True
-        if oneD:
+        # I am sure there is a better way to do this...
+        if kind == 'Phi':
+            valuesX = inp['phis']
+            label = 'Phi {:11.4f}'.format(t/41.3)
+        elif kind == 'Gam':
+            valuesX = inp['gams']
+            label = 'Gam {:11.4f}'.format(t/41.3)
+            pot=inp['potCube'][0]
+        elif kind == 'The':
+            valuesX = inp['thes']
+            label = 'The {:11.4f}'.format(t/41.3)
+        if kind == 'Phi' or kind == 'Gam' or kind == 'The':
             graphFileName = name + ".png"
-            if kind == 'Phi':
-                valuesX = inp['phis']
-                label = 'Phi {:11.4f}'.format(t/41.3)
-            elif kind == 'Gam':
-                valuesX = inp['gams']
-                label = 'Gam {:11.4f}'.format(t/41.3)
-                pot=inp['potCube'][0]
-            elif kind == 'The':
-                valuesX = inp['thes']
-                label = 'The {:11.4f}'.format(t/41.3)
             makeJustAnother2DgraphComplexSINGLE(valuesX,wf,graphFileName,label)
-        twoD = False
-        if twoD:
+
+        if kind == 'GamThe':
             for i in range(nstates):
                 for j in range(i+1): # In python the handshakes are like this...
                     graphFileName = '{}_state_{}_{}.png'.format(name,i,j)
@@ -442,33 +458,3 @@ if __name__ == "__main__":
     dataDict = np.load(fn2) # this is a numpy wrapper, for this we use [()]
     propagate3D(dataDict[()], inputDict)
 
-
-
-    ## REDUCE THE PROBLEM IN 1d GAM 1 state 
-    ## Take equilibrium points
-    #gsm_phi_ind = dataDict['phis'].index('P000-000')
-    #gsm_gam_ind = dataDict['gams'].index('P016-923')
-    #gsm_the_ind = dataDict['thes'].index('P114-804')
-
-    ##print(inp['kinCube'][gsm_phi_ind,gsm_gam_ind,gsm_the_ind])
-
-    ## slice the grid
-    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,gsm_the_ind,0]
-    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,gsm_the_ind]
-    #wf =                         wf[gsm_phi_ind,:,gsm_the_ind]
-
-
-    ## REDUCE THE PROBLEM IN 2d THE GAM 1 state
-    ## Take equilibrium points
-    #gsm_phi_ind = dataDict['phis'].index('P000-000')
-    #gsm_gam_ind = dataDict['gams'].index('P016-923')
-    #gsm_the_ind = dataDict['thes'].index('P114-804')
-
-    ## slice the grid
-    #inp['potCube'] = inp['potCube'][gsm_phi_ind,:,:,:numStates]
-    #inp['kinCube'] = inp['kinCube'][gsm_phi_ind,:,:]
-    #inp['dipCube'] = inp['dipCube'][gsm_phi_ind,:,:,:,:numStates,:numStates]
-    #wf =                         wf[gsm_phi_ind,:,:,:numStates]
-    #wf = wf/np.linalg.norm(wf)
-    #str111 = 'potCube: {}\nkinCube: {}\ndipCube: {}\nwf:      {}'
-    #print(str111.format(inp['potCube'].shape,inp['kinCube'].shape,inp['dipCube'].shape,wf.shape))
