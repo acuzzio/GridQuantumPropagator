@@ -13,7 +13,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
 from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
                                            Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
                                            Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
-                                           Cderivative_1D_The)
+                                           Cderivative_1D_The,Crk4Ene3d)
 
 def expandcube(inp):
     return inp
