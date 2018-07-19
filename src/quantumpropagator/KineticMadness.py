@@ -16,7 +16,8 @@ def calc_s_mat(phi,gam,the,verbose=None):
     '''
     verbose = verbose or False
     ang2boh = 1.889725988
-    umass = 1836
+
+    phiNumber = 0.06
 
     # 
     # In this part we want to take out masses from the calculations of these coefficients
@@ -27,18 +28,18 @@ def calc_s_mat(phi,gam,the,verbose=None):
     ch    = 1.541 * ang2boh
 
     # derivatives of phi
-    dp_c8x  = (-0.165777 * ang2boh / 6)
-    dp_c8y  = (0.067387  * ang2boh / 6)
-    dp_c8z  = (0.016393  * ang2boh / 6)
-    dp_c9x  = (-0.145170 * ang2boh / 6)
-    dp_c9y  = (-0.096085 * ang2boh / 6)
-    dp_c9z  = (-0.143594 * ang2boh / 6)
-    dp_h12x = (-0.520977 * ang2boh / 6)
-    dp_h12y = (0.086124  * ang2boh / 6)
-    dp_h12z = (0.316644  * ang2boh / 6)
-    dp_h13x = (0.450303  * ang2boh / 6)
-    dp_h13y = (-0.048000 * ang2boh / 6)
-    dp_h13z = (0.245432  * ang2boh / 6)
+    dp_c8x  = (-0.165777 * ang2boh / phiNumber)
+    dp_c8y  = (0.067387  * ang2boh / phiNumber)
+    dp_c8z  = (0.016393  * ang2boh / phiNumber)
+    dp_c9x  = (-0.145170 * ang2boh / phiNumber)
+    dp_c9y  = (-0.096085 * ang2boh / phiNumber)
+    dp_c9z  = (-0.143594 * ang2boh / phiNumber)
+    dp_h12x = (-0.520977 * ang2boh / phiNumber)
+    dp_h12y = (0.086124  * ang2boh / phiNumber)
+    dp_h12z = (0.316644  * ang2boh / phiNumber)
+    dp_h13x = (0.450303  * ang2boh / phiNumber)
+    dp_h13y = (-0.048000 * ang2boh / phiNumber)
+    dp_h13z = (0.245432  * ang2boh / phiNumber)
 
     dp_phi  = array([ dp_c8x,   dp_c8y,  dp_c8z,
                       dp_c9x,   dp_c9y,  dp_c9z,
