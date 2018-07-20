@@ -3,10 +3,12 @@ This is the module where the program generates graphics
 '''
 
 import numpy as np
-#import matplotlib as mpl
-#mpl.use('Agg')
-import matplotlib.pyplot as plt
 import os
+import matplotlib as mpl
+if os.environ.get('DISPLAY','') == '':
+    print('no display found. Using non-interactive Agg backend')
+    mpl.use('Agg')
+import matplotlib.pyplot as plt
 
 import quantumpropagator.h5Reader as h5
 import quantumpropagator.GeneralFunctions as gf
