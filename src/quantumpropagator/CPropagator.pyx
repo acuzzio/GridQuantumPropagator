@@ -393,7 +393,7 @@ cdef Cderivative2D_GamThe_Mu(double time,double complex [:,:,:] GRID, dict inp, 
                Mtot = 0
 
                for d in range(nstates): # state s outer loop, state d inner loop
-                   for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                   for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                        Mtot = Mtot - ((pulseV[carte] * Dm[g,t,carte,s,d] ) * GRID[g,t,d])
 
                if selector == 1:
@@ -493,7 +493,7 @@ cdef Cderivative1D_Phi_Mu(double time, double complex [:,:] GRID,dict inp, int s
             Mtot = 0
 
             for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
-                for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                     Mtot = Mtot - ((pulseV[carte] * Dm[p,carte,s,d] ) * GRID[p,d])
 
             if selector == 1:
@@ -590,7 +590,7 @@ cdef Cderivative1D_Gam_Mu(double time, double complex [:,:] GRID,dict inp, int s
             Mtot = 0
 
             for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
-                for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                     Mtot = Mtot - ((pulseV[carte] * Dm[g,carte,s,d] ) * GRID[g,d])
 
             if selector == 1:
@@ -688,7 +688,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
             Mtot = 0
 
             for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
-                for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                     Mtot = Mtot - ((pulseV[carte] * Dm[t,carte,s,d] ) * GRID[t,d])
 
             if selector == 1:
