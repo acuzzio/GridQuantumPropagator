@@ -58,6 +58,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
     t :: Double -> time
     GRID :: np.array[:,:,:,:] <- wavefunction[phis,gams,thes,states]
     inp :: dictionary of various inputs
+    export OMP_NUM_THREADS=10
     '''
     cdef:
         int s,p,g,t,phiL=inp['phiL'],gamL=inp['gamL'],theL=inp['theL'],nstates=inp['nstates']
@@ -237,7 +238,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                    Mtot = 0
 
                    for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
-                       for carte in range(2): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
+                       for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                            #Mtot += -(pulseV[carte] * D[carte,s,d] ) * GRID[p,g,t,d]
                            # parallel version DOES NOT want += (better, it does not consider += as
                            # the serial version would. += works on shared reduction
