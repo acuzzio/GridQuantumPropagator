@@ -102,7 +102,7 @@ def createOutputFile(tupleI):
         nstates = ener.size
         nstatesNAC = 8 # states for nac are actually 8
         natoms = aType.size
-        # I want to save only the low left corner of overlap
+        # I want to save only the low left corner of overlap [nstates:,:nstates]
         if True:
             NAC = parseNAC(h5out,nstatesNAC,natoms)
         else:
@@ -242,7 +242,7 @@ def refineStuffs(folderO,folderE,fn1,fn2):
     this is the old brother of correctorFromDirection
     I am trying to get a refinement and catch points that suddenly changes sign.
     I am lucky that theta and gamma when Phi=0 seems good, so I try to force out the changes
-    in Phi.
+    in Phi. THIS ATTEMPT FAILED MISERABLY
     '''
     phis1,gammas1,thetas1 = readDirectionFile(fn1)
     phis2,gammas2,thetas2 = readDirectionFile(fn2)
@@ -290,9 +290,6 @@ def refineStuffs(folderO,folderE,fn1,fn2):
                 writeH5fileDict(OUTN,allValues)
 
 
-
-
-
 def correctorFromDirection(folderO,folderE,fn1,fn2):
     '''
     This function is the corrector that follows the direction files...
@@ -313,7 +310,7 @@ def correctorFromDirection(folderO,folderE,fn1,fn2):
     graph6,revgraph6,_ = makeCubeGraph(phis2,gammas1,thetas2)
     graph7,revgraph7,_ = makeCubeGraph(phis1,gammas2,thetas2)
     graph8,revgraph8,_ = makeCubeGraph(phis2,gammas2,thetas2)
-    cutAt = 8
+    cutAt = 14
     # correct first point here - True means "I am the first"
     print('\n\n----------THIS IS INITIAL -> cut at {}:\n'.format(cutAt))
     newsign = np.ones(cutAt)
@@ -368,11 +365,12 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
         (nstates, _ ) = overlapsM.shape
         overlapsAll = overlapsM # leave this here for now
 
+    nacCUT = 8
     # let's cut something
     energies = enerAll[:cutAt]
     dipoles = dipolesAll[:, :cutAt, :cutAt]
     overlaps = overlapsAll[:cutAt, :cutAt]
-    nacs = nacAll[:cutAt, :cutAt]
+    nacs = nacAll[:nacCUT, :nacCUT]
 
     correctionArray1DABS, overlap_one_zero = createOneAndZero(overlaps, oneDarray)
     correctionMatrix = createTabellineFromArray(correctionArray1DABS)
@@ -380,8 +378,8 @@ def correctThis(elem,oneDarray,rootNameE,rootNameO,cutAt,first=None):
     # here I use the fact that correctionMatrix is ALWAYS 2d
     # so I loop over the it
     new_nacs = np.empty_like(nacs)
-    for i in range(cutAt):
-        for j in range(cutAt):
+    for i in range(nacCUT):
+        for j in range(nacCUT):
             new_nacs[i,j] = nacs[i,j] * correctionMatrix[i,j]
 
 
