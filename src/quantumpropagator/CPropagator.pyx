@@ -67,6 +67,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double [:,:,:,:] Vm = inp['potCube']
         double [:,:,:,:,:] Km = inp['kinCube']
         double [:,:,:,:,:,:] Dm = inp['dipCube']
+        double [:,:,:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
         double complex [:,:,:,:] new, kinS, potS
         double complex I = -1j
@@ -77,7 +78,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double complex d2G_dgt_numerator_cross_1,d2G_dgt_numerator_cross_2,d2G_dgt_numerator
         double complex d2G_dpg,d2G_dpt,d2G_dgt,d2G_dgp,d2G_dtp,d2G_dtg
         double complex Tpp,Tpg,Tpt,Tgp,Tgg,Tgt,Ttp,Ttg,Ttt
-        double complex Ttot,Vtot,Mtot
+        double complex Ttot,Vtot,Mtot,Ntot
 
     new = np.empty_like(GRID)
     kinS = np.empty_like(GRID)
@@ -245,8 +246,12 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                            # variables inside of the prange() loop
                            Mtot = Mtot - ((pulseV[carte] * Dm[p,g,t,carte,s,d] ) * GRID[p,g,t,d])
 
+                           # NAC calculation
+                           # nac1    = - (tau[Ici, Icj] * dR[Icj]) / reducedMass
+                           Ntot = Ntot - (Nm[p,g,t,s,d,0] * dG_dp + Nm[p,g,t,s,d,1] * dG_dg + Nm[p,g,t,s,d,2] * dG_dt)
+
                    if selector == 1:
-                       new[p,g,t,s] = I * (Ttot+Vtot+Mtot)
+                       new[p,g,t,s] = I * (Ttot+Vtot+Mtot+Ntot)
                    else:
                        kinS[p,g,t,s] = Ttot
                        potS[p,g,t,s] = Vtot
