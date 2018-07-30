@@ -102,10 +102,9 @@ def calc_s_mat(phi,gam,the,verbose=None):
 
     if verbose:
         good('New Run')
-        print(identity)
 
-        stringZ = '\nCart/int matrix:\n{}\nShape: {}\n\nS (inverted) Matrix:\n{}\n{}'
-        print(stringZ.format(dcart_dint_mat, dcart_dint_mat.shape, dint_dcart_mat, dint_dcart_mat.shape))
+        stringZ = 'Identity itself:\n{}\nCart/int matrix:\n{}\nShape: {}\n\nS (inverted) Matrix:\n{}\nIts shape: {}'
+        print(stringZ.format(identity,dcart_dint_mat, dcart_dint_mat.shape, dint_dcart_mat, dint_dcart_mat.shape))
 
     # good('only Z')
 

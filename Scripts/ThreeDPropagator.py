@@ -1,5 +1,6 @@
 ''' This script launches a 3d propagation from a h5 file. '''
 
+import pickle
 import glob
 import numpy as np
 import os
@@ -108,12 +109,17 @@ def main():
         print('\nNEW 3D PROPAGATION')
         # is there a data file?
         if 'dataFile' in inputAU:
-            data = np.load(inputAU['dataFile'])
-
+            name_data_file = inputAU['dataFile']
             # LAUNCH THE PROPAGATION, BITCH 
-            # [()] <- because np.load returns a numpy wrapper on the dictionary
+            if name_data_file[-3:] == 'npy':
+                data = np.load(name_data_file)
+                # [()] <- because np.load returns a numpy wrapper on the dictionary
+                propagate3D(data[()], inputAU)
+            elif name_data_file[-3:] == 'kle':
+                with open(name_data_file, "rb") as input_file:
+                    data = pickle.load(input_file)
+                propagate3D(data, inputAU)
 
-            propagate3D(data[()], inputAU)
 
         else:
             # if not, guess you should create it...
@@ -122,7 +128,8 @@ def main():
 
             # read the first one to understand who is the seed of the cube and take numbers
             phi1, gam1, the1 = readDirectionFile(inputAU['directions1'])
-            ext = '.corrected.h5'
+            #ext = '.corrected.h5'
+            ext = '.refined.h5'
             prjlab = inputAU['proj_label']
             first_file = inputAU['proj_label'] + phi1[0] + '_' + gam1[0] + '_' + the1[0] + ext
             fnh5 = os.path.join(inputAU['inputFol'], first_file)
@@ -132,11 +139,14 @@ def main():
             phiL, gamL, theL = len(phis), len(gams), len(thes)
             output = lengths.format(nstates, natoms, phiL, gamL, theL)
 
+            nacLength = 8
+
             # start to allocate the vectors
-            potCUBE = np.empty((phiL, gamL, theL, nstates))
+            potCUBE = np.empty((phiL, gamL, theL, nacLength))
             kinCUBE = np.empty((phiL, gamL, theL, 9, 3))
-            dipCUBE = np.empty((phiL, gamL, theL, 3, nstates, nstates))
+            dipCUBE = np.empty((phiL, gamL, theL, 3, nacLength, nacLength))
             geoCUBE = np.empty((phiL, gamL, theL, natoms, 3))
+            nacCUBE = np.empty((phiL, gamL, theL, nacLength, nacLength, natoms, 3))
 
             for p, phi in enumerate(phis):
                 for g, gam in enumerate(gams):
@@ -144,10 +154,11 @@ def main():
                         labelZ = prjlab + phi + '_' + gam + '_' + the + ext
                         fnh5 = os.path.join(inputAU['inputFol'], labelZ)
                         if os.path.exists(fnh5):
-                            potCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'ROOT_ENERGIES')
+                            potCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'ROOT_ENERGIES')[:nacLength]
                             kinCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'KINETIC_COEFFICIENTS')
                             dipCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'DIPOLES')
                             geoCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'CENTER_COORDINATES')
+                            nacCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'NAC')
                         else:
                             err('{} does not exist'.format(labelZ))
                     printProgressBar(p*gamL+g,phiL*gamL,prefix = 'H5 data loaded:')
@@ -156,6 +167,7 @@ def main():
                     'potCube' : potCUBE,
                     'dipCUBE' : dipCUBE,
                     'geoCUBE' : geoCUBE,
+                    'nacCUBE' : nacCUBE,
                     'phis'    : phis,
                     'gams'    : gams,
                     'thes'    : thes

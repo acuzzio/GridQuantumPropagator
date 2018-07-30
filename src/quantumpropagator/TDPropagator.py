@@ -74,6 +74,7 @@ def propagate3D(dataDict, inputDict):
             'potCube'  : dataDict['potCube'],
             'kinCube'  : dataDict['kinCube'],
             'dipCube'  : dataDict['dipCUBE'],
+            'nacCube'  : dataDict['smoCube'],
             'pulseX'   : inputDict['pulseX'],
             'pulseY'   : inputDict['pulseY'],
             'pulseZ'   : inputDict['pulseZ'],

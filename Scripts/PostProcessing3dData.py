@@ -44,9 +44,10 @@ def read_single_arguments(single_inputs):
     parser.add_argument("-r", "--refine",
                         dest="r",
                         nargs='+',
-                        help="refiner, takes two arguments:\n"
-                        "Folder of not refined h5\n"
-                        "Folder of outputs\n")
+                        help="refiner, takes three arguments:\n"
+                        "Folder of non corr with nac\n"
+                        "Folder of corr without nac\n"
+                        "OutputFolder.\n")
 
 
     args = parser.parse_args()
@@ -237,56 +238,52 @@ def makeCubeGraph(phis,gammas,thetas):
     return(graph,reverseGraph,first)
 
 
-def refineStuffs(folderO,folderE,fn1,fn2):
+def refineStuffs(folderO,folderE,folderOUTPUT,fn1,fn2):
     '''
-    this is the old brother of correctorFromDirection
-    I am trying to get a refinement and catch points that suddenly changes sign.
-    I am lucky that theta and gamma when Phi=0 seems good, so I try to force out the changes
-    in Phi. THIS ATTEMPT FAILED MISERABLY
+    There is a folder, folderO, where there are NAC calculated but the dipoles are not corrected.
+    Then there is a folder folderE that has the correct dipoles, but nacs are 0.
+    I use the sign of the dipoles in folderE to correct the NAC when putting them into the new grid
     '''
     phis1,gammas1,thetas1 = readDirectionFile(fn1)
     phis2,gammas2,thetas2 = readDirectionFile(fn2)
     rootNameO = os.path.join(folderO,'zNorbornadiene')
     rootNameE = os.path.join(folderE,'zNorbornadiene')
+    rootNameOut = os.path.join(folderOUTPUT,'zNorbornadiene')
+
+    flat_range_Phi   = phis1[::-1]+phis2[1:]
     flat_range_Gamma = gammas1[::-1]+gammas2[1:]
     flat_range_Theta = (thetas1[::-1]+thetas2[1:])[::-1]
 
     dataToGet = ['DIPOLES', 'NAC']
 
-    for gamLab in flat_range_Gamma:
-        for theLab in flat_range_Theta:
-            AbsCorr = np.ones((3,8,8))
-            for p,phiLab in enumerate(phis1[:-1]):
+    for phiLab in flat_range_Phi[:]:
+        for gamLab in flat_range_Gamma[:]:
+            for theLab in flat_range_Theta[:]:
                 elemT = '{}_{}_{}'.format(phiLab,gamLab,theLab)
-                elemN = '{}_{}_{}'.format(phis1[p+1],gamLab,theLab)
-                THIS = '{}_{}.corrected.h5'.format(rootNameO,elemT)
-                NEXT = '{}_{}.corrected.h5'.format(rootNameO,elemN)
-                OUTN = '{}_{}.refined.h5'.format(rootNameE,elemN)
-                if p==0:
-                    OUTT = '{}_{}.refined.h5'.format(rootNameE,elemT)
-                    copy2(THIS,OUTT)
+                THIS = '{}_{}.all.h5'.format(rootNameO,elemT)
+                NEXT = '{}_{}.corrected.h5'.format(rootNameE,elemT)
+                OUTN = '{}_{}.refined.h5'.format(rootNameOut,elemT)
                 [dipolesAllT, nacAllT] = retrieve_hdf5_data(THIS, dataToGet)
                 [dipolesAllN, nacAllN] = retrieve_hdf5_data(NEXT, dataToGet)
                 _,nstates,_ = dipolesAllT.shape
-                # loop on lower triangule
-                for cart in range(3):
-                    for i in range(nstates):
-                        for j in range(i):
-                            uno = dipolesAllT[cart,i,j]
-                            due = dipolesAllN[cart,i,j]
-                            sign1 = np.sign(uno)
-                            sign2 = np.sign(due)
-                            if abs(uno) > 10e-2 and abs(due) > 10e-2 and sign1 != sign2:
-                                AbsCorr[cart,i,j] = -AbsCorr[cart,i,j]
-                                print('change in {} -> {} ({},{},{})'.format(elemT,elemN,cart,i,j))
-                            dipolesAllN[cart,i,j] = due * AbsCorr[cart,i,j]
-                            dipolesAllN[cart,j,i] = due * AbsCorr[cart,i,j]
 
+                cutStates = 8
+
+                for i in range(cutStates):
+                    for j in range(i):
+                        uno = dipolesAllT[0,i,j]
+                        due = dipolesAllN[0,i,j]
+                        if np.sign(uno) == np.sign(due):
+                            nacAllN[i,j] = nacAllT[i,j]
+                            nacAllN[j,i] = -nacAllT[i,j]
+                        else:
+                            nacAllN[i,j] = -nacAllT[i,j]
+                            nacAllN[j,i] = nacAllT[i,j]
 
                 # file handling
                 allValues = readWholeH5toDict(NEXT)
-                allValues['DIPOLES'] = dipolesAllN
-                #allValues['NAC'] = new_nacs
+                allValues['DIPOLES'] = dipolesAllN[:,:cutStates,:cutStates]
+                allValues['NAC'] = nacAllN
                 writeH5fileDict(OUTN,allValues)
 
 
@@ -483,6 +480,7 @@ def main():
     '''
     fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions1'
     fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions2'
+    warning('still an hardcoded direction file')
     o_inputs = single_inputs("","","","",1)
     inp = read_single_arguments(o_inputs)
     if inp.direction == "" and inp.refine == "":
@@ -499,7 +497,7 @@ def main():
     elif inp.refine != "":
         # here the code for the refining thing. big stuff...
         #print(inp.refine[0],inp.refine[1],fn1,fn2)
-        refineStuffs(inp.refine[0],inp.refine[1],fn1,fn2)
+        refineStuffs(inp.refine[0],inp.refine[1],inp.refine[2],fn1,fn2)
     else:
         correctorFromDirection(inp.direction[0],inp.direction[1],fn1,fn2)
 
