@@ -55,7 +55,8 @@ def propagate3D(dataDict, inputDict):
 
     wf = np.zeros((phiL, gamL, theL, nstates), dtype=complex)
 
-    wf[:,:,:,initial_state] = initialCondition3d(wf[:,:,:,0],dataDict,factor,displ,init_mom)
+    print(initial_state)
+    wf[:,:,:,initial_state] = initialCondition3d(wf[:,:,:,initial_state],dataDict,factor,displ,init_mom)
 
     # Take values array from labels (radians already)
     phis,gams,thes = fromLabelsToFloats(dataDict)
