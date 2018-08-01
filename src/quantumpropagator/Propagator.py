@@ -655,6 +655,7 @@ def derivative1d(t, GRID, pulseV, matVG, matMuG, matNACG, matGELEG, nstates, gri
             hamilt = sum(HamiltonianEle1d(Ici, Icj, matVG[g], matMuG[g], pulseV, d2R, dR, g,
                          states[Icj], reducedMass, matNACG[g], matGELEG[g], absP[g])
                          for Icj in range(nstates))
+            # con = -i
             summa[Ici] = con * hamilt
         new[:,g] = summa
     return new

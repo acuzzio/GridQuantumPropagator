@@ -91,7 +91,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
     pulseV[2] = pulZe(time,inp['pulseZ'])
 
     #for s in range(nstates):
-    for s in prange(nstates, nogil=True):
+    for s in prange(nstates, nogil=True):   # first state loop.
         for p in range(phiL):
             for g in range(gamL):
                for t in range(theL):
@@ -237,21 +237,25 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
 
                    # loop and sum on other states.
                    Mtot = 0
+                   Ntot = 0
+
+                   # this is state S with all the others. Summing up.
 
                    for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
                        for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
-                           #Mtot += -(pulseV[carte] * D[carte,s,d] ) * GRID[p,g,t,d]
+                           # Mtot += -(pulseV[carte] * D[carte,s,d] ) * GRID[p,g,t,d]
                            # parallel version DOES NOT want += (better, it does not consider += as
                            # the serial version would. += works on shared reduction
                            # variables inside of the prange() loop
                            Mtot = Mtot - ((pulseV[carte] * Dm[p,g,t,carte,s,d] ) * GRID[p,g,t,d])
 
                            # NAC calculation
-                           # nac1    = - (tau[Ici, Icj] * dR[Icj]) / reducedMass
                            Ntot = Ntot - (Nm[p,g,t,s,d,0] * dG_dp + Nm[p,g,t,s,d,1] * dG_dg + Nm[p,g,t,s,d,2] * dG_dt)
 
                    if selector == 1:
+                       # I = -i
                        new[p,g,t,s] = I * (Ttot+Vtot+Mtot+Ntot)
+                       #new[p,g,t,s] = I * (Ttot+Vtot+Mtot)
                    else:
                        kinS[p,g,t,s] = Ttot
                        potS[p,g,t,s] = Vtot
