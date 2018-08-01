@@ -47,8 +47,15 @@ def propagate3D(dataDict, inputDict):
     else:
         init_mom = (0,0,0)
 
+    if 'initial_state' in inputDict:
+        initial_state = inputDict['initial_state']
+        warning('Initial gaussian wavepacket in state {}'.format(initial_state))
+    else:
+        initial_state = 0
+
     wf = np.zeros((phiL, gamL, theL, nstates), dtype=complex)
-    wf[:,:,:,0] = initialCondition3d(wf[:,:,:,0],dataDict,factor,displ,init_mom)
+
+    wf[:,:,:,initial_state] = initialCondition3d(wf[:,:,:,0],dataDict,factor,displ,init_mom)
 
     # Take values array from labels (radians already)
     phis,gams,thes = fromLabelsToFloats(dataDict)
