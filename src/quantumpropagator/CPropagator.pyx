@@ -72,7 +72,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double complex [:,:,:,:] new, kinS, potS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
-        double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
+        double complex dG_dp_oth, dG_dg_oth, dG_dt_oth, p_term, g_term, t_term
         double complex d2G_dcross_numerator_p,d2G_dcross_numerator_g,d2G_dcross_numerator_t
         double complex d2G_dpg_numerator_cross_1,d2G_dpg_numerator_cross_2,d2G_dpg_numerator
         double complex d2G_dpt_numerator_cross_1,d2G_dpt_numerator_cross_2,d2G_dpt_numerator
@@ -285,7 +285,20 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                            else:
                                dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
 
-                           Ntot = Ntot - (Nm[p,g,t,s,d,0] * dG_dp_oth + Nm[p,g,t,s,d,1] * dG_dg_oth + Nm[p,g,t,s,d,2] * dG_dt_oth)
+
+                           #  # s = 1   d = 2 
+                           #  p_term = (a * dG_dp_2 -a * dG_dp_1) / 2
+
+                           #  # s = 2   d = 1
+                           #  p_term = (-a * dG_dp_1 + a * dG_dp_2) / 2
+
+
+                           p_term = (Nm[p,g,t,s,d,0] * dG_dp_oth +Nm[p,g,t,s,d,0] * dG_dp) / 2
+                           g_term = (Nm[p,g,t,s,d,1] * dG_dg_oth +Nm[p,g,t,s,d,1] * dG_dg) / 2
+                           t_term = (Nm[p,g,t,s,d,2] * dG_dt_oth +Nm[p,g,t,s,d,2] * dG_dt) / 2
+
+
+                           Ntot = Ntot - ( p_term + g_term + t_term )
 
                    if selector == 1:
                        # I = -i

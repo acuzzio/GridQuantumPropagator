@@ -91,11 +91,13 @@ bpy.ops.object.select_all(action='DESELECT')
 
 mat = bpy.data.materials.get("Material.001")
 
-G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian00*.h5'
+#G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian00*.h5'
 
-allH5 = sorted(glob.glob(G_E))
+G_Exp = '/home/alessio/n-Propagation/results/USETHISINBLENDER_0001/Gaussian00*.h5'
 
-for i,fn in enumerate(allH5[:29]):
+allH5 = sorted(glob.glob(G_Exp))
+
+for i,fn in enumerate(allH5[:]):
     
     print('doing {}'.format(fn))
     
