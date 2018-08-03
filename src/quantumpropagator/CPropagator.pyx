@@ -72,6 +72,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double complex [:,:,:,:] new, kinS, potS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
+        double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
         double complex d2G_dcross_numerator_p,d2G_dcross_numerator_g,d2G_dcross_numerator_t
         double complex d2G_dpg_numerator_cross_1,d2G_dpg_numerator_cross_2,d2G_dpg_numerator
         double complex d2G_dpt_numerator_cross_1,d2G_dpt_numerator_cross_2,d2G_dpt_numerator
@@ -250,7 +251,41 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                            Mtot = Mtot - ((pulseV[carte] * Dm[p,g,t,carte,s,d] ) * GRID[p,g,t,d])
 
                            # NAC calculation
-                           Ntot = Ntot - (Nm[p,g,t,s,d,0] * dG_dp + Nm[p,g,t,s,d,1] * dG_dg + Nm[p,g,t,s,d,2] * dG_dt)
+
+                           if p == 0:
+                               dG_dp_oth = (GRID[p+1,g,t,d]) / (2 * dphi)
+                           elif p == 1:
+                               dG_dp_oth = (GRID[p+1,g,t,d]-GRID[p-1,g,t,d]) / (2 * dphi)
+                           elif p == phiL-2:
+                               dG_dp_oth = (GRID[p+1,g,t,d]-GRID[p-1,g,t,d]) / (2 * dphi)
+                           elif p == phiL-1:
+                               dG_dp_oth = (-GRID[p-1,g,t,d]) / (2 * dphi)
+                           else:
+                               dG_dp_oth = (GRID[p+1,g,t,d]-GRID[p-1,g,t,d]) / (2 * dphi)
+
+                           if g == 0:
+                               dG_dg_oth = (GRID[p,g+1,t,d]) / (2 * dgam)
+                           elif g == 1:
+                               dG_dg_oth = (GRID[p,g+1,t,d]-GRID[p,g-1,t,d]) / (2 * dgam)
+                           elif g == gamL-2:
+                               dG_dg_oth = (GRID[p,g+1,t,d]-GRID[p,g-1,t,d]) / (2 * dgam)
+                           elif g == gamL-1:
+                               dG_dg_oth = (-GRID[p,g-1,t,d]) / (2 * dgam)
+                           else:
+                               dG_dg_oth = (GRID[p,g+1,t,d]-GRID[p,g-1,t,d]) / (2 * dgam)
+
+                           if t == 0:
+                               dG_dt_oth = (GRID[p,g,t+1,d]) / (2 * dthe)
+                           elif t == 1:
+                               dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
+                           elif t == theL-2:
+                               dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
+                           elif t == theL-1:
+                               dG_dt_oth = (-GRID[p,g,t-1,d]) / (2 * dthe)
+                           else:
+                               dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
+
+                           Ntot = Ntot - (Nm[p,g,t,s,d,0] * dG_dp_oth + Nm[p,g,t,s,d,1] * dG_dg_oth + Nm[p,g,t,s,d,2] * dG_dt_oth)
 
                    if selector == 1:
                        # I = -i

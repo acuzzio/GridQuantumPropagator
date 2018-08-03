@@ -54,7 +54,7 @@ def createMeshFromData(name, origin, verts, faces):
 
 def generateIso(data,iso,mat,frame):
     verts, faces, normals, values = measure.marching_cubes(data, iso)
-    name = 'frame{}_iso_{}'.format(frame,iso)
+    name = 'frame{:03d}_iso_{}'.format(frame,iso)
     ob = createMeshFromData(name,(0,-30,0),verts,(faces.astype(int)).tolist())
     ob.scale = [0.05, 0.05, 0.05]
     bpy.context.object.location = [0,0,0]
@@ -83,18 +83,21 @@ def generateIso(data,iso,mat,frame):
     ob.hide = True
     ob.keyframe_insert(data_path="hide")
     
-    bpy.ops.object.select_all(action='DESELECT')
+    for obj in bpy.data.objects:
+        obj.select = False
 
 
 bpy.ops.object.select_all(action='DESELECT')
 
 mat = bpy.data.materials.get("Material.001")
 
-G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian000*.h5'
+G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian00*.h5'
 
 allH5 = sorted(glob.glob(G_E))
 
-for i,fn in enumerate(allH5):
+for i,fn in enumerate(allH5[:29]):
+    
+    print('doing {}'.format(fn))
     
     wf = openh5(fn,'WF')
     ground = wf[:,:,:,0]
@@ -103,8 +106,20 @@ for i,fn in enumerate(allH5):
     for iso in [0.01]:
         generateIso(ground,iso,mat,i)
 
-
-
+def doThis(strei):
+    for obj in bpy.data.objects:
+        obj.select = False
+    for obj in bpy.data.objects:
+        object_name = obj.name
+        if object_name[:5] == 'frame':
+            if strei == 'sele':
+                bpy.data.objects[object_name].select = True
+            elif strei == 'dele':
+                bpy.data.objects[object_name].select = True
+                bpy.ops.object.delete()
+            else:
+                print('I just deselect')    
+                
 
 # workaround to REMESH the MC-Mesh
 #ob2 = createMeshFromData('dual_contouring',(0,0,0),verts,(faces.astype(int)).tolist())
