@@ -72,7 +72,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double complex [:,:,:,:] new, kinS, potS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
-        double complex dG_dp_oth, dG_dg_oth, dG_dt_oth, p_term, g_term, t_term
+        double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
         double complex d2G_dcross_numerator_p,d2G_dcross_numerator_g,d2G_dcross_numerator_t
         double complex d2G_dpg_numerator_cross_1,d2G_dpg_numerator_cross_2,d2G_dpg_numerator
         double complex d2G_dpt_numerator_cross_1,d2G_dpt_numerator_cross_2,d2G_dpt_numerator
@@ -101,79 +101,94 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
 
                    # derivatives in phi
                    if p == 0:
-                       dG_dp   = (GRID[p+1,g,t,s]) / (2 * dphi)
+                       #dG_dp   = (GRID[p+1,g,t,s]) / (2 * dphi)
+                       dG_dp   = ((2/3)*GRID[p+1,g,t,s]+(-1/12)*GRID[p+2,g,t,s]) / dphi
                        d2G_dp2 = (-GRID[p+2,g,t,s]+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]) / (12 * dphi**2)
                        d2G_dcross_numerator_p = -GRID[p+1,g,t,s]
 
                    elif p == 1:
-                       dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       #dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       dG_dp   = ((-2/3)*GRID[p-1,g,t,s]+(2/3)*GRID[p+1,g,t,s]+(-1/12)*GRID[p+2,g,t,s]) / dphi
                        d2G_dp2 = (-GRID[p+2,g,t,s]+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]) / (12 * dphi**2)
                        d2G_dcross_numerator_p = -GRID[p+1,g,t,s] -GRID[p-1,g,t,s]
 
                    elif p == phiL-2:
-                       dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       #dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       dG_dp   = ((1/12)*GRID[p-2,g,t,s]+(-2/3)*GRID[p-1,g,t,s]+(2/3)*GRID[p+1,g,t,s]) / dphi
                        d2G_dp2 = (+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]-GRID[p-2,g,t,s]) / (12 * dphi**2)
                        d2G_dcross_numerator_p = -GRID[p+1,g,t,s] -GRID[p-1,g,t,s]
 
                    elif p == phiL-1:
-                       dG_dp   = (-GRID[p-1,g,t,s]) / (2 * dphi)
+                       #dG_dp   = (-GRID[p-1,g,t,s]) / (2 * dphi)
+                       dG_dp   = ((1/12)*GRID[p-2,g,t,s]+(-2/3)*GRID[p-1,g,t,s]) / dphi
                        d2G_dp2 = (-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]-GRID[p-2,g,t,s]) / (12 * dphi**2)
                        d2G_dcross_numerator_p = -GRID[p-1,g,t,s]
 
                    else:
-                       dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       #dG_dp   = (GRID[p+1,g,t,s]-GRID[p-1,g,t,s]) / (2 * dphi)
+                       dG_dp   = ((1/12)*GRID[p-2,g,t,s]+(-2/3)*GRID[p-1,g,t,s]+(2/3)*GRID[p+1,g,t,s]+(-1/12)*GRID[p+2,g,t,s]) / dphi
                        d2G_dp2 = (-GRID[p+2,g,t,s]+16*GRID[p+1,g,t,s]-30*GRID[p,g,t,s]+16*GRID[p-1,g,t,s]-GRID[p-2,g,t,s]) / (12 * dphi**2)
                        d2G_dcross_numerator_p = -GRID[p+1,g,t,s] -GRID[p-1,g,t,s]
 
                    # derivatives in gam
                    if g == 0:
-                       dG_dg   = (GRID[p,g+1,t,s]) / (2 * dgam)
+                       #dG_dg   = (GRID[p,g+1,t,s]) / (2 * dgam)
+                       dG_dg   = ((2/3)*GRID[p,g+1,t,s]+(-1/12)*GRID[p,g+2,t,s]) / dgam
                        d2G_dg2 = (-GRID[p,g+2,t,s]+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]) / (12 * dgam**2)
                        d2G_dcross_numerator_g = -GRID[p,g+1,t,s]
 
                    elif g == 1:
-                       dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       #dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       dG_dg   = ((-2/3)*GRID[p,g-1,t,s]+(2/3)*GRID[p,g+1,t,s]+(-1/12)*GRID[p,g+2,t,s]) / dgam
                        d2G_dg2 = (-GRID[p,g+2,t,s]+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]) / (12 * dgam**2)
                        d2G_dcross_numerator_g = -GRID[p,g+1,t,s] -GRID[p,g-1,t,s]
 
                    elif g == gamL-2:
-                       dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       #dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       dG_dg   = ((1/12)*GRID[p,g-2,t,s]+(-2/3)*GRID[p,g-1,t,s]+(2/3)*GRID[p,g+1,t,s]) / dgam
                        d2G_dg2 = (+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]-GRID[p,g-2,t,s]) / (12 * dgam**2)
                        d2G_dcross_numerator_g = -GRID[p,g+1,t,s] -GRID[p,g-1,t,s]
 
                    elif g == gamL-1:
-                       dG_dg   = (-GRID[p,g-1,t,s]) / (2 * dgam)
+                       #dG_dg   = (-GRID[p,g-1,t,s]) / (2 * dgam)
+                       dG_dg   = ((1/12)*GRID[p,g-2,t,s]+(-2/3)*GRID[p,g-1,t,s]) / dgam
                        d2G_dg2 = (-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]-GRID[p,g-2,t,s]) / (12 * dgam**2)
                        d2G_dcross_numerator_g = -GRID[p,g-1,t,s]
 
                    else:
-                       dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       #dG_dg   = (GRID[p,g+1,t,s]-GRID[p,g-1,t,s]) / (2 * dgam)
+                       dG_dg   = ((1/12)*GRID[p,g-2,t,s]+(-2/3)*GRID[p,g-1,t,s]+(2/3)*GRID[p,g+1,t,s]+(-1/12)*GRID[p,g+2,t,s]) / dgam
                        d2G_dg2 = (-GRID[p,g+2,t,s]+16*GRID[p,g+1,t,s]-30*GRID[p,g,t,s]+16*GRID[p,g-1,t,s]-GRID[p,g-2,t,s]) / (12 * dgam**2)
                        d2G_dcross_numerator_g = -GRID[p,g+1,t,s] -GRID[p,g-1,t,s]
 
                    # derivatives in the
                    if t == 0:
-                       dG_dt   = (GRID[p,g,t+1,s]) / (2 * dthe)
+                       #dG_dt   = (GRID[p,g,t+1,s]) / (2 * dthe)
+                       dG_dt   = ((2/3)*GRID[p,g,t+1,s]+(-1/12)*GRID[p,g,t+2,s]) / dthe
                        d2G_dt2 = (-GRID[p,g,t+2,s]+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]) / (12 * dthe**2)
                        d2G_dcross_numerator_t = -GRID[p,g,t+1,s]
 
                    elif t == 1:
-                       dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       #dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       dG_dt   = ((-2/3)*GRID[p,g,t-1,s]+(2/3)*GRID[p,g,t+1,s]+(-1/12)*GRID[p,g,t+2,s]) / dthe
                        d2G_dt2 = (-GRID[p,g,t+2,s]+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]) / (12 * dthe**2)
                        d2G_dcross_numerator_t = -GRID[p,g,t+1,s] -GRID[p,g,t-1,s]
 
                    elif t == theL-2:
-                       dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       #dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       dG_dt   = ((1/12)*GRID[p,g,t-2,s]+(-2/3)*GRID[p,g,t-1,s]+(2/3)*GRID[p,g,t+1,s]) / dthe
                        d2G_dt2 = (+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]-GRID[p,g,t-2,s]) / (12 * dthe**2)
                        d2G_dcross_numerator_t = -GRID[p,g,t+1,s] -GRID[p,g,t-1,s]
 
                    elif t == theL-1:
-                       dG_dt   = (-GRID[p,g,t-1,s]) / (2 * dthe)
+                       #dG_dt   = (-GRID[p,g,t-1,s]) / (2 * dthe)
+                       dG_dt   = ((1/12)*GRID[p,g,t-2,s]+(-2/3)*GRID[p,g,t-1,s]) / dthe
                        d2G_dt2 = (-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]-GRID[p,g,t-2,s]) / (12 * dthe**2)
                        d2G_dcross_numerator_t = -GRID[p,g,t-1,s]
 
                    else:
-                       dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       #dG_dt   = (GRID[p,g,t+1,s]-GRID[p,g,t-1,s]) / (2 * dthe)
+                       dG_dt   = ((1/12)*GRID[p,g,t-2,s]+(-2/3)*GRID[p,g,t-1,s]+(2/3)*GRID[p,g,t+1,s]+(-1/12)*GRID[p,g,t+2,s]) / dthe
                        d2G_dt2 = (-GRID[p,g,t+2,s]+16*GRID[p,g,t+1,s]-30*GRID[p,g,t,s]+16*GRID[p,g,t-1,s]-GRID[p,g,t-2,s]) / (12 * dthe**2)
                        d2G_dcross_numerator_t = -GRID[p,g,t+1,s] -GRID[p,g,t-1,s]
 
@@ -253,52 +268,40 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                            # NAC calculation
 
                            if p == 0:
-                               dG_dp_oth = (GRID[p+1,g,t,d]) / (2 * dphi)
+                               dG_dp_oth = ((2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
                            elif p == 1:
-                               dG_dp_oth = (GRID[p+1,g,t,d]-GRID[p-1,g,t,d]) / (2 * dphi)
+                               dG_dp_oth = ((-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
                            elif p == phiL-2:
-                               dG_dp_oth = (GRID[p+1,g,t,d]-GRID[p-1,g,t,d]) / (2 * dphi)
+                               dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]) / dphi
                            elif p == phiL-1:
-                               dG_dp_oth = (-GRID[p-1,g,t,d]) / (2 * dphi)
+                               dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]) / dphi
                            else:
-                               dG_dp_oth = (GRID[p+1,g,t,d]-GRID[p-1,g,t,d]) / (2 * dphi)
+                               dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
 
                            if g == 0:
-                               dG_dg_oth = (GRID[p,g+1,t,d]) / (2 * dgam)
+                               dG_dg_oth = ((2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
                            elif g == 1:
-                               dG_dg_oth = (GRID[p,g+1,t,d]-GRID[p,g-1,t,d]) / (2 * dgam)
+                               dG_dg_oth = ((-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
                            elif g == gamL-2:
-                               dG_dg_oth = (GRID[p,g+1,t,d]-GRID[p,g-1,t,d]) / (2 * dgam)
+                               dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]) / dgam
                            elif g == gamL-1:
-                               dG_dg_oth = (-GRID[p,g-1,t,d]) / (2 * dgam)
+                               dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]) / dgam
                            else:
-                               dG_dg_oth = (GRID[p,g+1,t,d]-GRID[p,g-1,t,d]) / (2 * dgam)
+                               dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
 
                            if t == 0:
-                               dG_dt_oth = (GRID[p,g,t+1,d]) / (2 * dthe)
+                               dG_dt_oth = ((2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
                            elif t == 1:
-                               dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
+                               dG_dt_oth = ((-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
                            elif t == theL-2:
-                               dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
+                               dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]) / dthe
                            elif t == theL-1:
-                               dG_dt_oth = (-GRID[p,g,t-1,d]) / (2 * dthe)
+                               dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]) / dthe
                            else:
-                               dG_dt_oth = (GRID[p,g,t+1,d]-GRID[p,g,t-1,d]) / (2 * dthe)
+                               dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
 
 
-                           #  # s = 1   d = 2 
-                           #  p_term = (a * dG_dp_2 -a * dG_dp_1) / 2
-
-                           #  # s = 2   d = 1
-                           #  p_term = (-a * dG_dp_1 + a * dG_dp_2) / 2
-
-
-                           p_term = (Nm[p,g,t,s,d,0] * dG_dp_oth +Nm[p,g,t,s,d,0] * dG_dp) / 2
-                           g_term = (Nm[p,g,t,s,d,1] * dG_dg_oth +Nm[p,g,t,s,d,1] * dG_dg) / 2
-                           t_term = (Nm[p,g,t,s,d,2] * dG_dt_oth +Nm[p,g,t,s,d,2] * dG_dt) / 2
-
-
-                           Ntot = Ntot - ( p_term + g_term + t_term )
+                           Ntot = Ntot - ( Nm[p,g,t,s,d,0] * dG_dp_oth + Nm[p,g,t,s,d,1] * dG_dg_oth + Nm[p,g,t,s,d,2] * dG_dt_oth)
 
                    if selector == 1:
                        # I = -i
