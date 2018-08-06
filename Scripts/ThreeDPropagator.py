@@ -70,6 +70,7 @@ directions2 : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/direction
 # initial_state : 1 # to start from another state
 # init_mom : (0,0,0) # to give initial momentum
 # kind : Phi  # 3D The Gam TheGam
+# multiply_nac : just to multiply/take them out
 
 '''
 

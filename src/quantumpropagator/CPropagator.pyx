@@ -14,6 +14,10 @@ from libc.stdio cimport printf
 cdef extern from "complex.h":
         double complex cexp(double complex)
 
+
+def version_Cpropagator():
+    return('0.0.0000')
+
 def Crk4Ene3d(f, t, y, inp):
     '''
     Runge Kutta with 3d grid as y
@@ -69,7 +73,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double [:,:,:,:,:,:] Dm = inp['dipCube']
         double [:,:,:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
-        double complex [:,:,:,:] new, kinS, potS
+        double complex [:,:,:,:] new, kinS, potS, pulS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
         double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
@@ -84,6 +88,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
     new = np.empty_like(GRID)
     kinS = np.empty_like(GRID)
     potS = np.empty_like(GRID)
+    pulS = np.empty_like(GRID)
 
     pulseV = np.empty((3))
 
@@ -265,58 +270,59 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                            # variables inside of the prange() loop
                            Mtot = Mtot - ((pulseV[carte] * Dm[p,g,t,carte,s,d] ) * GRID[p,g,t,d])
 
-                           # NAC calculation
+                       # NAC calculation
 
-                           if p == 0:
-                               dG_dp_oth = ((2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
-                           elif p == 1:
-                               dG_dp_oth = ((-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
-                           elif p == phiL-2:
-                               dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]) / dphi
-                           elif p == phiL-1:
-                               dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]) / dphi
-                           else:
-                               dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
+                       if p == 0:
+                           dG_dp_oth = ((2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
+                       elif p == 1:
+                           dG_dp_oth = ((-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
+                       elif p == phiL-2:
+                           dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]) / dphi
+                       elif p == phiL-1:
+                           dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]) / dphi
+                       else:
+                           dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
 
-                           if g == 0:
-                               dG_dg_oth = ((2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
-                           elif g == 1:
-                               dG_dg_oth = ((-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
-                           elif g == gamL-2:
-                               dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]) / dgam
-                           elif g == gamL-1:
-                               dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]) / dgam
-                           else:
-                               dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
+                       if g == 0:
+                           dG_dg_oth = ((2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
+                       elif g == 1:
+                           dG_dg_oth = ((-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
+                       elif g == gamL-2:
+                           dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]) / dgam
+                       elif g == gamL-1:
+                           dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]) / dgam
+                       else:
+                           dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
 
-                           if t == 0:
-                               dG_dt_oth = ((2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
-                           elif t == 1:
-                               dG_dt_oth = ((-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
-                           elif t == theL-2:
-                               dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]) / dthe
-                           elif t == theL-1:
-                               dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]) / dthe
-                           else:
-                               dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
+                       if t == 0:
+                           dG_dt_oth = ((2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
+                       elif t == 1:
+                           dG_dt_oth = ((-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
+                       elif t == theL-2:
+                           dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]) / dthe
+                       elif t == theL-1:
+                           dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]) / dthe
+                       else:
+                           dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
 
 
-                           Ntot = Ntot - ( Nm[p,g,t,s,d,0] * dG_dp_oth + Nm[p,g,t,s,d,1] * dG_dg_oth + Nm[p,g,t,s,d,2] * dG_dt_oth)
+                       Ntot = Ntot - ( Nm[p,g,t,s,d,0] * dG_dp_oth + Nm[p,g,t,s,d,1] * dG_dg_oth + Nm[p,g,t,s,d,2] * dG_dt_oth)
 
                    if selector == 1:
                        # I = -i
                        new[p,g,t,s] = I * (Ttot+Vtot+Mtot+Ntot)
                        #new[p,g,t,s] = I * (Ttot+Vtot+Mtot)
                    else:
-                       kinS[p,g,t,s] = Ttot
+                       kinS[p,g,t,s] = Ttot + Ntot
                        potS[p,g,t,s] = Vtot
+                       pulS[p,g,t,s] = Mtot
                        #lol = Tpp.real * Tpp.real + Tpp.imag * Tpp.imag
                        #if lol > 0.00001:
                        #    printf("%i %i %i %i %f\n", p,g,t,s,lol)
     if selector == 1:
         return(new)
     else:
-        return(kinS,potS)
+        return(kinS,potS,pulS)
 
 
 #########################
@@ -693,16 +699,18 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
         double [:,:] Vm = inp['potCube']
         double [:,:,:] Km = inp['kinCube']
         double [:,:,:,:] Dm = inp['dipCube']
+        double [:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
-        double complex [:,:] new, kinS, potS
+        double complex [:,:] new, kinS, potS, pulS
         double complex I = -1j
-        double complex dG_dt, d2G_dt2, G
+        double complex dG_dt, d2G_dt2, G, dG_dt_oth
         double complex Ttt
-        double complex Ttot,Vtot,Mtot
+        double complex Ttot,Vtot,Mtot,Ntot
 
     new = np.empty_like(GRID)
     kinS = np.empty_like(GRID)
     potS = np.empty_like(GRID)
+    pulS = np.empty_like(GRID)
 
     pulseV = np.empty((3))
 
@@ -718,23 +726,23 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
 
             # derivatives in theta
             if t == 0:
-                dG_dt   = (GRID[t+1,s]) / (2 * dthe)
+                dG_dt   = ((2/3)*GRID[t+1,s]+(-1/12)*GRID[t+2,s]) / dthe
                 d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]) / (12 * dthe**2)
 
             elif t == 1:
-                dG_dt   = (GRID[t+1,s]-GRID[t-1,s]) / (2 * dthe)
+                dG_dt   = ((-2/3)*GRID[t-1,s]+(2/3)*GRID[t+1,s]+(-1/12)*GRID[t+2,s]) / dthe
                 d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]) / (12 * dthe**2)
 
             elif t == theL-2:
-                dG_dt   = (GRID[t+1,s]-GRID[t-1,s]) / (2 * dthe)
+                dG_dt   = ((1/12)*GRID[t-2,s]+(-2/3)*GRID[t-1,s]+(2/3)*GRID[t+1,s]) / dthe
                 d2G_dt2 = (+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
 
             elif t == theL-1:
-                dG_dt   = (-GRID[t-1,s]) / (2 * dthe)
+                dG_dt   = ((1/12)*GRID[t-2,s]+(-2/3)*GRID[t-1,s]) / dthe
                 d2G_dt2 = (-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
 
             else:
-                dG_dt   = (GRID[t+1,s]-GRID[t-1,s]) / (2 * dthe)
+                dG_dt   = ((1/12)*GRID[t-2,s]+(-2/3)*GRID[t-1,s]+(2/3)*GRID[t+1,s]+(-1/12)*GRID[t+2,s]) / dthe
                 d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
 
 
@@ -746,18 +754,41 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
 
             # loop and sum on other states.
             Mtot = 0
+            Ntot = 0
 
             for d in range(nstates): # state s is where the outer loop is, d is where the inner loop is.
                 for carte in range(3): # carte is 'cartesian', meaning 0,1,2 -> x,y,z
                     Mtot = Mtot - ((pulseV[carte] * Dm[t,carte,s,d] ) * GRID[t,d])
 
+                # NAC calculation
+                if t == 0:
+                    dG_dt_oth = ((2/3)*GRID[t+1,d]+(-1/12)*GRID[t+2,d]) / dthe
+                elif t == 1:
+                    dG_dt_oth = ((-2/3)*GRID[t-1,d]+(2/3)*GRID[t+1,d]+(-1/12)*GRID[t+2,d]) / dthe
+                elif t == theL-2:
+                    dG_dt_oth = ((1/12)*GRID[t-2,d]+(-2/3)*GRID[t-1,d]+(2/3)*GRID[t+1,d]) / dthe
+                elif t == theL-1:
+                    dG_dt_oth = ((1/12)*GRID[t-2,d]+(-2/3)*GRID[t-1,d]) / dthe
+                else:
+                    dG_dt_oth = ((1/12)*GRID[t-2,d]+(-2/3)*GRID[t-1,d]+(2/3)*GRID[t+1,d]+(-1/12)*GRID[t+2,d]) / dthe
+
+
+                Ntot = Ntot - (Nm[t,s,d,2] * dG_dt_oth)
+
+                #lol = Ntot.real * Ntot.real + Ntot.imag * Ntot.imag
+                #if lol > 0.00001:
+                    #print(time,t,s,d,lol,dG_dt_oth,dG_dt,Nm[t,s,d,2],Nm[t,d,s,2])
+                #print(time,t,s,d,dG_dt_oth,dG_dt)
+
             if selector == 1:
-                new[t,s] = I * (Ttot+Vtot+Mtot)
+                new[t,s] = I * (Ttot+Vtot+Mtot+Ntot)
             else:
-                kinS[t,s] = Ttot
+                kinS[t,s] = Ttot + Ntot
                 potS[t,s] = Vtot
+                pulS[t,s] = Mtot
+
     if selector == 1:
         return(new)
     else:
-        return(kinS,potS)
+        return(kinS,potS,pulS)
 

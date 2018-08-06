@@ -13,10 +13,21 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
 from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
                                            Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
                                            Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
-                                           Cderivative_1D_The,Crk4Ene3d)
+                                           Cderivative_1D_The,Crk4Ene3d, version_Cpropagator)
 
 def expandcube(inp):
     return inp
+
+def doubleAxespoins1(Y):
+    N = len(Y)
+    X = np.arange(0, 2*N, 2)
+    X_new = np.arange(2*N-1)       # Where you want to interpolate
+    Y_new = np.interp(X_new, X, Y)
+    return(Y_new)
+
+def doubleAxespoins(Y):
+    return (doubleAxespoins1(doubleAxespoins1(Y)))
+
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -65,7 +76,6 @@ def propagate3D(dataDict, inputDict):
     dphi = phis[0] - phis[1]
     dgam = gams[0] - gams[1]
     dthe = thes[0] - thes[1]
-
 
     inp = { 'h'        : inputDict['dt'],
             'fullTime' : inputDict['fullTime'],
@@ -122,6 +132,10 @@ def propagate3D(dataDict, inputDict):
         inp['kinCube'] = inp['kinCube']*kokoko
         warning('kincube divided by {}'.format(kokoko))
 
+    if 'multiply_nac' in inputDict:
+        nac_multiplier = inputDict['multiply_nac']
+        warning('Nac are multiplied by {}'.format(nac_multiplier))
+        inp['nacCube'] = inp['nacCube'] * nac_multiplier
 
 
     nameRoot = create_enumerated_folder(inputDict['outFol'])
@@ -136,7 +150,7 @@ def propagate3D(dataDict, inputDict):
 
     kind = inp['kind']
 
-    # Take equilibrium points # this can be deduced by directionFile
+    # Take equilibrium points from directionFile
     gsm_phi_ind, gsm_gam_ind, gsm_the_ind = equilibriumIndex(inputDict['directions1'],dataDict)
 
     inp['nstates'] = numStates
@@ -178,15 +192,56 @@ def propagate3D(dataDict, inputDict):
         norm_wf = np.linalg.norm(wf)
         wf = wf / norm_wf
     elif kind == 'The':
+
+        sposta = True
+        if sposta:
+            gsm_phi_ind = 16
+            gsm_gam_ind = 16
+        warning('Phi is {}, NOT EQUILIBRIUM'.format(gsm_phi_ind))
+        warning('Gam is {}, NOT EQUILIBRIUM'.format(gsm_gam_ind))
+
         inp['potCube'] = inp['potCube'][gsm_phi_ind,gsm_gam_ind,:,:numStates]
         inp['kinCube'] = inp['kinCube'][gsm_phi_ind,gsm_gam_ind,:]
         inp['dipCube'] = inp['dipCube'][gsm_phi_ind,gsm_gam_ind,:,:,:numStates,:numStates]
+        inp['nacCube'] = inp['nacCube'][gsm_phi_ind,gsm_gam_ind,:,:numStates,:numStates,:]
         wf             =             wf[gsm_phi_ind,gsm_gam_ind,:,:numStates]
+
+        #  doubleGridPoints
+        doubleThis = False
+        if doubleThis:
+            warning('POINTS DOUBLED ALONG THETA')
+            inp['thes'] = doubleAxespoins(inp['thes'])
+            inp['theL'] = inp['thes'].size
+            inp['dthe'] = inp['thes'][0] - inp['thes'][1]
+            inp['potCube'] = np.array([doubleAxespoins(x) for x in inp['potCube'].T]).T
+
+            newWf =  np.empty((inp['theL'],numStates), dtype=complex)
+            for ssssss in range(numStates):
+                newWf[:,ssssss] = doubleAxespoins(wf[:,ssssss])
+
+            wf = newWf
+
+            newNac = np.empty((inp['theL'],numStates,numStates,3))
+            for nnn in range(2):
+                for mmm in range(2):
+                    for aaa in range(3):
+                        newNac[:,nnn,mmm,aaa] = doubleAxespoins(inp['nacCube'][:,nnn,mmm,aaa])
+            inp['nacCube'] = newNac
+
+            newKin = np.empty((inp['theL'],9,3))
+            for nnn in range(9):
+                for mmm in range(3):
+                    newKin[:,nnn,mmm] = doubleAxespoins(inp['kinCube'][:,nnn,mmm])
+            inp['kinCube'] = newKin
+
+
         good('Propagation in THE with Phi {} and Gam {}'.format(gsm_phi_ind,gsm_gam_ind))
         print('Shapes: P:{} K:{} W:{} D:{}'.format(inp['potCube'].shape, inp['kinCube'].shape, wf.shape, inp['dipCube'].shape))
         print('\nDimensions:\nThe: {}\nNstates: {}\nNatoms: {}\n'.format(theL, numStates, natoms))
         norm_wf = np.linalg.norm(wf)
         wf = wf / norm_wf
+    else:
+        err('I do not recognize the kind')
 
     # take a wf from file (and not from initial condition)
     if 'initialFile' in inputDict:
@@ -208,6 +263,7 @@ def propagate3D(dataDict, inputDict):
                   }
 
     CEnergy, Cpropagator = Propagators[kind]
+    good('Cpropagator version: {}'.format(version_Cpropagator()))
 
     # INITIAL DYNAMICS VALUES
     h = inp['h']
@@ -226,15 +282,16 @@ def propagate3D(dataDict, inputDict):
     writeH5fileDict(dataH5filename,inp)
 
     # print top of table
-    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   |    Pulse X    |    Pulse Y    |    Pulse Z    |'
+    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   | Pulse_Inter. |  Pulse X   |  Pulse Y   |  Pulse Z   |'
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
     # calculating initial total/potential/kinetic
-    kin, pot = CEnergy(t,wf,inp)
+    kin, pot, pul = CEnergy(t,wf,inp)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
-    initialTotal = kinetic + potential
+    pulse_interaction = np.vdot(wf,pul)
+    initialTotal = kinetic + potential + pulse_interaction
     inp['initialTotal'] = initialTotal.real
 
     # to give the graph a nice range
@@ -262,14 +319,15 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
-    kin, pot = CEnergy(t,wf,inp)
+    kin, pot, pul = CEnergy(t,wf,inp)
 
     #kinetic = np.vdot(wf,kin)
     #potential = np.vdot(wf,pot)
 
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
-    total = kinetic + potential
+    pulse_interaction = np.vdot(wf,pul)
+    total = kinetic + potential + pulse_interaction
     initialTotal = inp['initialTotal']
     norm_wf = np.linalg.norm(wf)
 
@@ -278,8 +336,8 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     #if int(rows) // counter == 0:
     #    print('zero')
 
-    outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+13.5e} | {:+13.5e} | {:+13.5e} |'
-    outputString = outputStringS.format(counter, ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
+    outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+10.3e} | {:+10.3e} | {:+10.3e} |'
+    outputString = outputStringS.format(counter, ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
     print(outputString)
 
     kind = inp['kind']
