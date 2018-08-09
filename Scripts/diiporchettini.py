@@ -52,11 +52,18 @@ def createMeshFromData(name, origin, verts, faces):
 # Generate a level set about zero of two identical ellipsoids in 3D
 #ellip_base = ellipsoid(6, 10, 16, levelset=True)
 
-def generateIso(data,iso,mat,frame):
-    verts, faces, normals, values = measure.marching_cubes(data, iso)
-    name = 'frame{:03d}_iso_{}'.format(frame,iso)
+def generateIso(data,iso,mat,frame,state):
+    try:
+        verts, faces, normals, values = measure.marching_cubes(data, iso)
+    except ValueError:
+        print('No iso here') 
+        return None
+
+    name = 'frame{:03d}_iso_{}_state_{}'.format(frame,iso,state)
     ob = createMeshFromData(name,(0,-30,0),verts,(faces.astype(int)).tolist())
-    ob.scale = [0.05, 0.05, 0.05]
+    #ob.scale = [0.09, 0.05, 0.02] # NON SWAPPED
+    #             t    g     p
+    ob.scale = [0.02, 0.06, 0.06] # SWAPPED
     bpy.context.object.location = [0,0,0]
     bpy.ops.object.modifier_add(type='SOLIDIFY')
     bpy.context.object.modifiers["Solidify"].thickness = 0.03
@@ -73,15 +80,21 @@ def generateIso(data,iso,mat,frame):
     
     bpy.context.scene.frame_set(i-1)
     ob.hide = True
+    ob.hide_render = True
     ob.keyframe_insert(data_path="hide")
+    ob.keyframe_insert(data_path="hide_render")
 
     bpy.context.scene.frame_set(i)
     ob.hide = False
+    ob.hide_render = False
     ob.keyframe_insert(data_path="hide")
+    ob.keyframe_insert(data_path="hide_render")
     
     bpy.context.scene.frame_set(i+1)
     ob.hide = True
+    ob.hide_render = True
     ob.keyframe_insert(data_path="hide")
+    ob.keyframe_insert(data_path="hide_render")
     
     for obj in bpy.data.objects:
         obj.select = False
@@ -89,24 +102,33 @@ def generateIso(data,iso,mat,frame):
 
 bpy.ops.object.select_all(action='DESELECT')
 
-mat = bpy.data.materials.get("Material.001")
+
 
 #G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian00*.h5'
 
-G_Exp = '/home/alessio/n-Propagation/results/USETHISINBLENDER_0001/Gaussian00*.h5'
+G_Exp = '/home/alessio/Desktop/USETHISINBLENDER_0001/Gaussian*.h5'
 
 allH5 = sorted(glob.glob(G_Exp))
 
-for i,fn in enumerate(allH5[:]):
-    
-    print('doing {}'.format(fn))
-    
-    wf = openh5(fn,'WF')
-    ground = wf[:,:,:,0]
+from quantumpropagator import abs2
 
-    #for iso in [0.001, 0.01, 0.03]:
-    for iso in [0.01]:
-        generateIso(ground,iso,mat,i)
+for i,fn in enumerate(allH5[:]):
+    for state in range(4):
+        nameMaterial = "Material.{:03d}".format(state+1)
+        mat = bpy.data.materials.get(nameMaterial)
+    
+        print('doing {}'.format(fn))
+    
+        wf = openh5(fn,'WF')
+        ground2 = abs2(wf[:,:,:,state])
+        
+        ground = np.swapaxes(ground2,0,2)
+        
+        for iso in [0.0001, 0.001, 0.003]:
+        #for iso in [0.01]:
+            generateIso(ground,iso,mat,i,state)
+
+bpy.context.scene.frame_set(1)
 
 def doThis(strei):
     for obj in bpy.data.objects:

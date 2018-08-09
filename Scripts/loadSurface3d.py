@@ -82,6 +82,7 @@ b = np.fromfile('fullB.txt')
 c = np.fromfile('fullC.txt')
 #d = np.fromfile('fullE.txt')
 d = np.fromfile('fullD_x_0.txt')
+e = np.fromfile('/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/NOT_corrected/fullD_x_0.txt')
 
 nstates = 14
 
@@ -89,7 +90,11 @@ ax1N = a.size
 ax2N = b.size
 ax3N = c.size
 
+
+
 d = d.reshape((ax1N,ax2N,ax3N,nstates))
+e = e.reshape((ax1N,ax2N,ax3N,nstates))
+
 
 dmin = np.min(d)
 d = d - (dmin)
