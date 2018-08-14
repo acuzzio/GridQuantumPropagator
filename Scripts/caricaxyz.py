@@ -227,6 +227,8 @@ bondLengths = {
 
 #fn = 'C:/Users/Alessio/Desktop/Dropbox/Blender/punto00_059.md.xyz'
 fn = '/home/alessio/Desktop/Dropbox/Blender/punto14_000.md.xyz'
+fn = '/home/alessio/Desktop/z-animation/JACOBIAN/all.xyz'
+
 
 
 #fn='C:/Users/alessio/Desktop/Dropbox/Blender/water.xyz'

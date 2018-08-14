@@ -112,16 +112,23 @@ allH5 = sorted(glob.glob(G_Exp))
 
 from quantumpropagator import abs2
 
-for i,fn in enumerate(allH5[:]):
-    for state in range(4):
+for i,fn in enumerate(allH5[:2]):
+    for state in range(2):
         nameMaterial = "Material.{:03d}".format(state+1)
         mat = bpy.data.materials.get(nameMaterial)
     
         print('doing {}'.format(fn))
     
         wf = openh5(fn,'WF')
-        ground2 = abs2(wf[:,:,:,state])
-        
+        if state == 0:
+            uno = wf[:,:,:,0]
+            due = wf[:,:,:,1]
+
+        else:
+            uno = wf[:,:,:,1]
+            due = wf[:,:,:,0]
+
+        ground2 = np.conj(uno) * due                         
         ground = np.swapaxes(ground2,0,2)
         
         for iso in [0.0001, 0.001, 0.003]:

@@ -195,8 +195,8 @@ def propagate3D(dataDict, inputDict):
 
         sposta = True
         if sposta:
-            gsm_phi_ind = 16
-            gsm_gam_ind = 16
+            gsm_phi_ind = 29
+            gsm_gam_ind = 30
         warning('Phi is {}, NOT EQUILIBRIUM'.format(gsm_phi_ind))
         warning('Gam is {}, NOT EQUILIBRIUM'.format(gsm_gam_ind))
 

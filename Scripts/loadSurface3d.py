@@ -84,7 +84,7 @@ c = np.fromfile('fullC.txt')
 d = np.fromfile('fullD_x_0.txt')
 e = np.fromfile('/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/NOT_corrected/fullD_x_0.txt')
 
-nstates = 14
+nstates = 8
 
 ax1N = a.size
 ax2N = b.size
@@ -93,7 +93,16 @@ ax3N = c.size
 
 
 d = d.reshape((ax1N,ax2N,ax3N,nstates))
+nstates = 14
 e = e.reshape((ax1N,ax2N,ax3N,nstates))
+
+nstates = 8
+
+f = np.concatenate((d,e[:,:,:,:8]),axis=0)
+fmin = np.min(f)
+f = f - (fmin)
+ax1N = ax1N*2-2
+
 
 
 dmin = np.min(d)
@@ -113,7 +122,7 @@ scaleX = 5
 bpy.context.scene.frame_end = ax1N-1
 bpy.context.scene.frame_start = 0
 
-for state in range(10):
+for state in range(8):
 
   verts = []
   edges = []
@@ -156,7 +165,7 @@ for ff in range(ax1N):
             state = int(re.findall(r'\d+',nameMesh)[0]) # works only for mashes with Surface0014
             kk = g % ax3N
             jj = ((g-kk)/ax3N)%ax2N
-            z = d[ff,jj,kk,state]*scaleZ
+            z = f[ff,jj,kk,state]*scaleZ
             print(ax1N,ax2N,ax3N,g,kk,jj,ff,z)
             j.co.z = z
             j.keyframe_insert('co', index=2, frame=ff)
