@@ -197,8 +197,8 @@ def propagate3D(dataDict, inputDict):
         if sposta:
             gsm_phi_ind = 20
             gsm_gam_ind = 20
-        warning('Phi is {}, NOT EQUILIBRIUM'.format(gsm_phi_ind))
-        warning('Gam is {}, NOT EQUILIBRIUM'.format(gsm_gam_ind))
+            warning('Phi is {}, NOT EQUILIBRIUM'.format(gsm_phi_ind))
+            warning('Gam is {}, NOT EQUILIBRIUM'.format(gsm_gam_ind))
 
         inp['potCube'] = inp['potCube'][gsm_phi_ind,gsm_gam_ind,:,:numStates]
         inp['kinCube'] = inp['kinCube'][gsm_phi_ind,gsm_gam_ind,:]
@@ -276,7 +276,6 @@ def propagate3D(dataDict, inputDict):
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
     print('\ntail -f {}\n'.format(outputFileP))
-
     # saving input data in h5 file
     dataH5filename = os.path.join(nameRoot, 'allInput.h5')
     writeH5fileDict(dataH5filename,inp)
