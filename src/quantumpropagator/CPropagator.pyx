@@ -16,7 +16,7 @@ cdef extern from "complex.h":
 
 
 def version_Cpropagator():
-    return('0.0.0004')
+    return('0.0.0005')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -725,29 +725,29 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
 
             # derivatives in theta
             if t == 0:
-                dG_dt   = ((2/3)*GRID[t+1,s]+(-1/12)*GRID[t+2,s]) / dthe
+                dG_dt   = ((2.0/3)*GRID[t+1,s]+(-1.0/12)*GRID[t+2,s]) / dthe
                 d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]) / (12 * dthe**2)
 
             elif t == 1:
-                dG_dt   = ((-2/3)*GRID[t-1,s]+(2/3)*GRID[t+1,s]+(-1/12)*GRID[t+2,s]) / dthe
+                dG_dt   = ((-2.0/3)*GRID[t-1,s]+(2.0/3)*GRID[t+1,s]+(-1.0/12)*GRID[t+2,s]) / dthe
                 d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]) / (12 * dthe**2)
 
             elif t == theL-2:
-                dG_dt   = ((1/12)*GRID[t-2,s]+(-2/3)*GRID[t-1,s]+(2/3)*GRID[t+1,s]) / dthe
+                dG_dt   = ((1.0/12)*GRID[t-2,s]+(-2.0/3)*GRID[t-1,s]+(2.0/3)*GRID[t+1,s]) / dthe
                 d2G_dt2 = (+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
 
             elif t == theL-1:
-                dG_dt   = ((1/12)*GRID[t-2,s]+(-2/3)*GRID[t-1,s]) / dthe
+                dG_dt   = ((1.0/12)*GRID[t-2,s]+(-2.0/3)*GRID[t-1,s]) / dthe
                 d2G_dt2 = (-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
 
             else:
-                dG_dt   = ((1/12)*GRID[t-2,s]+(-2/3)*GRID[t-1,s]+(2/3)*GRID[t+1,s]+(-1/12)*GRID[t+2,s]) / dthe
+                dG_dt   = ((1.0/12)*GRID[t-2,s]+(-2.0/3)*GRID[t-1,s]+(2.0/3)*GRID[t+1,s]+(-1.0/12)*GRID[t+2,s]) / dthe
                 d2G_dt2 = (-GRID[t+2,s]+16*GRID[t+1,s]-30*GRID[t,s]+16*GRID[t-1,s]-GRID[t-2,s]) / (12 * dthe**2)
 
 
             # T elements (9)
             #Ttt = Km[t,8,0] * G + Km[t,8,1] * dG_dt + Km[t,8,2] * d2G_dt2
-            Ttt = -0.00000001 * d2G_dt2
+            Ttt = -0.0000001 * d2G_dt2
 
             Ttot = Ttt
             Vtot = V * G
@@ -761,31 +761,43 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
                     Mtot = Mtot - ((pulseV[carte] * Dm[t,carte,s,d] ) * GRID[t,d])
 
                 # NAC calculation
-                if t == 0:
-                    dG_dt_oth =                                           ((2/3)*GRID[t+1,d] + (-1/12)*GRID[t+2,d]) / dthe
-                elif t == 1:
-                    dG_dt_oth =                      ((-2/3)*GRID[t-1,d] + (2/3)*GRID[t+1,d] + (-1/12)*GRID[t+2,d]) / dthe
-                elif t == theL-2:
-                    dG_dt_oth = ((1/12)*GRID[t-2,d] + (-2/3)*GRID[t-1,d] + (2/3)*GRID[t+1,d])                       / dthe
-                elif t == theL-1:
-                    dG_dt_oth = ((1/12)*GRID[t-2,d] + (-2/3)*GRID[t-1,d])                                           / dthe
+                if   s < d:
+                   if t == 0:
+                       dG_dt_oth = (                                          (2.0/3)*GRID[t+1,d] + (-1.0/12)*GRID[t+2,d])*Nm[t,s,d,2] / dthe
+                   elif t == 1:
+                       dG_dt_oth = (                     (-2.0/3)*GRID[t-1,d] + (2.0/3)*GRID[t+1,d] + (-1.0/12)*GRID[t+2,d])*Nm[t,s,d,2] / dthe
+                   elif t == theL-2:
+                       dG_dt_oth = ((1.0/12)*GRID[t-2,d] + (-2.0/3)*GRID[t-1,d] + (2.0/3)*GRID[t+1,d]                      )*Nm[t,s,d,2] / dthe
+                   elif t == theL-1:
+                       dG_dt_oth = ((1.0/12)*GRID[t-2,d] + (-2.0/3)*GRID[t-1,d]                                          )*Nm[t,s,d,2] / dthe
+                   else:
+                       dG_dt_oth = ((1.0/12)*GRID[t-2,d] + (-2.0/3)*GRID[t-1,d] + (2.0/3)*GRID[t+1,d] + (-1.0/12)*GRID[t+2,d])*Nm[t,s,d,2] / dthe
+                elif s > d:
+                   if t == 0:
+                       dG_dt_oth = (                                                                      (2.0/3)*GRID[t+1,d]*Nm[t+1,s,d,2] + (-1.0/12)*GRID[t+2,d]*Nm[t+2,s,d,2]) / dthe
+                   elif t == 1:
+                       dG_dt_oth = (                                   (-2.0/3)*GRID[t-1,d]*Nm[t-1,s,d,2] + (2.0/3)*GRID[t+1,d]*Nm[t+1,s,d,2] + (-1.0/12)*GRID[t+2,d]*Nm[t+2,s,d,2]) / dthe
+                   elif t == theL-2:
+                       dG_dt_oth = ((1.0/12)*GRID[t-2,d]*Nm[t-2,s,d,2] + (-2.0/3)*GRID[t-1,d]*Nm[t-1,s,d,2] + (2.0/3)*GRID[t+1,d]*Nm[t+1,s,d,2]                                    ) / dthe
+                   elif t == theL-1:
+                       dG_dt_oth = ((1.0/12)*GRID[t-2,d]*Nm[t-2,s,d,2] + (-2.0/3)*GRID[t-1,d]*Nm[t-1,s,d,2]                                                                      ) / dthe
+                   else:
+                       dG_dt_oth = ((1.0/12)*GRID[t-2,d]*Nm[t-2,s,d,2] + (-2.0/3)*GRID[t-1,d]*Nm[t-1,s,d,2] + (2.0/3)*GRID[t+1,d]*Nm[t+1,s,d,2] + (-1.0/12)*GRID[t+2,d]*Nm[t+2,s,d,2]) / dthe
                 else:
-                    dG_dt_oth = ((1/12)*GRID[t-2,d] + (-2/3)*GRID[t-1,d] + (2/3)*GRID[t+1,d] + (-1/12)*GRID[t+2,d]) / dthe
+                     dG_dt_oth = 0
 
-                # here Nm[t,s,d,2] the two is Theta.
-                Ntot = Ntot - (Nm[t,s,d,2] * dG_dt_oth)
-                #if d == s:
-                #    Ntot = Ntot
-                #else:
-                #    if d > s:
-                #        Ntot = Ntot - (+0.000001 * dG_dt_oth)
-                #    else:
-                #        Ntot = Ntot - (-0.000001 * dG_dt_oth)
 
-                #lol = Ntot.real * Ntot.real + Ntot.imag * Ntot.imag
+                Ntot = Ntot - dG_dt_oth
                 #if lol > 0.00001:
                     #print(time,t,s,d,lol,dG_dt_oth,dG_dt,Nm[t,s,d,2],Nm[t,d,s,2])
-                #print(time,t,s,d,dG_dt_oth,Nm[t,s,d,2])
+                #if selector == 1 and t == 70 and s == 0 and d == 1:
+                #    print(time,t,s,d)
+                #    print(Nm[t,s,d,2],dthe,2.0/3)
+                #    print(((2.0/3)*Nm[t,s,d,2])/dthe)
+                #if selector == 1 and t == 70 and s == 1 and d == 0:
+                #    print(time,t,s,d)
+                #    print(Nm[t-1,s,d,2],dthe,-2.0/3)
+                #    print(((-2.0/3)*Nm[t-1,s,d,2])/dthe)
             #print(Ntot)
             if selector == 1:
                 new[t,s] = I * (Ttot+Vtot+Mtot+Ntot)

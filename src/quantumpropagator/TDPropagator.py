@@ -317,7 +317,7 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     nstates = inp['nstates']
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
-    writeH5file(h5name,[("WF", wf),("Time", [t/41.5,t])])
+    writeH5file(h5name,[("WF", wf),("Time", [t*0.02418884,t])])
     kin, pot, pul = CEnergy(t,wf,inp)
 
     #kinetic = np.vdot(wf,kin)
@@ -336,7 +336,7 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     #    print('zero')
 
     outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+10.3e} | {:+10.3e} | {:+10.3e} |'
-    outputString = outputStringS.format(counter, ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
+    outputString = outputStringS.format(counter, ii,t*0.02418884,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
     print(outputString)
 
     kind = inp['kind']
