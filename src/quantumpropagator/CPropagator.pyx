@@ -16,7 +16,7 @@ cdef extern from "complex.h":
 
 
 def version_Cpropagator():
-    return('0.0.0005')
+    return('0.0.0006')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -272,53 +272,87 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
 
                        # NAC calculation
 
-                       if p == 0:
-                           dG_dp_oth = ((2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
-                       elif p == 1:
-                           dG_dp_oth = ((-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
-                       elif p == phiL-2:
-                           dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]) / dphi
-                       elif p == phiL-1:
-                           dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]) / dphi
+                       if s < d:
+                          # phi
+                          if p == 0:
+                              dG_dp_oth = (                                                      (2.0/3)*GRID[p+1,g,t,d] + (-1.0/12)*GRID[p+2,g,t,d])*Nm[p,g,t,s,d,0] / dphi
+                          elif p == 1:
+                              dG_dp_oth = (                           (-2.0/3)*GRID[p-1,g,t,d] + (2.0/3)*GRID[p+1,g,t,d] + (-1.0/12)*GRID[p+2,g,t,d])*Nm[p,g,t,s,d,0] / dphi
+                          elif p == phiL-2:
+                              dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,d] + (-2.0/3)*GRID[p-1,g,t,d] + (2.0/3)*GRID[p+1,g,t,d]                            )*Nm[p,g,t,s,d,0] / dphi
+                          elif p == phiL-1:
+                              dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,d] + (-2.0/3)*GRID[p-1,g,t,d]                                                      )*Nm[p,g,t,s,d,0] / dphi
+                          else:
+                              dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,d] + (-2.0/3)*GRID[p-1,g,t,d] + (2.0/3)*GRID[p+1,g,t,d] + (-1.0/12)*GRID[p+2,g,t,d])*Nm[p,g,t,s,d,0] / dphi
+                          # gamma
+                          if g == 0:
+                              dG_dg_oth = (                                                      (2.0/3)*GRID[p,g+1,t,d] + (-1.0/12)*GRID[p,g+2,t,d])*Nm[p,g,t,s,d,1] / dgam
+                          elif g == 1:
+                              dG_dg_oth = (                           (-2.0/3)*GRID[p,g-1,t,d] + (2.0/3)*GRID[p,g+1,t,d] + (-1.0/12)*GRID[p,g+2,t,d])*Nm[p,g,t,s,d,1] / dgam
+                          elif g == gamL-2:
+                              dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,d] + (-2.0/3)*GRID[p,g-1,t,d] + (2.0/3)*GRID[p,g+1,t,d]                            )*Nm[p,g,t,s,d,1] / dgam
+                          elif g == gamL-1:
+                              dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,d] + (-2.0/3)*GRID[p,g-1,t,d]                                                      )*Nm[p,g,t,s,d,1] / dgam
+                          else:
+                              dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,d] + (-2.0/3)*GRID[p,g-1,t,d] + (2.0/3)*GRID[p,g+1,t,d] + (-1.0/12)*GRID[p,g+2,t,d])*Nm[p,g,t,s,d,1] / dgam
+                          # theta
+                          if t == 0:
+                              dG_dt_oth = (                                                      (2.0/3)*GRID[p,g,t+1,d] + (-1.0/12)*GRID[p,g,t+2,d])*Nm[p,g,t,s,d,2] / dthe
+                          elif t == 1:
+                              dG_dt_oth = (                           (-2.0/3)*GRID[p,g,t-1,d] + (2.0/3)*GRID[p,g,t+1,d] + (-1.0/12)*GRID[p,g,t+2,d])*Nm[p,g,t,s,d,2] / dthe
+                          elif t == theL-2:
+                              dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,d] + (-2.0/3)*GRID[p,g,t-1,d] + (2.0/3)*GRID[p,g,t+1,d]                            )*Nm[p,g,t,s,d,2] / dthe
+                          elif t == theL-1:
+                              dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,d] + (-2.0/3)*GRID[p,g,t-1,d]                                                      )*Nm[p,g,t,s,d,2] / dthe
+                          else:
+                              dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,d] + (-2.0/3)*GRID[p,g,t-1,d] + (2.0/3)*GRID[p,g,t+1,d] + (-1.0/12)*GRID[p,g,t+2,d])*Nm[p,g,t,s,d,2] / dthe
+                       elif s > d:
+                          # phi
+                          if p == 0:
+                              dG_dp_oth = (                                                                                          (2.0/3)*GRID[p+1,g,t,d]*Nm[p+1,g,t,s,d,0] + (-1.0/12)*GRID[p+2,g,t,d]*Nm[p+2,g,t,s,d,0]) / dphi
+                          elif p == 1:
+                              dG_dp_oth = (                                             (-2.0/3)*GRID[p-1,g,t,d]*Nm[p-1,g,t,s,d,0] + (2.0/3)*GRID[p+1,g,t,d]*Nm[p+1,g,t,s,d,0] + (-1.0/12)*GRID[p+2,g,t,d]*Nm[p+2,g,t,s,d,0]) / dphi
+                          elif p == phiL-2:
+                              dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,d]*Nm[p-2,g,t,s,d,0] + (-2.0/3)*GRID[p-1,g,t,d]*Nm[p-1,g,t,s,d,0] + (2.0/3)*GRID[p+1,g,t,d]*Nm[p+1,g,t,s,d,0]                                              ) / dphi
+                          elif p == phiL-1:
+                              dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,d]*Nm[p-2,g,t,s,d,0] + (-2.0/3)*GRID[p-1,g,t,d]*Nm[p-1,g,t,s,d,0]                                                                                          ) / dphi
+                          else:
+                              dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,d]*Nm[p-2,g,t,s,d,0] + (-2.0/3)*GRID[p-1,g,t,d]*Nm[p-1,g,t,s,d,0] + (2.0/3)*GRID[p+1,g,t,d]*Nm[p+1,g,t,s,d,0] + (-1.0/12)*GRID[p+2,g,t,d]*Nm[p+2,g,t,s,d,0]) / dphi
+                          # gam
+                          if g == 0:
+                              dG_dg_oth = (                                                                                          (2.0/3)*GRID[p,g+1,t,d]*Nm[p,g+1,t,s,d,1] + (-1.0/12)*GRID[p,g+2,t,d]*Nm[p,g+2,t,s,d,1]) / dgam
+                          elif g == 1:
+                              dG_dg_oth = (                                             (-2.0/3)*GRID[p,g-1,t,d]*Nm[p,g-1,t,s,d,1] + (2.0/3)*GRID[p,g+1,t,d]*Nm[p,g+1,t,s,d,1] + (-1.0/12)*GRID[p,g+2,t,d]*Nm[p,g+2,t,s,d,1]) / dgam
+                          elif g == gamL-2:
+                              dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,d]*Nm[p,g-2,t,s,d,1] + (-2.0/3)*GRID[p,g-1,t,d]*Nm[p,g-1,t,s,d,1] + (2.0/3)*GRID[p,g+1,t,d]*Nm[p,g+1,t,s,d,1]                                              ) / dgam
+                          elif g == gamL-1:
+                              dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,d]*Nm[p,g-2,t,s,d,1] + (-2.0/3)*GRID[p,g-1,t,d]*Nm[p,g-1,t,s,d,1]                                                                                          ) / dgam
+                          else:
+                              dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,d]*Nm[p,g-2,t,s,d,1] + (-2.0/3)*GRID[p,g-1,t,d]*Nm[p,g-1,t,s,d,1] + (2.0/3)*GRID[p,g+1,t,d]*Nm[p,g+1,t,s,d,1] + (-1.0/12)*GRID[p,g+2,t,d]*Nm[p,g+2,t,s,d,1]) / dgam
+                          # the
+                          if t == 0:
+                              dG_dt_oth = (                                                                                          (2.0/3)*GRID[p,g,t+1,d]*Nm[p,g,t+1,s,d,2] + (-1.0/12)*GRID[p,g,t+2,d]*Nm[p,g,t+2,s,d,2]) / dthe
+                          elif t == 1:
+                              dG_dt_oth = (                                             (-2.0/3)*GRID[p,g,t-1,d]*Nm[p,g,t-1,s,d,2] + (2.0/3)*GRID[p,g,t+1,d]*Nm[p,g,t+1,s,d,2] + (-1.0/12)*GRID[p,g,t+2,d]*Nm[p,g,t+2,s,d,2]) / dthe
+                          elif t == theL-2:
+                              dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,d]*Nm[p,g,t-2,s,d,2] + (-2.0/3)*GRID[p,g,t-1,d]*Nm[p,g,t-1,s,d,2] + (2.0/3)*GRID[p,g,t+1,d]*Nm[p,g,t+1,s,d,2]                                              ) / dthe
+                          elif t == theL-1:
+                              dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,d]*Nm[p,g,t-2,s,d,2] + (-2.0/3)*GRID[p,g,t-1,d]*Nm[p,g,t-1,s,d,2]                                                                                          ) / dthe
+                          else:
+                              dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,d]*Nm[p,g,t-2,s,d,2] + (-2.0/3)*GRID[p,g,t-1,d]*Nm[p,g,t-1,s,d,2] + (2.0/3)*GRID[p,g,t+1,d]*Nm[p,g,t+1,s,d,2] + (-1.0/12)*GRID[p,g,t+2,d]*Nm[p,g,t+2,s,d,2]) / dthe
                        else:
-                           dG_dp_oth = ((1/12)*GRID[p-2,g,t,d]+(-2/3)*GRID[p-1,g,t,d]+(2/3)*GRID[p+1,g,t,d]+(-1/12)*GRID[p+2,g,t,d]) / dphi
+                          dG_dp_oth = 0
+                          dG_dg_oth = 0
+                          dG_dt_oth = 0
 
-                       if g == 0:
-                           dG_dg_oth = ((2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
-                       elif g == 1:
-                           dG_dg_oth = ((-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
-                       elif g == gamL-2:
-                           dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]) / dgam
-                       elif g == gamL-1:
-                           dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]) / dgam
-                       else:
-                           dG_dg_oth = ((1/12)*GRID[p,g-2,t,d]+(-2/3)*GRID[p,g-1,t,d]+(2/3)*GRID[p,g+1,t,d]+(-1/12)*GRID[p,g+2,t,d]) / dgam
-
-                       if t == 0:
-                           dG_dt_oth = ((2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
-                       elif t == 1:
-                           dG_dt_oth = ((-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
-                       elif t == theL-2:
-                           dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]) / dthe
-                       elif t == theL-1:
-                           dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]) / dthe
-                       else:
-                           dG_dt_oth = ((1/12)*GRID[p,g,t-2,d]+(-2/3)*GRID[p,g,t-1,d]+(2/3)*GRID[p,g,t+1,d]+(-1/12)*GRID[p,g,t+2,d]) / dthe
-
-
-                       Ntot = Ntot - ( Nm[p,g,t,s,d,0] * dG_dp_oth + Nm[p,g,t,s,d,1] * dG_dg_oth + Nm[p,g,t,s,d,2] * dG_dt_oth)
+                       Ntot = Ntot - ( dG_dp_oth + dG_dg_oth + dG_dt_oth)
 
                    if selector == 1:
-                       # I = -i
-                       #new[p,g,t,s] = I * (Ttot+Vtot+Mtot+Ntot)
                        new[p,g,t,s] = I * (Ttot+Vtot+Mtot)
                    else:
                        kinS[p,g,t,s] = Ttot + Ntot
                        potS[p,g,t,s] = Vtot
                        pulS[p,g,t,s] = Mtot
-                       #lol = Tpp.real * Tpp.real + Tpp.imag * Tpp.imag
-                       #if lol > 0.00001:
-                       #    printf("%i %i %i %i %f\n", p,g,t,s,lol)
     if selector == 1:
         return(new)
     else:
@@ -346,6 +380,7 @@ def Cderivative_2d_GamThe(t,GRID,inp):
 cdef Cderivative2D_GamThe_Mu(double time,double complex [:,:,:] GRID, dict inp, int selector):
     '''
     derivative done for a 2d Grid on the angles
+    NEEDS TO BE CORRECTED
     '''
 
     cdef:
@@ -496,6 +531,7 @@ cdef Cderivative1D_Phi_Mu(double time, double complex [:,:] GRID,dict inp, int s
     t :: Double -> time
     GRID :: np.array[:,:] <- wavefunction[phis,states]
     inp :: dictionary of various inputs
+    NEEDS TO BE CORRECTED
     '''
     cdef:
         int s,p,phiL=inp['phiL'],nstates=inp['nstates']
@@ -594,6 +630,7 @@ cdef Cderivative1D_Gam_Mu(double time, double complex [:,:] GRID,dict inp, int s
     t :: Double -> time
     GRID :: np.array[:,:] <- wavefunction[gams,states]
     inp :: dictionary of various inputs
+    NEEDS TO BE CORRECTED
     '''
     cdef:
         int s,g,gamL=inp['gamL'],nstates=inp['nstates']
