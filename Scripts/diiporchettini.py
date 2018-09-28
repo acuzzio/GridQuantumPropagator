@@ -107,12 +107,13 @@ bpy.ops.object.select_all(action='DESELECT')
 #G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian00*.h5'
 
 G_Exp = '/home/alessio/Desktop/USETHISINBLENDER_0001/Gaussian*.h5'
+G_Exp = '/home/alessio/m-dynamicshere/results/1_2_nac_0001/Gaussian*.h5'
 
 allH5 = sorted(glob.glob(G_Exp))
 
 from quantumpropagator import abs2
 
-for i,fn in enumerate(allH5[:2]):
+for i,fn in enumerate(allH5[:]):
     for state in range(2):
         nameMaterial = "Material.{:03d}".format(state+1)
         mat = bpy.data.materials.get(nameMaterial)
@@ -120,15 +121,8 @@ for i,fn in enumerate(allH5[:2]):
         print('doing {}'.format(fn))
     
         wf = openh5(fn,'WF')
-        if state == 0:
-            uno = wf[:,:,:,0]
-            due = wf[:,:,:,1]
-
-        else:
-            uno = wf[:,:,:,1]
-            due = wf[:,:,:,0]
-
-        ground2 = np.conj(uno) * due                         
+        ground2 = abs2(wf[:,:,:,state])
+        
         ground = np.swapaxes(ground2,0,2)
         
         for iso in [0.0001, 0.001, 0.003]:

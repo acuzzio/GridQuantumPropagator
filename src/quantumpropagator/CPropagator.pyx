@@ -66,7 +66,8 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
     '''
     cdef:
         int s,p,g,t,phiL=inp['phiL'],gamL=inp['gamL'],theL=inp['theL'],nstates=inp['nstates']
-        int d,carte
+        int d,carte,tuPlL,s_p
+        int [:,:] tuPl
         double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe'],V
         double [:,:,:,:] Vm = inp['potCube']
         double [:,:,:,:,:] Km = inp['kinCube']
@@ -97,8 +98,18 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
     pulseV[2] = pulZe(time,inp['pulseZ'])
 
     #for s in range(nstates):
-    for s in prange(nstates, nogil=True):   # first state loop.
-        for p in range(phiL):
+
+    tuPlL = nstates*phiL
+
+    # parallel 8 version
+    #for s in prange(nstates, nogil=True):   # first state loop.
+    #    for p in range(phiL):
+
+    # trying to get 16
+    for s_p in prange(tuPlL, nogil=True, schedule='dynamic'):
+    #for s_p in range(tuPlL):
+            s = s_p // phiL
+            p = s_p % phiL
             for g in range(gamL):
                for t in range(theL):
                    G = GRID[p,g,t,s]
