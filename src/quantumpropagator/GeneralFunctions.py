@@ -7,10 +7,13 @@ import numpy as np
 import pandas as pd
 import yaml
 import sys
+import math
+import pickle
 
 #Debug time
 #import pdb
 #pdb.set_trace() #to debug h=help
+
 
 def equilibriumIndex(fn,dataDict):
     '''
@@ -25,6 +28,7 @@ def equilibriumIndex(fn,dataDict):
     gsm_the_ind = dataDict['thes'].index(thes[0])
     print('Equilibrium points found at : ({},{},{})'.format(gsm_phi_ind, gsm_gam_ind, gsm_the_ind))
     return (gsm_phi_ind, gsm_gam_ind, gsm_the_ind)
+
 
 def stringTransformation3d(fn):
     '''
@@ -55,6 +59,7 @@ def fromLabelsToFloats(dataDict):
     gams = np.deg2rad(labTranformA(dataDict['gams']))
     thes = np.deg2rad(labTranformA(dataDict['thes'])/2)
     return(phis,gams,thes)
+
 
 def fromFloatsToLabels(phis,gams,thes):
     '''
@@ -131,8 +136,10 @@ def printDict(dictionary):
     for x in dictionary:
         print('{} -> {}'.format(x,dictionary[x]))
 
+
 def printDictKeys(dictionary):
     print(dictionary.keys())
+
 
 def readGeometry(fn):
     '''
@@ -290,37 +297,46 @@ def dipoleMoment(states,matMu):
         dipole[component] = summa
     return dipole
 
+
 def fromFsToAu(n):
     ''' from femtosecond to au '''
     return (n*41.341)
+
 
 def fromBohToAng(n):
     ''' From Bohr to Angstrom conversion - n :: Double '''
     return (n * 0.529177249)
 
+
 def fromAngToBoh(n):
     ''' From Angstrom to Bohr conversion - n :: Double '''
     return (n * 1.889725988)
+
 
 def fromEvtoHar(n):
     ''' From ElectronVolt to Hartree conversion - n :: Double '''
     return (n * 0.0367493)
 
+
 def fromHartoEv(n):
     ''' From Hartree to ElectronVolt conversion - n :: Double '''
     return (n * 27.211402)
+
 
 def fromCmMin1toHartree(n):
     ''' from cm-1 to hartree conversion - n :: Double '''
     return (n*4.5563e-06)
 
+
 def fromHartreetoCmMin1(n):
     ''' from hartree to cm-1 conversion - n :: Double '''
     return (n/4.5563e-06)
 
+
 def fromCmMin1toFs(n):
     ''' from cm-1 to fs conversion - n :: Double '''
     return (1/(fromHartreetoCmMin1(n))*1.88365157e+4)
+
 
 # https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 # https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/
@@ -333,6 +349,7 @@ def DFT_slow(x):
     M = np.exp(-2j * np.pi * k * n / N)
     return np.dot(M, x)
 
+
 def calcBond(geom,atom1,atom2):
     '''
     returns the bond length between atom1 and atom2
@@ -344,6 +361,7 @@ def calcBond(geom,atom1,atom2):
     b = geom[atom2-1]
     bond = np.linalg.norm(a-b)
     return bond
+
 
 def calcAngle(geom,atom1,atom2,atom3):
     '''
@@ -362,6 +380,7 @@ def calcAngle(geom,atom1,atom2,atom3):
     angle = np.arccos(cosine_angle)
     return(np.degrees(angle))
 
+
 def calcDihedral(geom,atom1,atom2,atom3,atom4):
     '''
     returns the dihedral of atom1,2,3 and 4
@@ -377,6 +396,7 @@ def calcDihedral(geom,atom1,atom2,atom3,atom4):
     d = geom[atom4-1]
     print('still have to do it')
     print(a,b,c,d)
+
 
 def massOf(elem):
     '''
@@ -408,6 +428,7 @@ def massOf(elem):
             'Yb': 173.04, 'Y': 88.90585, 'Zn': 65.39, 'Zr': 91.224}
     return(dictMass[elem])
 
+
 def saveTraj(arrayTraj, labels, filename, convert=None):
     '''
     given a numpy array of multiple coordinates, it prints the concatenated xyz file
@@ -432,10 +453,10 @@ def saveTraj(arrayTraj, labels, filename, convert=None):
                         ['{:10.6f}'.format(num) for num
                     in arrayTraj[geo,i]]) + '\n'
 
-
     with open(fn, "w") as myfile:
         myfile.write(string)
     print('\nfile {0} written:\n\nvmd {0}'.format(fn))
+
 
 def scanvalues(first,second,resolution):
     '''
@@ -447,6 +468,7 @@ def scanvalues(first,second,resolution):
     vec = np.linspace(first,second,resolution)
     oneline = " ".join(['{:7.3f}'.format(b) for b in vec])
     return oneline
+
 
 def printMatrix2D(mat, pre=None, thr=None):
     '''
@@ -464,6 +486,7 @@ def printMatrix2D(mat, pre=None, thr=None):
     out = pd.DataFrame(mat, index=indexes, columns=indexes)
     print(out)
 
+
 def createTabellineFromArray(arr):
     '''
     arr :: np.array(Double)
@@ -477,11 +500,13 @@ def createTabellineFromArray(arr):
             mat[ii,kk]=arr[ii]*arr[kk]
     return(mat)
 
+
 def labTranformReverseA(floArray):
     '''
     labTranformReverse applied to an array
     '''
     return [ labTranformReverse(x) for x in floArray ]
+
 
 def labTranformReverse(flo):
     '''
@@ -489,6 +514,7 @@ def labTranformReverse(flo):
     '''
     flo2 = '{:+08.3f}'.format(flo)
     return flo2.replace('-','N').replace('.','-').replace('+','P')
+
 
 def labTranform(string):
     '''
@@ -613,8 +639,168 @@ def generateNorbGeometry(phi,gam,the, vector_res=None):
         saveTraj(np.array([new]),atomTN,fn)
 
 
+def file_len(fname):
+    '''
+    gives the number of lines in the file
+    fn :: FilePath
+    '''
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
+
+def frames_counter(fn):
+    '''
+    Given a trajectory files, gives back number of frame and number of atoms.
+    fn :: FilePath
+    '''
+    f = open(fn)
+    atomN = int(f.readline())
+    f.close()
+    with open(fn) as f:
+        for i, l in enumerate(f):
+            pass
+    frameN = int((i + 1)/(atomN+2))
+    return (atomN,frameN)
+
+
+def readTrajectory(fn):
+    '''
+    reads a md.xyz format file and gives back a dictionary with geometries and all the rest
+    '''
+    atomsN,frameN = frames_counter(fn)
+    print('\nAtoms: {}\nFrames: {}\n'.format(atomsN,frameN))
+    geom = np.empty((frameN,atomsN,3))
+    atomT = []
+    with open(fn) as f:
+        for i in range(frameN):
+            f.readline()
+            f.readline()
+            for j in range(atomsN):
+              a  = f.readline()
+              bb = a.split(" ")
+              b  = [ x for x in bb if x != '']
+              geom[i,j] = [float(b[1]),float(b[3]),float(b[2])]
+              if i == 0:
+                  atomT.append(b[0])
+    final_data = {
+                 'geoms'  : geom,
+                 'atomsN' : atomsN,
+                 'frameN' : frameN,
+                 'atomT'  : atomT,
+                 }
+    return final_data
+
+def bondL():
+    bondLengths = {
+    'HH' : 0.74,
+    'CH' : 1.09,
+    'HO' : 0.96,
+    'HN' : 1.02,
+    'CC' : 1.54,
+    'CN' : 1.47,
+    'CO' : 1.43,
+    'NN' : 1.45,
+    'NO' : 1.40,
+    'OO' : 1.48,
+    'HS' : 1.34,
+    'OS' : 1.43,
+    'CS' : 1.82,
+    'NS' : 0.50,
+    'SS' : 1.0,
+    'II' : 1.0,
+    'MM' : 1.0,
+    'IM' : 2.8,
+    'CM' : 1.0,
+    'MS' : 1.0,
+    'HM' : 1.0,
+    'CI' : 1.0,
+    'IS' : 1.0,
+    'HI' : 1.0
+    }
+    return bondLengths
+
+
+def transformTrajectoryIntoBlenderData(name,traj):
+    '''
+    takes a trajectory dictionary and gives back new kind of data for blender
+    '''
+    geoms = traj['geoms']
+    atomsN = traj['atomsN']
+    frameN = traj['frameN']
+    atomT = traj['atomT']
+    BL = bondL()
+    paletti = []
+    spheres = []
+    for i in range(atomsN):
+        spheres.append((i,atomT[i],geoms[:,i]))
+        for j in range(i):
+            unoL = atomT[i]
+            dueL = atomT[j]
+            geom1Ini = geoms[0,i]
+            geom2Ini = geoms[0,j]
+            toCheckDistance = ''.join(sorted(unoL + dueL))
+            bondLengthMax = BL[toCheckDistance] + 0.3
+            bondIni = np.linalg.norm((geom1Ini,geom2Ini))
+            if bondIni < bondLengthMax:
+                print('There should be a bond between {}{} and {}{}'.format(unoL, i, dueL, j))
+                if unoL == dueL:
+                    pos = np.empty((frameN,3))
+                    rot = np.empty((frameN,3))
+                    dim = np.empty((frameN))
+                    for frame in range(frameN):
+                        geom1 = geoms[frame, i]
+                        geom2 = geoms[frame, j]
+                        bond = np.linalg.norm((geom1,geom2))
+                        center = (geom1 + geom2) / 2
+                        d12 = geom2 - geom1
+                        phi = math.atan2(d12[1], d12[0])
+                        theta = math.acos(d12[2] / bond)
+                        if frame == 0:
+                            oldZ = 0.0
+                        else:
+                            oldZ = rot[frame-1,1]
+                        if abs(phi) > 1.0 and phi * oldZ < 0:
+                            phi = phi + (math.pi*2)
+                        pos[frame] = center
+                        rot[frame] = [0,phi,theta]
+                        dim[frame] = bond
+
+                    paletti.append((dim,pos,rot,unoL))
+                        # createCyl(cylDIMEN,dim,toghetX,toghetY,toghetZ,Mat1)
+                else:
+                    pos1 = np.empty((frameN,3))
+                    pos2 = np.empty((frameN,3))
+                    rot = np.empty((frameN,3))
+                    dim = np.empty((frameN))
+                    for frame in range(frameN):
+                        geom1 = geoms[frame, i]
+                        geom2 = geoms[frame, j]
+                        bond = np.linalg.norm((geom1,geom2))
+                        center = (geom1 + geom2) / 2
+                        d12 = geom2 - geom1
+                        phi = math.atan2(d12[1], d12[0])
+                        theta = math.acos(d12[2] / bond)
+                        dim[frame] = bond / 2
+                        pos1[frame] = (center + geom1) / 2
+                        pos2[frame] = (center + geom2) / 2
+                        rot[frame] = [0,phi,theta]
+                    paletti.append((dim,pos1,rot,unoL))
+                    paletti.append((dim,pos2,rot,dueL))
+    print(spheres)
+    print(paletti)
+    blender_dict = {'spheres' : spheres, 'paletti' : paletti}
+    print(len(spheres),len(paletti))
+    pickle.dump(blender_dict, open(name, "wb" ) )
+
+
+
 if __name__ == "__main__":
-    print(generateNorbGeometry(2,2,2,True))
+    fn   = '/home/alessio/Desktop/LoadHuge/water.xyz'
+    name = '/home/alessio/Desktop/LoadHuge/water.p'
+    a = readTrajectory(fn)
+    transformTrajectoryIntoBlenderData(name,a)
     #from time import sleep
 
     ## A List of Items

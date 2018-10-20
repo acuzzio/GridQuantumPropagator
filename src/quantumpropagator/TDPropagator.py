@@ -151,6 +151,7 @@ def propagate3D(dataDict, inputDict):
     kind = inp['kind']
 
     # Take equilibrium points from directionFile
+    warning('This is a bad equilibriumfinder')
     gsm_phi_ind, gsm_gam_ind, gsm_the_ind = equilibriumIndex(inputDict['directions1'],dataDict)
 
     inp['nstates'] = numStates
