@@ -313,7 +313,7 @@ def fromAngToBoh(n):
     return (n * 1.889725988)
 
 
-def fromEvtoHar(n):
+def fromEvtoHart(n):
     ''' From ElectronVolt to Hartree conversion - n :: Double '''
     return (n * 0.0367493)
 
@@ -321,7 +321,6 @@ def fromEvtoHar(n):
 def fromHartoEv(n):
     ''' From Hartree to ElectronVolt conversion - n :: Double '''
     return (n * 27.211402)
-
 
 def fromCmMin1toHartree(n):
     ''' from cm-1 to hartree conversion - n :: Double '''
@@ -742,63 +741,31 @@ def transformTrajectoryIntoBlenderData(name,traj):
             geom2Ini = geoms[0,j]
             toCheckDistance = ''.join(sorted(unoL + dueL))
             bondLengthMax = BL[toCheckDistance] + 0.3
-            bondIni = np.linalg.norm((geom1Ini,geom2Ini))
+            bondIni = np.linalg.norm((geom2Ini-geom1Ini))
+            #print('{} {} {} blMax {}, bondIni {}'.format(i,j,toCheckDistance,bondLengthMax,bondIni))
             if bondIni < bondLengthMax:
                 print('There should be a bond between {}{} and {}{}'.format(unoL, i, dueL, j))
                 if unoL == dueL:
-                    pos = np.empty((frameN,3))
-                    rot = np.empty((frameN,3))
-                    dim = np.empty((frameN))
-                    for frame in range(frameN):
-                        geom1 = geoms[frame, i]
-                        geom2 = geoms[frame, j]
-                        bond = np.linalg.norm((geom1,geom2))
-                        center = (geom1 + geom2) / 2
-                        d12 = geom2 - geom1
-                        phi = math.atan2(d12[1], d12[0])
-                        theta = math.acos(d12[2] / bond)
-                        if frame == 0:
-                            oldZ = 0.0
-                        else:
-                            oldZ = rot[frame-1,1]
-                        if abs(phi) > 1.0 and phi * oldZ < 0:
-                            phi = phi + (math.pi*2)
-                        pos[frame] = center
-                        rot[frame] = [0,phi,theta]
-                        dim[frame] = bond
-
-                    paletti.append((dim,pos,rot,unoL))
-                        # createCyl(cylDIMEN,dim,toghetX,toghetY,toghetZ,Mat1)
+                    pos1 = geoms[:, i]
+                    pos2 = geoms[:, j]
+                    paletti.append((pos1,pos2,unoL))
                 else:
-                    pos1 = np.empty((frameN,3))
-                    pos2 = np.empty((frameN,3))
-                    rot = np.empty((frameN,3))
-                    dim = np.empty((frameN))
-                    for frame in range(frameN):
-                        geom1 = geoms[frame, i]
-                        geom2 = geoms[frame, j]
-                        bond = np.linalg.norm((geom1,geom2))
-                        center = (geom1 + geom2) / 2
-                        d12 = geom2 - geom1
-                        phi = math.atan2(d12[1], d12[0])
-                        theta = math.acos(d12[2] / bond)
-                        dim[frame] = bond / 2
-                        pos1[frame] = (center + geom1) / 2
-                        pos2[frame] = (center + geom2) / 2
-                        rot[frame] = [0,phi,theta]
-                    paletti.append((dim,pos1,rot,unoL))
-                    paletti.append((dim,pos2,rot,dueL))
-    print(spheres)
-    print(paletti)
+                    pos1 = geoms[:, i]
+                    pos2 = geoms[:, j]
+                    center = (pos1 + pos2) / 2
+                    paletti.append((pos1,center,unoL))
+                    paletti.append((pos2,center,dueL))
+    print('{} {}'.format(atomsN,frameN))
     blender_dict = {'spheres' : spheres, 'paletti' : paletti}
-    print(len(spheres),len(paletti))
     pickle.dump(blender_dict, open(name, "wb" ) )
+    print(paletti)
+    print('There are {} atoms and {} paletti'.format(len(spheres),len(paletti)))
 
 
 
 if __name__ == "__main__":
-    fn   = '/home/alessio/Desktop/LoadHuge/water.xyz'
-    name = '/home/alessio/Desktop/LoadHuge/water.p'
+    fn   = '/home/alessio/Desktop/Dropbox/sharedWithPPl/Acu-Elisa/soloRET/b.xyz'
+    name = '/home/alessio/Desktop/Dropbox/sharedWithPPl/Acu-Elisa/soloRET/b.p'
     a = readTrajectory(fn)
     transformTrajectoryIntoBlenderData(name,a)
     #from time import sleep

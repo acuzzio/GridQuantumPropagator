@@ -8,7 +8,7 @@ from .errors import (err, good, box, warning)
 from .GeneralFunctions import (asyncFun, abs2, population, ndprint, singlepop,
                                groundState, gaussian, saveComplex, gaussian2,
                                loadComplex, print2ArrayInColumns, dipoleMoment,
-                               fromBohToAng, fromAngToBoh, fromEvtoHar, fromHartoEv, DFT_slow,
+                               fromBohToAng, fromAngToBoh, fromEvtoHart, fromHartoEv, DFT_slow,
                                fromCmMin1toHartree, calculateGradientOnMatrix0,
                                chunksOf, chunksOfList, calcBond, calcAngle,
                                calcDihedral, massOf, saveTraj, scanvalues, fromHartreetoCmMin1,

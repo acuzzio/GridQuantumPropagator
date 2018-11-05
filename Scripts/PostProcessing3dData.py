@@ -151,7 +151,7 @@ def parseNAC(fileN,nstates,natoms):
     #command = "grep norm: " + fileN + "| awk '{print $2}'"
     p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     (output, err) = p.communicate()
-    #  I am reading a list of lists(triplets) in bytes. I need to separate them
+    #  I am reading a list of lists(triplet) in bytes. I need to separate them
 
     # this parser need to filter out the b'' objects that forms from the function split.
     # also, there is a problem with numbers not separated in molcas outputs, 
