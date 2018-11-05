@@ -16,7 +16,7 @@ cdef extern from "complex.h":
 
 
 def version_Cpropagator():
-    return('0.0.0007')
+    return('0.0.0010')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -34,13 +34,17 @@ def Crk4Ene3d(f, t, y, inp):
     return y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
 
 def pulZe(t, param_Pulse):
+    '''
+    Warning ... this functions works strangely...
+    '''
     Ed,omega,sigma,phase,t0 = param_Pulse
+    print(Ed,omega,sigma,phase,t0)
     num = (t-t0)**2
-    den = 2*(sigma**2)
+    den = 2.0*(sigma**2)
     if (den == 0):
         result = 0.0
     else:
-        result = Ed * (np.cos(omega*t+phase)) * np.exp(-num/den)
+        result = Ed * (np.cos(omega*(t-t0)+phase)) * np.exp(-num/den)
     return result
 
 def CextractEnergy3dMu(t,GRID,inp):

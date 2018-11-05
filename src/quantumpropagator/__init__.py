@@ -43,14 +43,14 @@ from .Propagator import (rk4Ene1dSLOW, rk4Ene3d, derivative3d, derivative1d, Ham
                          NuclearKinetic1d, doubleDeronK, singleDerOnK,
                          createXaxisReciprocalspace1d, divideByTwo, calculateTotal,
                          rk6Ene1dSLOW, EULER1d,derivative1dPhi, derivative1dGam,
-                         derivative2dGamThe, derivative2dGamTheMu, pulZe,derivative3dMu)
+                         derivative2dGamThe, derivative2dGamTheMu, derivative3dMu)
 from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, component,
                       envel, pulse)
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
 from .KineticMadness import (calc_g_G, calc_s_mat)
 from .TDPropagator import propagate3D
-from .CPropagator import (Crk4Ene3d, CextractEnergy3dMu, Cderivative3dMu,Cenergy_1D_Phi,
+from .CPropagator import (Crk4Ene3d, CextractEnergy3dMu, Cderivative3dMu, Cenergy_1D_Phi,
                           Cderivative_1D_Phi,Cenergy_1D_Gam, Cderivative_1D_Gam,Cenergy_1D_The,
-                          Cderivative_1D_The)
+                          Cderivative_1D_The,pulZe)
 from .IpythonJupyter import *
