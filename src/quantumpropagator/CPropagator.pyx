@@ -38,7 +38,6 @@ def pulZe(t, param_Pulse):
     Warning ... this functions works strangely...
     '''
     Ed,omega,sigma,phase,t0 = param_Pulse
-    print(Ed,omega,sigma,phase,t0)
     num = (t-t0)**2
     den = 2.0*(sigma**2)
     if (den == 0):
