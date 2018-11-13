@@ -18,7 +18,8 @@ def read_single_arguments(single_inputs):
     This funcion reads the command line arguments and assign the values on
     the namedTuple for the 3D grid propagator.
     '''
-    parser = ArgumentParser()
+    d = 'This script will launch a Grid quantum propagation'
+    parser = ArgumentParser(description=d)
     parser.add_argument("-i", "--input",
                         dest="i",
                         required=True,
