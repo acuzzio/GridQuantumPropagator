@@ -53,13 +53,30 @@ def info_coord(dictio):
     coordinates_df.columns = columns_df
     return (coordinates_df.to_html())
 
+def info_pulse(dictio):
+    '''
+    Creates a string with a table for the pulse
+    '''
+    columns_df = ['E','omega','sigma','phi','t0']
+    little_table = {
+            'X' : dictio['pulseX'],
+            'Y' : dictio['pulseY'],
+            'Z' : dictio['pulseZ']}
+    pulse_df = pd.DataFrame.from_dict(little_table, orient='index')
+    pulse_df.columns = columns_df
+    return (pulse_df.to_html())
+
 def create_string_input(allout):
     '''
     This function transform the all input h5 file into a string of information for the report
     '''
     dictio = qp.readWholeH5toDict(allout)
     # 'theL', 'dphi', 'nacCube', 'nstates', 'pulseZ', 'pulseX', 'kind', 'natoms', 'kinCube', 'outFol', 'dipCube', 'phis', 'fullTime', 'dgam', 'dthe', 'h', 'gams', 'potCube', 'phiL', 'thes', 'gamL', 'pulseY'
-    return info_coord(dictio)
+    coord_string = 'Coordinates:' + info_coord(dictio)
+    pulse_string = 'Pulse specs in AU:' + info_pulse(dictio)
+
+    fullString = coord_string + pulse_string
+    return(fullString)
 
 def main():
     '''
