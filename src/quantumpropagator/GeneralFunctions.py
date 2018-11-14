@@ -298,9 +298,13 @@ def dipoleMoment(states,matMu):
     return dipole
 
 
+def fromAuToFs(n):
+    ''' from au to femtosecond '''
+    return (n*0.02418884254)
+
 def fromFsToAu(n):
     ''' from femtosecond to au '''
-    return (n*41.341)
+    return (n*41.341374575751)
 
 
 def fromBohToAng(n):

@@ -29,6 +29,7 @@ setup(
      'Scripts/3dmultiGraphEneDipole.py',
      'Scripts/NorbornadieneGenerateGeometries.py',
      'Scripts/generateGeomsAroundConical.py',
+     'Scripts/Report_Generator.py',
      'Scripts/ThreeDPropagator.py',
      'Scripts/PostProcessing3dData.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib', 'pyyaml','cython'],

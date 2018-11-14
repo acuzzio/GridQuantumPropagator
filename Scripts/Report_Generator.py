@@ -1,12 +1,93 @@
 import numpy as np
 import pandas as pd
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, BaseLoader
+#from jinja2 import FileSystemLoader
 import webbrowser
+import argparse
 import os
 import quantumpropagator as qp
 import io
 import base64
 import matplotlib.pyplot as plt
+
+def style_css():
+    '''
+    return style
+    '''
+    return '''
+table.dataframe {
+  font-family: "Times New Roman", Times, serif;
+  border: 1px solid #FFFFFF;
+  width: 350px;
+  height: 200px;
+  text-align: center;
+  border-collapse: collapse;
+}
+table.dataframe td, table.dataframe th {
+  border: 2px solid #FFFFFF;
+  padding: 3px 2px;
+}
+table.dataframe tbody td {
+  font-size: 13px;
+}
+table.dataframe tr:nth-child(even) {
+  background: #D0E4F5;
+}
+table.dataframe thead {
+  background: #0B6FA4;
+  border-bottom: 5px solid #FFFFFF;
+}
+table.dataframe thead th {
+  font-size: 17px;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-align: center;
+  border-left: 2px solid #FFFFFF;
+}
+table.dataframe thead th:first-child {
+  border-left: none;
+}
+
+table.dataframe tfoot td {
+  font-size: 14px;
+}
+'''
+
+def template_html():
+    '''
+    the html template for the report
+    '''
+    return '''
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+<style>
+{{ style_string }}
+</style>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title> {{ title }} </title>
+</head>
+
+<body>
+<h1> {{ title }} </h1>
+
+<h2> General info: </h2>
+{{ info_string  }}
+
+<h2> Population, norm and energies </h2>
+{{ popul_figure }}
+{{ norm_figure }}
+{{ kin_tot_figure }}
+
+<h2> Raw data </h2>
+{{ table_output }}
+
+</body>
+
+</html>
+'''
 
 def fig_to_html(fig):
     '''
@@ -45,9 +126,9 @@ def info_coord(dictio):
 
     columns_df =  [ 'sx_extr', 'dx_extr', 'dq', 'range' ]
     little_table = {
-                   'phi' : [phis_ext[-1],phis_ext[0],dphi,range_phi],
-                   'gam' : [gams_ext[-1],gams_ext[0],dgam,range_gam],
-                   'the' : [thes_ext[-1],thes_ext[0],dthe,range_the]
+                   'φ' : [phis_ext[-1],phis_ext[0],dphi,range_phi],
+                   'γ' : [gams_ext[-1],gams_ext[0],dgam,range_gam],
+                   'θ' : [thes_ext[-1],thes_ext[0],dthe,range_the]
                    }
     coordinates_df = pd.DataFrame.from_dict(little_table, orient='index')
     coordinates_df.columns = columns_df
@@ -57,7 +138,7 @@ def info_pulse(dictio):
     '''
     Creates a string with a table for the pulse
     '''
-    columns_df = ['E','omega','sigma','phi','t0']
+    columns_df = ['E','ω','σ','φ','t0']
     little_table = {
             'X' : dictio['pulseX'],
             'Y' : dictio['pulseY'],
@@ -66,46 +147,53 @@ def info_pulse(dictio):
     pulse_df.columns = columns_df
     return (pulse_df.to_html())
 
-def create_string_input(allout):
+def create_string_input(dictio):
     '''
     This function transform the all input h5 file into a string of information for the report
     '''
-    dictio = qp.readWholeH5toDict(allout)
     # 'theL', 'dphi', 'nacCube', 'nstates', 'pulseZ', 'pulseX', 'kind', 'natoms', 'kinCube', 'outFol', 'dipCube', 'phis', 'fullTime', 'dgam', 'dthe', 'h', 'gams', 'potCube', 'phiL', 'thes', 'gamL', 'pulseY'
-    coord_string = 'Coordinates:' + info_coord(dictio)
-    pulse_string = 'Pulse specs in AU:' + info_pulse(dictio)
+    pres_string = 'This is a simulation of kind "{}" done in {} states<br/>dt: {} AU or {} fs<br/><br/>'
+    dtAU = dictio['h']
+    dtfs = qp.fromAuToFs(dtAU)
+    pres_stringF = pres_string.format(dictio['kind'],dictio['nstates'],dtAU,dtfs)
+    coord_string = '<b> Coordinates:</b>' + info_coord(dictio)
+    pulse_string = '<b> Pulse specs in AU:</b>' + info_pulse(dictio)
 
-    fullString = coord_string + pulse_string
+    fullString = pres_stringF + coord_string + pulse_string
     return(fullString)
 
 def main():
     '''
     Transform a dynamics folder into a html report
     '''
-    nstates = 8
 
-    # style part
-    style = 'home/alessio/y-RepoQuantum/Scripts/reportGen/style.css'
-    with open('style.css','r') as f:
-        style_string = f.read()
+    # parse command line
+    args = parseCL()
 
+    root = os.path.dirname(os.path.abspath(args.i))
+    project = os.path.basename(os.path.abspath(args.i))
 
-    root = '/home/alessio/m-dynamicshere/results'
-    #project = 'w-from6withouspulse_0000'
-    #project = 'x-from5withouspulse_0000'
-    #project = 'y-from4withouspulse_0000'
-    project = 'z-from3withouspulse_0000'
+    # html and style template part
+    # if it is standlaone, it will use internal function for html and css file
+    # otherwise it will read external files (to be used for heavy debugging/changes)
+    standalone = True
+    if standalone:
+        style_string = style_css()
+        template = Environment(loader=BaseLoader()).from_string(template_html())
+    else:
+        style = 'home/alessio/y-RepoQuantum/Scripts/reportGen/style.css'
+        with open('style.css','r') as f:
+            style_string = f.read()
+        env = Environment(loader=FileSystemLoader('.'))
+        template = env.get_template("report.html.j2")
+
     folder = os.path.join(root, project)
     allout = os.path.join(folder,'allInput.h5')
     outfn = os.path.join(folder,'output')
     outfnP = os.path.join(folder,'outputPopul')
 
-    info_string = create_string_input(allout)
-    # dictio = qp.readWholeH5toDict(allout)
-
-    env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template("report.html.j2")
-
+    dictio = qp.readWholeH5toDict(allout)
+    info_string = create_string_input(dictio)
 
     data = pd.read_csv(outfn, delim_whitespace=True, header=None);
     dataP = pd.read_csv(outfnP, delim_whitespace=True, header=None);
@@ -118,6 +206,7 @@ def main():
     title_Repo = 'Report: {}'.format(project)
 
     # first graph
+    nstates = dictio['nstates']
     fig = plt.figure(figsize=(15,6))
     ax1 = fig.add_subplot(111)
     ax2 = ax1.twinx()
@@ -165,7 +254,23 @@ def main():
     print('\nFile {} written.\n'.format(filename))
 
     # open the browser or not
-    webbrowser.open(filename)
+    if args.browser:
+        webbrowser.open(filename)
+
+def parseCL():
+    d = 'This tools is used to generate html reports'
+    parser = argparse.ArgumentParser(description=d)
+    parser.add_argument("-i", "--input",
+                        dest="i",
+                        required=True,
+                        type=str,
+                        help="path of the folder for the analysis")
+    parser.add_argument("-f", "--firefox",
+                        dest="browser",
+                        action='store_true',
+                        help="launches the browser")
+
+    return parser.parse_args()
 
 
 
