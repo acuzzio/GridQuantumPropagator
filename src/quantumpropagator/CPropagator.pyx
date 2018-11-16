@@ -26,7 +26,7 @@ def Crk4Ene3d(f, t, y, inp):
     y -> the numpy array
     inp -> dictionaries with immutable objects
     '''
-    h = inp['h']
+    h = inp['dt']
     k1 = h * f(t, y, inp)
     k2 = h * f(t + 0.5 * h, y + 0.5 * k1, inp)
     k3 = h * f(t + 0.5 * h, y + 0.5 * k2, inp)

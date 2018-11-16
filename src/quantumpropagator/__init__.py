@@ -49,7 +49,7 @@ from .EMPulse import (specificPulse, userPulse, varPulseZ, specificPulseZero, co
 from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
 from .KineticMadness import (calc_g_G, calc_s_mat)
-from .TDPropagator import propagate3D
+from .TDPropagator import propagate3D, restart_propagation
 from .CPropagator import (Crk4Ene3d, CextractEnergy3dMu, Cderivative3dMu, Cenergy_1D_Phi,
                           Cderivative_1D_Phi,Cenergy_1D_Gam, Cderivative_1D_Gam,Cenergy_1D_The,
                           Cderivative_1D_The, pulZe)

@@ -28,6 +28,18 @@ def doubleAxespoins1(Y):
 def doubleAxespoins(Y):
     return (doubleAxespoins1(doubleAxespoins1(Y)))
 
+def select_propagator(kind):
+    '''
+    This function will return correct function name for the propagators
+    kind :: String <- the kind of dynamics
+    '''
+    Propagators = {'3d'     : (CextractEnergy3dMu, Cderivative3dMu),
+                   'GamThe' : (Cenergy_2d_GamThe,Cderivative_2d_GamThe),
+                   'Phi'    : (Cenergy_1D_Phi, Cderivative_1D_Phi),
+                   'Gam'    : (Cenergy_1D_Gam, Cderivative_1D_Gam),
+                   'The'    : (Cenergy_1D_The, Cderivative_1D_The),
+                  }
+    return Propagators[kind]
 
 def propagate3D(dataDict, inputDict):
     '''
@@ -77,7 +89,7 @@ def propagate3D(dataDict, inputDict):
     dgam = gams[0] - gams[1]
     dthe = thes[0] - thes[1]
 
-    inp = { 'h'        : inputDict['dt'],
+    inp = { 'dt'       : inputDict['dt'],
             'fullTime' : inputDict['fullTime'],
             'phiL'     : phiL,
             'gamL'     : gamL,
@@ -255,38 +267,23 @@ def propagate3D(dataDict, inputDict):
         wf = wf_not_norm/np.linalg.norm(wf_not_norm)
 
     #############################
-    # INTEGRATOR SELECTION HERE #
+    # PROPAGATOR SELECTION HERE #
     #############################
 
-    Propagators = {'3d'     : (CextractEnergy3dMu, Cderivative3dMu),
-                   'GamThe' : (Cenergy_2d_GamThe,Cderivative_2d_GamThe),
-                   'Phi'    : (Cenergy_1D_Phi, Cderivative_1D_Phi),
-                   'Gam'    : (Cenergy_1D_Gam, Cderivative_1D_Gam),
-                   'The'    : (Cenergy_1D_The, Cderivative_1D_The),
-                  }
-
-    CEnergy, Cpropagator = Propagators[kind]
+    CEnergy, Cpropagator = select_propagator(kind)
     good('Cpropagator version: {}'.format(version_Cpropagator()))
 
     # INITIAL DYNAMICS VALUES
-    h = inp['h']
+    dt = inp['dt']
     t = 0
     counter  = 0
     fulltime = inp['fullTime']
-    fulltimeSteps = int(fulltime/h)
+    fulltimeSteps = int(fulltime/dt)
     deltasGraph = inputDict['deltasGraph']
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
     print('\ntail -f {}\n'.format(outputFileP))
-    # saving input data in h5 file
-    dataH5filename = os.path.join(nameRoot, 'allInput.h5')
-    writeH5fileDict(dataH5filename,inp)
-
-    # print top of table
-    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   | Pulse_Inter. |  Pulse X   |  Pulse Y   |  Pulse Z   |'
-    bar = ('-' * (len(header)))
-    print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
     # calculating initial total/potential/kinetic
     kin, pot, pul = CEnergy(t,wf,inp)
@@ -302,6 +299,15 @@ def propagate3D(dataDict, inputDict):
     # graph the pulse
     graphic_Pulse(inp)
 
+    # saving input data in h5 file
+    dataH5filename = os.path.join(nameRoot, 'allInput.h5')
+    writeH5fileDict(dataH5filename,inp)
+
+    # print top of table
+    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   | Pulse_Inter. |  Pulse X   |  Pulse Y   |  Pulse Z   |'
+    bar = ('-' * (len(header)))
+    print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
+
     for ii in range(fulltimeSteps):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             #  async is awesome. But it is not needed in 1d and maybe in 2d.
@@ -312,7 +318,45 @@ def propagate3D(dataDict, inputDict):
             counter += 1
 
         wf = Crk4Ene3d(Cpropagator,t,wf,inp)
-        t  = t + h
+        t  = t + dt
+
+def restart_propagation(inp,inputDict):
+    '''
+    This function restarts a propagation that has been stopped
+    '''
+    import glob
+    nameRoot = inputDict['outFol']
+    list_wave_h5 = sorted(glob.glob(nameRoot + '/Gaussian*.h5'))
+    last_wave_h5 = list_wave_h5[-1]
+    print(len(list_wave_h5))
+    wf = retrieve_hdf5_data(last_wave_h5,'WF')
+    t = retrieve_hdf5_data(last_wave_h5,'Time')[1] # [1] is atomic units
+    kind = inp['kind']
+    deltasGraph = inputDict['deltasGraph']
+    counter = len(list_wave_h5) - 1
+    warning('take care of what COUNTER IS here')
+
+    dt = inputDict['dt']
+    fulltime = inp['fullTime']
+    fulltimeSteps = int(fulltime/dt)
+    print('I will do {} more steps.\n'.format(fulltimeSteps))
+    outputFile = os.path.join(nameRoot, 'output')
+    outputFileP = os.path.join(nameRoot, 'outputPopul')
+    print('\ntail -f {}\n'.format(outputFileP))
+    CEnergy, Cpropagator = select_propagator(kind)
+    good('Cpropagator version: {}'.format(version_Cpropagator()))
+
+    for ii in range(fulltimeSteps):
+        if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
+            #  async is awesome. But it is not needed in 1d and maybe in 2d.
+            if kind == '3D':
+                asyncFun(doAsyncStuffs,wf,t,ii,inp,inp,counter,outputFile,outputFileP,CEnergy)
+            else:
+                doAsyncStuffs(wf,t,ii,inp,inp,counter,outputFile,outputFileP,CEnergy)
+            counter += 1
+
+        wf = Crk4Ene3d(Cpropagator,t,wf,inp)
+        t  = t + dt
 
 
 def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
@@ -322,9 +366,6 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t*0.02418884,t])])
     kin, pot, pul = CEnergy(t,wf,inp)
-
-    #kinetic = np.vdot(wf,kin)
-    #potential = np.vdot(wf,pot)
 
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)

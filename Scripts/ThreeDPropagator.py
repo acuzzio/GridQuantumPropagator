@@ -4,13 +4,14 @@ import pickle
 import glob
 import numpy as np
 import os
+import sys
 
 from argparse import ArgumentParser
 from collections import namedtuple
 from quantumpropagator import (fromFsToAu,
         printDict,stringTransformation3d,retrieve_hdf5_data,
         loadInputYAML, readDirectionFile, err, good, propagate3D, bring_input_to_AU,
-        printProgressBar)
+        printProgressBar, restart_propagation, readWholeH5toDict)
 
 
 def read_single_arguments(single_inputs):
@@ -25,17 +26,22 @@ def read_single_arguments(single_inputs):
                         required=True,
                         type=str,
                         help="inputFile")
+    parser.add_argument("-r", "--restart",
+                        dest="restart_folder",
+                        type=str,
+                        help="restart from folder")
 
     args = parser.parse_args()
 
     if args.i != None:
         single_inputs = single_inputs._replace(inputFile=args.i)
+    if args.restart_folder != None:
+        single_inputs = single_inputs._replace(restart=args.restart_folder)
     return single_inputs
 
 single_inputs = namedtuple("single_input",
-            ("inputFile"
-            )
-            )
+            ("inputFile","restart"
+            ))
 
 defaultYaml = '''# folders
 proj_label : zNorbornadiene_
@@ -44,9 +50,9 @@ outFol : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results
 
 # propagation details in fs.
 dt : 0.01
-states : 8
-fullTime : 200
-deltasGraph : 20
+states : 2
+fullTime : 0.2
+deltasGraph : 50
 
 # PULSE SPECIFICATIONS
 # E :: intensities
@@ -99,87 +105,99 @@ def main():
     '''
     This will launch a 3d wavepacket propagation.
     '''
-    default = single_inputs(".")              # input file
+    default = single_inputs(".",None)              # input file
     inputs = read_single_arguments(default)
     fn = inputs.inputFile
     if os.path.exists(fn):
         ff = loadInputYAML(fn)
         inputAU = bring_input_to_AU(ff)
-        # create subfolder with yml file name
+        # create subfolder name with yml file name
         filename, file_extension = os.path.splitext(fn)
         projfolder = os.path.join(inputAU['outFol'],filename)
         inputAU['outFol'] = projfolder
-        print('\nNEW 3D PROPAGATION')
-        # is there a data file?
-        if 'dataFile' in inputAU:
-            name_data_file = inputAU['dataFile']
-            # LAUNCH THE PROPAGATION, BITCH 
-            if name_data_file[-3:] == 'npy':
-                data = np.load(name_data_file)
-                # [()] <- because np.load returns a numpy wrapper on the dictionary
-                propagate3D(data[()], inputAU)
-            elif name_data_file[-3:] == 'kle':
-                with open(name_data_file, "rb") as input_file:
-                    data = pickle.load(input_file)
-                propagate3D(data, inputAU)
+        print('\nNEW PROPAGATION')
+
+        if inputs.restart != None:
+            restart_folder = inputs.restart
+            # read hdf5 input
+            projfolder = os.path.abspath(restart_folder)
+            h5_data_file = os.path.join(projfolder,'allInput.h5')
+            good(h5_data_file)
+            inputAU['outFol'] = projfolder
+            dictionary_data = readWholeH5toDict(h5_data_file)
+            restart_propagation(dictionary_data, inputAU)
+
+        else: # not a restart
+
+            if 'dataFile' in inputAU: # is there a data file?
+                name_data_file = inputAU['dataFile']
+                # LAUNCH THE PROPAGATION, BITCH 
+                if name_data_file[-3:] == 'npy':
+                    data = np.load(name_data_file)
+                    # [()] <- because np.load returns a numpy wrapper on the dictionary
+                    dictionary_data = data[()]
+                    propagate3D(dictionary_data, inputAU)
+                elif name_data_file[-3:] == 'kle':
+                    with open(name_data_file, "rb") as input_file:
+                        dictionary_data = pickle.load(input_file)
+                    propagate3D(dictionary_data, inputAU)
 
 
-        else:
-            # if not, guess you should create it...
-            good('data file creation in progress...')
-            phis, gams, thes = readDirections(inputAU['directions1'],inputAU['directions2'])
+            else: # if not, guess you should create it...
+                good('data file creation in progress...')
+                phis, gams, thes = readDirections(inputAU['directions1'],inputAU['directions2'])
 
-            # read the first one to understand who is the seed of the cube and take numbers
-            phi1, gam1, the1 = readDirectionFile(inputAU['directions1'])
-            #ext = '.corrected.h5'
-            ext = '.refined.h5'
-            prjlab = inputAU['proj_label']
-            first_file = inputAU['proj_label'] + phi1[0] + '_' + gam1[0] + '_' + the1[0] + ext
-            fnh5 = os.path.join(inputAU['inputFol'], first_file)
-            nstates = len(retrieve_hdf5_data(fnh5,'ROOT_ENERGIES'))
-            natoms = len(retrieve_hdf5_data(fnh5,'CENTER_COORDINATES'))
-            lengths = '\nnstates: {}\nnatoms:  {}\nphi:     {}\ngamma:   {}\ntheta:   {}'
-            phiL, gamL, theL = len(phis), len(gams), len(thes)
-            output = lengths.format(nstates, natoms, phiL, gamL, theL)
+                # read the first one to understand who is the seed of the cube and take numbers
+                phi1, gam1, the1 = readDirectionFile(inputAU['directions1'])
+                #ext = '.corrected.h5'
+                ext = '.refined.h5'
+                prjlab = inputAU['proj_label']
+                first_file = inputAU['proj_label'] + phi1[0] + '_' + gam1[0] + '_' + the1[0] + ext
+                fnh5 = os.path.join(inputAU['inputFol'], first_file)
+                nstates = len(retrieve_hdf5_data(fnh5,'ROOT_ENERGIES'))
+                natoms = len(retrieve_hdf5_data(fnh5,'CENTER_COORDINATES'))
+                lengths = '\nnstates: {}\nnatoms:  {}\nphi:     {}\ngamma:   {}\ntheta:   {}'
+                phiL, gamL, theL = len(phis), len(gams), len(thes)
+                output = lengths.format(nstates, natoms, phiL, gamL, theL)
 
-            nacLength = 8
+                nacLength = 8
 
-            # start to allocate the vectors
-            potCUBE = np.empty((phiL, gamL, theL, nacLength))
-            kinCUBE = np.empty((phiL, gamL, theL, 9, 3))
-            dipCUBE = np.empty((phiL, gamL, theL, 3, nacLength, nacLength))
-            geoCUBE = np.empty((phiL, gamL, theL, natoms, 3))
-            nacCUBE = np.empty((phiL, gamL, theL, nacLength, nacLength, natoms, 3))
+                # start to allocate the vectors
+                potCUBE = np.empty((phiL, gamL, theL, nacLength))
+                kinCUBE = np.empty((phiL, gamL, theL, 9, 3))
+                dipCUBE = np.empty((phiL, gamL, theL, 3, nacLength, nacLength))
+                geoCUBE = np.empty((phiL, gamL, theL, natoms, 3))
+                nacCUBE = np.empty((phiL, gamL, theL, nacLength, nacLength, natoms, 3))
 
-            for p, phi in enumerate(phis):
-                for g, gam in enumerate(gams):
-                    for t, the in enumerate(thes):
-                        labelZ = prjlab + phi + '_' + gam + '_' + the + ext
-                        fnh5 = os.path.join(inputAU['inputFol'], labelZ)
-                        if os.path.exists(fnh5):
-                            potCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'ROOT_ENERGIES')[:nacLength]
-                            kinCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'KINETIC_COEFFICIENTS')
-                            dipCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'DIPOLES')
-                            geoCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'CENTER_COORDINATES')
-                            nacCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'NAC')
-                        else:
-                            err('{} does not exist'.format(labelZ))
-                    printProgressBar(p*gamL+g,phiL*gamL,prefix = 'H5 data loaded:')
+                for p, phi in enumerate(phis):
+                    for g, gam in enumerate(gams):
+                        for t, the in enumerate(thes):
+                            labelZ = prjlab + phi + '_' + gam + '_' + the + ext
+                            fnh5 = os.path.join(inputAU['inputFol'], labelZ)
+                            if os.path.exists(fnh5):
+                                potCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'ROOT_ENERGIES')[:nacLength]
+                                kinCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'KINETIC_COEFFICIENTS')
+                                dipCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'DIPOLES')
+                                geoCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'CENTER_COORDINATES')
+                                nacCUBE[p,g,t] = retrieve_hdf5_data(fnh5,'NAC')
+                            else:
+                                err('{} does not exist'.format(labelZ))
+                        printProgressBar(p*gamL+g,phiL*gamL,prefix = 'H5 data loaded:')
 
-            data = {'kinCube' : kinCUBE,
-                    'potCube' : potCUBE,
-                    'dipCUBE' : dipCUBE,
-                    'geoCUBE' : geoCUBE,
-                    'nacCUBE' : nacCUBE,
-                    'phis'    : phis,
-                    'gams'    : gams,
-                    'thes'    : thes
-                    }
-            np.save('data' + filename, data)
-            with open(fn, 'a') as f:
-                stringAdd = 'dataFile : data' + filename + '.npy'
-                f.write(stringAdd)
-            print('\n...done!\n')
+                data = {'kinCube' : kinCUBE,
+                        'potCube' : potCUBE,
+                        'dipCUBE' : dipCUBE,
+                        'geoCUBE' : geoCUBE,
+                        'nacCUBE' : nacCUBE,
+                        'phis'    : phis,
+                        'gams'    : gams,
+                        'thes'    : thes
+                        }
+                np.save('data' + filename, data)
+                with open(fn, 'a') as f:
+                    stringAdd = 'dataFile : data' + filename + '.npy'
+                    f.write(stringAdd)
+                print('\n...done!\n')
 
     else:
         filename, file_extension = os.path.splitext(fn)
