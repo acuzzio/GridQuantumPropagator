@@ -325,10 +325,10 @@ def restart_propagation(inp,inputDict):
     This function restarts a propagation that has been stopped
     '''
     import glob
+
     nameRoot = inputDict['outFol']
     list_wave_h5 = sorted(glob.glob(nameRoot + '/Gaussian*.h5'))
     last_wave_h5 = list_wave_h5[-1]
-    print(len(list_wave_h5))
     wf = retrieve_hdf5_data(last_wave_h5,'WF')
     t = retrieve_hdf5_data(last_wave_h5,'Time')[1] # [1] is atomic units
     kind = inp['kind']
@@ -337,16 +337,27 @@ def restart_propagation(inp,inputDict):
     warning('take care of what COUNTER IS here')
 
     dt = inputDict['dt']
-    fulltime = inp['fullTime']
+    fulltime = inputDict['fullTime']
+
     fulltimeSteps = int(fulltime/dt)
-    print('I will do {} more steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
+    # I need to update field fulltimeSteps or I will not be able to restart twice
+    # h5_data_file = os.path.join(nameRoot,'allInput.h5')
     print('\ntail -f {}\n'.format(outputFileP))
     CEnergy, Cpropagator = select_propagator(kind)
     good('Cpropagator version: {}'.format(version_Cpropagator()))
 
-    for ii in range(fulltimeSteps):
+    ii_initial = counter * deltasGraph
+    print('I will do {} more steps.\n'.format(fulltimeSteps-ii_initial))
+
+    warning('Did you restart this from a finished calculation?')
+    strout = "rm {}\nsed -i '$ d' {}\nsed -i '$ d' {}\n"
+    print(strout.format(last_wave_h5,outputFile,outputFileP))
+    input("Press Enter to continue...")
+
+
+    for ii in range(ii_initial,fulltimeSteps):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             #  async is awesome. But it is not needed in 1d and maybe in 2d.
             if kind == '3D':

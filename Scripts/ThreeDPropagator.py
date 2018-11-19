@@ -122,7 +122,6 @@ def main():
             # read hdf5 input
             projfolder = os.path.abspath(restart_folder)
             h5_data_file = os.path.join(projfolder,'allInput.h5')
-            good(h5_data_file)
             inputAU['outFol'] = projfolder
             dictionary_data = readWholeH5toDict(h5_data_file)
             restart_propagation(dictionary_data, inputAU)

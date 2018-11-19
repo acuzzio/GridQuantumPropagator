@@ -153,7 +153,10 @@ def create_string_input(dictio):
     '''
     # 'theL', 'dphi', 'nacCube', 'nstates', 'pulseZ', 'pulseX', 'kind', 'natoms', 'kinCube', 'outFol', 'dipCube', 'phis', 'fullTime', 'dgam', 'dthe', 'h', 'gams', 'potCube', 'phiL', 'thes', 'gamL', 'pulseY'
     pres_string = 'This is a simulation of kind "{}" done in {} states<br/>dt: {} AU or {} fs<br/><br/>'
-    dtAU = dictio['h']
+    try:
+        dtAU = dictio['h']
+    except KeyError:
+        dtAU = dictio['dt']
     dtfs = qp.fromAuToFs(dtAU)
     pres_stringF = pres_string.format(dictio['kind'],dictio['nstates'],dtAU,dtfs)
     coord_string = '<b> Coordinates:</b>' + info_coord(dictio)
