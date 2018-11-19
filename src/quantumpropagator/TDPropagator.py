@@ -347,7 +347,12 @@ def restart_propagation(inp,inputDict):
         good('Safe restart with same fulltime')
         #h5_data_file = os.path.join(nameRoot,'allInput.h5')
     else:
-        err('different fullTime s are not correctly implemented')
+        h5_data_file = os.path.join(nameRoot,'allInput.h5')
+        dict_all_data = readWholeH5toDict(h5_data_file)
+        dict_all_data['fullTime'] = inputDict['fullTime']
+        writeH5fileDict(h5_data_file, dict_all_data)
+        good('different fullTime detected and allInput updated')
+
 
     print('\ntail -f {}\n'.format(outputFileP))
     CEnergy, Cpropagator = select_propagator(kind)
