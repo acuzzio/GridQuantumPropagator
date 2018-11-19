@@ -342,8 +342,13 @@ def restart_propagation(inp,inputDict):
     fulltimeSteps = int(fulltime/dt)
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
-    # I need to update field fulltimeSteps or I will not be able to restart twice
-    # h5_data_file = os.path.join(nameRoot,'allInput.h5')
+
+    if (inputDict['fullTime'] == inp['fullTime']):
+        good('Safe restart with same fulltime')
+        #h5_data_file = os.path.join(nameRoot,'allInput.h5')
+    else:
+        err('different fullTime s are not correctly implemented')
+
     print('\ntail -f {}\n'.format(outputFileP))
     CEnergy, Cpropagator = select_propagator(kind)
     good('Cpropagator version: {}'.format(version_Cpropagator()))
