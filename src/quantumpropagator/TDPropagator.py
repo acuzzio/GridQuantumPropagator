@@ -9,7 +9,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
          makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu,
-         graphic_Pulse,derivative3dMu,equilibriumIndex)
+         graphic_Pulse,derivative3dMu,equilibriumIndex, readWholeH5toDict)
 from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
                                            Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
                                            Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
@@ -352,7 +352,6 @@ def restart_propagation(inp,inputDict):
         dict_all_data['fullTime'] = inputDict['fullTime']
         writeH5fileDict(h5_data_file, dict_all_data)
         good('different fullTime detected and allInput updated')
-
 
     print('\ntail -f {}\n'.format(outputFileP))
     CEnergy, Cpropagator = select_propagator(kind)
