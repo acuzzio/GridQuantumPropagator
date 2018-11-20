@@ -72,7 +72,7 @@ def template_html():
 
 <body>
 <h1> {{ title }} </h1>
-
+{{ running_string }}
 <h2> General info: </h2>
 {{ info_string  }}
 
@@ -208,6 +208,12 @@ def main():
     # title
     title_Repo = 'Report: {}'.format(project)
 
+    # Status
+    if args.running:
+        running_string = '<font color="green">Running !</font>'
+    else:
+        running_string = 'not running/stopped'
+
     # first graph
     nstates = dictio['nstates']
     fig = plt.figure(figsize=(15,6))
@@ -241,6 +247,7 @@ def main():
     # setting the html
     template_vars = {"title" : title_Repo,
                      "table_output": df2.to_html(),
+                     "running_string": running_string,
                      "info_string": info_string,
                      "popul_figure": popul_figure,
                      "kin_tot_figure": kin_tot_figure,
@@ -272,6 +279,10 @@ def parseCL():
                         dest="browser",
                         action='store_true',
                         help="launches the browser")
+    parser.add_argument("-r", "--running",
+                        dest="running",
+                        action='store_true',
+                        help="tells the report that the calculation is running")
 
     return parser.parse_args()
 

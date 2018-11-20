@@ -334,7 +334,6 @@ def restart_propagation(inp,inputDict):
     kind = inp['kind']
     deltasGraph = inputDict['deltasGraph']
     counter = len(list_wave_h5) - 1
-    warning('take care of what COUNTER IS here')
 
     dt = inputDict['dt']
     fulltime = inputDict['fullTime']
