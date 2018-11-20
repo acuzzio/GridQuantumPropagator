@@ -359,10 +359,13 @@ def restart_propagation(inp,inputDict):
     ii_initial = counter * deltasGraph
     print('I will do {} more steps.\n'.format(fulltimeSteps-ii_initial))
 
-    warning('Did you restart this from a finished calculation?')
-    strout = "rm {}\nsed -i '$ d' {}\nsed -i '$ d' {}\n"
-    print(strout.format(last_wave_h5,outputFile,outputFileP))
-    input("Press Enter to continue...")
+    if True:
+        print('Calculation restart forced on me... I assume you did everything you need')
+    else:
+        warning('Did you restart this from a finished calculation?')
+        strout = "rm {}\nsed -i '$ d' {}\nsed -i '$ d' {}\n"
+        print(strout.format(last_wave_h5,outputFile,outputFileP))
+        input("Press Enter to continue...")
 
 
     for ii in range(ii_initial,fulltimeSteps):
