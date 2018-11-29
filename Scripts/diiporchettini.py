@@ -106,14 +106,16 @@ bpy.ops.object.select_all(action='DESELECT')
 
 #G_E='/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/results/o-newoneWithNACnow_0000/Gaussian00*.h5'
 
+G_Exp = '/home/alessio/Desktop/USETHISINBLENDER_0001/Gaussian*.h5'
 G_Exp = '/home/alessio/m-dynamicshere/results/1_2_nac_0001/Gaussian*.h5'
+G_Exp = '/home/alessio/Desktop/Noise_Or_Not/Gaussian*.h5'
 
 allH5 = sorted(glob.glob(G_Exp))
 
 from quantumpropagator import abs2
 
 for i,fn in enumerate(allH5[:]):
-    for state in range(7):
+    for state in range(1):
         nameMaterial = "Material.{:03d}".format(state+1)
         mat = bpy.data.materials.get(nameMaterial)
     
@@ -124,7 +126,7 @@ for i,fn in enumerate(allH5[:]):
         
         ground = np.swapaxes(ground2,0,2)
         
-        for iso in [0.0001, 0.001, 0.003]:
+        for iso in [0.0000001, 0.00001, 0.0001, 0.001, 0.003]:
         #for iso in [0.01]:
             generateIso(ground,iso,mat,i,state)
 

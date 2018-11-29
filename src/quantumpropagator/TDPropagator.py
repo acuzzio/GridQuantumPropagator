@@ -57,6 +57,7 @@ def propagate3D(dataDict, inputDict):
     # INITIAL WF default values
     if 'factor' in inputDict:
         factor = inputDict['factor']
+        warning('WF widened using factor: {}'.format(factor))
     else:
         factor = 1
 
@@ -367,15 +368,17 @@ def restart_propagation(inp,inputDict):
         print(strout.format(last_wave_h5,outputFile,outputFileP))
         input("Press Enter to continue...")
 
-
+    strOUT = '{} {} {}'.format(ii_initial,counter,fulltimeSteps)
+    good(strOUT)
     for ii in range(ii_initial,fulltimeSteps):
-        if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
-            #  async is awesome. But it is not needed in 1d and maybe in 2d.
-            if kind == '3D':
-                asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
-            else:
-                doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
-            counter += 1
+        #print('ii = {}'.format(ii))
+        if ((ii % deltasGraph) == 0 or ii==fulltimeSteps-1):
+                #  async is awesome. But it is not needed in 1d and maybe in 2d.
+                if kind == '3D':
+                    asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+                else:
+                    doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+                counter += 1
 
         wf = Crk4Ene3d(Cpropagator,t,wf,inp)
         t  = t + dt

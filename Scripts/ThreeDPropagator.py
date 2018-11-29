@@ -148,7 +148,8 @@ def main():
 
                 # read the first one to understand who is the seed of the cube and take numbers
                 phi1, gam1, the1 = readDirectionFile(inputAU['directions1'])
-                #ext = '.corrected.h5'
+                ext = 'all.h5'
+                ext = '.corrected.h5'
                 ext = '.refined.h5'
                 prjlab = inputAU['proj_label']
                 first_file = inputAU['proj_label'] + phi1[0] + '_' + gam1[0] + '_' + the1[0] + ext

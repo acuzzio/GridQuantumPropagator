@@ -72,6 +72,8 @@ def template_html():
 
 <body>
 <h1> {{ title }} </h1>
+{{ folder_string }} <br/>
+report created: {{ date_string }} <br/>
 {{ running_string }}
 <h2> General info: </h2>
 {{ info_string  }}
@@ -152,7 +154,7 @@ def create_string_input(dictio):
     This function transform the all input h5 file into a string of information for the report
     '''
     # 'theL', 'dphi', 'nacCube', 'nstates', 'pulseZ', 'pulseX', 'kind', 'natoms', 'kinCube', 'outFol', 'dipCube', 'phis', 'fullTime', 'dgam', 'dthe', 'h', 'gams', 'potCube', 'phiL', 'thes', 'gamL', 'pulseY'
-    pres_string = 'This is a simulation of kind "{}" done in {} states<br/>dt: {} AU or {} fs<br/><br/>'
+    pres_string = 'This is a simulation of kind "{}" done in {} states<br/>dt: {:.3e} AU or {:.3e} fs<br/><br/>'
     try:
         dtAU = dictio['h']
     except KeyError:
@@ -208,11 +210,18 @@ def main():
     # title
     title_Repo = 'Report: {}'.format(project)
 
+    #date
+    import datetime
+    now = datetime.datetime.now()
+    date_string = now.strftime("%Y-%m-%d %H:%M")
+
+    folder_string = folder
+
     # Status
     if args.running:
-        running_string = '<font color="green">Running !</font>'
+        running_string = 'Status: <font color="green">Simulation still running...</font>'
     else:
-        running_string = 'not running/stopped'
+        running_string = 'Status: This simulation is not running/stopped'
 
     # first graph
     nstates = dictio['nstates']
@@ -247,6 +256,8 @@ def main():
     # setting the html
     template_vars = {"title" : title_Repo,
                      "table_output": df2.to_html(),
+                     "folder_string" : folder_string,
+                     "date_string" : date_string,
                      "running_string": running_string,
                      "info_string": info_string,
                      "popul_figure": popul_figure,

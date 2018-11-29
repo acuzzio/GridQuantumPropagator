@@ -16,7 +16,8 @@ from shutil import copy2
 from quantumpropagator import (retrieve_hdf5_data, writeH5file,
                        npArrayOfFiles, printMatrix2D, createTabellineFromArray,
                        writeH5fileDict, readWholeH5toDict, chunksOf, err, good, warning,
-                       printDict, stringTransformation3d, calc_g_G, readDirectionFile)
+                       printDict, stringTransformation3d, calc_g_G, readDirectionFile,
+                       printProgressBar)
 
 def read_single_arguments(single_inputs):
     '''
@@ -254,11 +255,17 @@ def refineStuffs(folderO,folderE,folderOUTPUT,fn1,fn2):
     flat_range_Gamma = gammas1[::-1]+gammas2[1:]
     flat_range_Theta = (thetas1[::-1]+thetas2[1:])[::-1]
 
+    print('{}\n{}\n{}\n'.format(flat_range_Phi,flat_range_Gamma,flat_range_Theta))
+
     dataToGet = ['DIPOLES', 'NAC']
 
-    for phiLab in flat_range_Phi[:]:
-        for gamLab in flat_range_Gamma[:]:
-            for theLab in flat_range_Theta[:]:
+    phiL = len(flat_range_Phi)
+    gamL = len(flat_range_Gamma)
+
+    debug = False
+    for p, phiLab in enumerate(flat_range_Phi[:]):
+        for g, gamLab in enumerate(flat_range_Gamma[:]):
+            for t, theLab in enumerate(flat_range_Theta[:]):
                 elemT = '{}_{}_{}'.format(phiLab,gamLab,theLab)
                 THIS = '{}_{}.all.h5'.format(rootNameO,elemT)
                 NEXT = '{}_{}.corrected.h5'.format(rootNameE,elemT)
@@ -269,10 +276,15 @@ def refineStuffs(folderO,folderE,folderOUTPUT,fn1,fn2):
 
                 cutStates = 8
 
+                # I want out of diagonal pairs, so the double loop is correct like this,
+                # where 0,0 and 1,1 and 2,2 are not taken and corrected.
                 for i in range(cutStates):
                     for j in range(i):
                         uno = dipolesAllT[0,i,j]
                         due = dipolesAllN[0,i,j]
+                        if debug:
+                            strin = '\np {} g {} t {} i {} j {} 1 {} 2 {}'
+                            print(strin.format(phiLab,gamLab,theLab,i,j,uno,due))
                         if np.sign(uno) == np.sign(due):
                             nacAllN[i,j] = nacAllT[i,j]
                             nacAllN[j,i] = -nacAllT[i,j]
@@ -285,7 +297,7 @@ def refineStuffs(folderO,folderE,folderOUTPUT,fn1,fn2):
                 allValues['DIPOLES'] = dipolesAllN[:,:cutStates,:cutStates]
                 allValues['NAC'] = nacAllN
                 writeH5fileDict(OUTN,allValues)
-
+            printProgressBar(p*gamL+g,gamL*phiL,prefix = 'H5 refined:')
 
 def correctorFromDirection(folderO,folderE,fn1,fn2):
     '''
@@ -478,8 +490,9 @@ def main():
     '''
     from a grid frolder to a folder ready to be propagated
     '''
-    fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions1'
-    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/directions2'
+    fold = '/home/alessio/Desktop/NAC_CORRECTION_NOVEMBER2018'
+    fn1 = os.path.join(fold, 'directions1')
+    fn2 = os.path.join(fold, 'directions2')
     warning('still an hardcoded direction file')
     o_inputs = single_inputs("","","","",1)
     inp = read_single_arguments(o_inputs)
@@ -496,7 +509,7 @@ def main():
         print(results)
     elif inp.refine != "":
         # here the code for the refining thing. big stuff...
-        #print(inp.refine[0],inp.refine[1],fn1,fn2)
+        print(inp.refine[0],inp.refine[1],fn1,fn2)
         refineStuffs(inp.refine[0],inp.refine[1],inp.refine[2],fn1,fn2)
     else:
         correctorFromDirection(inp.direction[0],inp.direction[1],fn1,fn2)

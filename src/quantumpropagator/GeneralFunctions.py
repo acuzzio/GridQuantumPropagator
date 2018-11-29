@@ -768,8 +768,8 @@ def transformTrajectoryIntoBlenderData(name,traj):
 
 
 if __name__ == "__main__":
-    fn   = '/home/alessio/Desktop/Dropbox/sharedWithPPl/Acu-Elisa/soloRET/b.xyz'
-    name = '/home/alessio/Desktop/Dropbox/sharedWithPPl/Acu-Elisa/soloRET/b.p'
+    fn   = '/home/alessio/Desktop/lol.xyz'
+    name = '/home/alessio/Desktop/lol.p'
     a = readTrajectory(fn)
     transformTrajectoryIntoBlenderData(name,a)
     #from time import sleep
