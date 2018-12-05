@@ -75,11 +75,12 @@ def template_html():
 {{ folder_string }} <br/>
 report created: {{ date_string }} <br/>
 {{ running_string }}
+<h2> Populations </h2>
+{{ popul_figure }}
 <h2> General info: </h2>
 {{ info_string  }}
 
-<h2> Population, norm and energies </h2>
-{{ popul_figure }}
+<h2> Norm and energies </h2>
 {{ norm_figure }}
 {{ kin_tot_figure }}
 
@@ -205,7 +206,6 @@ def main():
     data.columns = ['count','steps','fs','Norm Deviation','Kinetic','Potential','Total','Total deviation','Xpulse','Ypulse','Zpulse']
     result = pd.concat([data, dataP], axis=1);
 
-    df2 = pd.DataFrame(result)
 
     # title
     title_Repo = 'Report: {}'.format(project)
@@ -230,9 +230,20 @@ def main():
     ax2 = ax1.twinx()
     ax1.set_ylabel('Population')
     ax2.set_ylabel('Pulse')
-    popul = np.arange(nstates)+1
-    result.plot(title = 'Population and Pulse', ax = ax1,  x=['fs'], y=popul, linewidth=0.8)
-    result.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False);
+
+    rename_dict = {}
+    for i in range(nstates):
+        rename_dict[i+1] = r"$S_{}$".format(i)
+
+    popul = [rename_dict[i+1] for i in range(nstates)]
+
+    result2 = result.rename(index=str, columns=rename_dict)
+
+
+    colors = ['b', 'g', 'r', 'm', 'c', 'y', 'mediumpurple', 'k']
+
+    result2.plot(title = 'Population and Pulse', ax = ax1,  x=['fs'], y=popul, linewidth=0.8, color = colors)
+    result2.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False);
 
     popul_figure = fig_to_html(fig)
 
@@ -252,6 +263,8 @@ def main():
     data.plot(title = 'Comparison Potential Total Kinetic', ax=ax1, x=['fs'] ,y=['Kinetic_Moved','Potential','Total'], figsize=(15,5))
 
     kin_tot_figure = fig_to_html(fig3)
+
+    df2 = pd.DataFrame(result)
 
     # setting the html
     template_vars = {"title" : title_Repo,
