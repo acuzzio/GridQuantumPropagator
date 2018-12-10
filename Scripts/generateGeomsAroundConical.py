@@ -16,7 +16,8 @@ def read_single_arguments(single_inputs):
     '''
      This funcion reads the command line arguments
     '''
-    parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+    d = "Create the goemetry scan and the circle graphic."
+    parser = ArgumentParser(formatter_class=RawTextHelpFormatter, description=d)
     parser.add_argument("-v", "--vectors",
                         dest="v",
                         nargs='+',
@@ -41,7 +42,8 @@ geometries (given by globalexpression) and branching plane vectors")
     parser.add_argument("-g", "--globalPattern",
                         dest="g",
                         type=str,
-                        help="it is the global pattern of rasscf h5 files")
+                        help="it is the global pattern of output rasscf h5 files\n"
+                        "to create the gnuplot graphic")
 
 
     args = parser.parse_args()
@@ -185,6 +187,17 @@ def graphScan(globalExp):
 #    print(bigArray1,bigArray2)
 #    mathematicaListGenerator(bigArray1,bigArray2,bigArrayE)
     gnuSplotCircle(bigArray1,bigArray2,bigArrayE)
+
+def bashcommand(output_fn):
+    '''
+    If I have time, this function withh take out vectors from log molcas file
+    output_fn :: String <- the file molcas output
+    '''
+    bashCommand = "ls"
+    import subprocess
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    return(output)
 
 def transformString(string):
     [ring,angle] = string.split('Scan')[1].split('.')[0].split('_')

@@ -77,6 +77,8 @@ report created: {{ date_string }} <br/>
 {{ running_string }}
 <h2> Populations </h2>
 {{ popul_figure }}
+<h2> Comments </h2>
+{{ readme_string }}
 <h2> General info: </h2>
 {{ info_string  }}
 
@@ -197,6 +199,14 @@ def main():
     allout = os.path.join(folder,'allInput.h5')
     outfn = os.path.join(folder,'output')
     outfnP = os.path.join(folder,'outputPopul')
+    readme_file = os.path.join(folder,'README')
+
+    if os.path.isfile(readme_file):
+        with open(readme_file,'r') as w:
+            readme_content = w.read()
+        readme_string = readme_content.replace('\n', '<br />')
+    else:
+        readme_string = 'No comments found in this folder'
 
     dictio = qp.readWholeH5toDict(allout)
     info_string = create_string_input(dictio)
@@ -275,6 +285,7 @@ def main():
                      "info_string": info_string,
                      "popul_figure": popul_figure,
                      "kin_tot_figure": kin_tot_figure,
+                     "readme_string" : readme_string,
                      "style_string": style_string,
                      "norm_figure": norm_figure}
 

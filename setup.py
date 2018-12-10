@@ -23,7 +23,6 @@ setup(
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
     scripts=['Scripts/SinglePointPropagatorLauncher.py',
-     'Scripts/OxiallylDensityWriter.py', 'Scripts/ReadCube.py',
      'Scripts/multiGraphEneDipole.py',
      'Scripts/2dmultiGraphEneDipole.py',
      'Scripts/3dmultiGraphEneDipole.py',

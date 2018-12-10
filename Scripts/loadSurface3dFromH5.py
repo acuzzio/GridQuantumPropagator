@@ -1,6 +1,27 @@
+import sys
+
+appen = ['/home/alessio/config/miniconda/envs/quantumpropagator/bin',
+ '/home/alessio/config/miniconda/envs/quantumpropagator/lib/python35.zip',
+ '/home/alessio/config/miniconda/envs/quantumpropagator/lib/python3.5',
+ '/home/alessio/config/miniconda/envs/quantumpropagator/lib/python3.5/plat-linux',
+ '/home/alessio/config/miniconda/envs/quantumpropagator/lib/python3.5/lib-dynload',
+ '/home/alessio/.local/lib/python3.5/site-packages',
+ '/home/alessio/config/miniconda/envs/quantumpropagator/lib/python3.5/site-packages',
+ '/home/alessio/Desktop/git/GridQuantumPropagator/src',
+ '/home/alessio/config/miniconda/envs/quantumpropagator/lib/python3.5/site-packages/IPython/extensions',
+ '/home/alessio/.ipython']
+
+check = '/home/alessio/Desktop/git/GridQuantumPropagator/src'
+
+if check not in sys.path:
+    for modumodu in appen:
+        sys.path.append(modumodu)
+
 import numpy as np
 import bpy
 import re
+import pickle
+from quantumpropagator import fromLabelsToFloats, labTranformA
 
 scn = bpy.context.scene
 
@@ -68,45 +89,22 @@ def setMaterial(ob, mat):
     me = ob.data
     me.materials.append(mat)
 
-##winl = 'C:\\Users\\Alessio\\Desktop\\Dropbox\\Blender\\SurfaceLoader\\'
 
-#a = np.loadtxt('1.txt')
-#b = np.loadtxt('2.txt')
-#c = np.loadtxt('3.txt')
-#a = np.fromfile(winl + 'fullA.txt')
-#b = np.fromfile(winl + 'fullB.txt')
-#c = np.fromfile(winl + 'fullC.txt')
+scaleZ = 1
+scaleX = 1
 
-a = np.fromfile('fullA.txt')
-b = np.fromfile('fullB.txt')
-c = np.fromfile('fullC.txt')
-#d = np.fromfile('fullE.txt')
-d = np.fromfile('fullD_x_0.txt')
-e = np.fromfile('/home/alessio/Desktop/a-3dScanSashaSupport/o-FinerProjectWithNAC/NOT_corrected/fullD_x_0.txt')
+name_data_file = '/home/alessio/n-Propagation/newExtrapolated_gammaExtrExag.pickle'
+with open(name_data_file, "rb") as input_file:
+    dictionary_data = pickle.load(input_file)
 
-nstates = 8
+# a = phi   b = gamma   c = theta
 
-ax1N = a.size
-ax2N = b.size
-ax3N = c.size
+phis_ext = labTranformA(dictionary_data['phis'])
+gams_ext = labTranformA(dictionary_data['gams'])
+thes_ext = labTranformA(dictionary_data['thes'])
 
+a,b,c = fromLabelsToFloats(dictionary_data)
 
-
-d = d.reshape((ax1N,ax2N,ax3N,nstates))
-nstates = 14
-e = e.reshape((ax1N,ax2N,ax3N,nstates))
-
-nstates = 8
-
-f = np.concatenate((d,e[:,:,:,:8]),axis=0)
-fmin = np.min(f)
-f = f - (fmin)
-ax1N = ax1N*2-2
-
-
-
-dmin = np.min(d)
-d = d - (dmin)
 amin = np.min(a)
 a = a - amin
 bmin = np.min(b)
@@ -114,11 +112,13 @@ b = b - bmin
 cmin = np.min(c)
 c = c - cmin
 
+f = dictionary_data['potCube']
+ax1N,ax2N,ax3N,nstates = f.shape
 
-scaleZ = 30
-scaleX = 5
+fmin = np.min(f)
+f = f - (fmin)
 
-
+print(f,f.shape)
 bpy.context.scene.frame_end = ax1N-1
 bpy.context.scene.frame_start = 0
 
@@ -131,7 +131,7 @@ for state in range(8):
   for m in range(1):
       for j in range(ax2N):
           for k in range(ax3N):
-               value = d[m,j,k,state]*scaleZ
+               value = f[m,j,k,state]*scaleZ
                verts.append((b[j]*scaleX,c[k], value))
                #print((b[j],c[k], value))
                if (j != 0 and k != 0):
@@ -156,7 +156,8 @@ for state in range(8):
       profile_object.select = True
 
 
-for ff in range(ax1N):
+for ff in range(ax1N):    
+#for ff in range(2):
     for i in bpy.context.scene.objects:
         nameMesh = i.name
         print(nameMesh,len(i.data.vertices))
@@ -172,8 +173,11 @@ for ff in range(ax1N):
             g += 1
 
 
-colorsName = ['Red','Blue','Green','White','Grey','Yellow','Pink','Celest','grey2','grey3']
-colorsId   = [(1,0,0),(0,0,1),(0,1,0),(1,1,1),(0.5,0.5,0.5),(1,1,0),(1,0,1),(0,1,1),(0.25,0.25,0.25),(0.75,0.75,0.75)]
+#colorsName = ['Red','Blue','Green','White','Grey','Yellow','Pink','Celest','grey2','grey3']
+#colorsId   = [(1,0,0),(0,0,1),(0,1,0),(1,1,1),(0.5,0.5,0.5),(1,1,0),(1,0,1),(0,1,1),(0.25,0.25,0.25),(0.75,0.75,0.75)]
+
+colorsName = ['Blue','Green','Red','Pink1','Cyan','Yellow','Violet','Grey']
+colorsId   = [(0,0,1),(0,1,0),(1,0,0),(1,0,0.5),(0,1,1),(1,1,0),(0.3,0,1),(0.15,0.15,0.15)]
 
 #create_cycleMaterial('Black',(0,0,0))
 
@@ -187,6 +191,7 @@ for i in bpy.context.scene.objects:
     bpy.ops.object.modifier_add(type='WIREFRAME')
     bpy.context.object.modifiers["Wireframe"].material_offset = 1
     bpy.context.object.modifiers["Wireframe"].use_replace = False
+    bpy.context.object.modifiers["Wireframe"].thickness = 0.0001
     cou += 1
 
 print(ax1N,ax2N,ax3N)
