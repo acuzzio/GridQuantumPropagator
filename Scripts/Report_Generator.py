@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def style_css():
     '''
-    return style
+    return style, it is mainly the format of the tables
     '''
     return '''
 table.dataframe {
@@ -79,6 +79,8 @@ report created: {{ date_string }} <br/>
 {{ popul_figure }}
 <h2> Comments </h2>
 {{ readme_string }}
+<h2> Regions: </h2>
+{{ regions_info }}
 <h2> General info: </h2>
 {{ info_string  }}
 
@@ -257,6 +259,51 @@ def main():
 
     popul_figure = fig_to_html(fig)
 
+    # regions graph
+    regions_file = '/home/alessio/n-Propagation/regions.pickle'
+
+    if os.path.isfile(regions_file):
+        import pickle
+        filesList = [ fn for fn in sorted(os.listdir(folder)) if fn[:8] == 'Gaussian' and fn[-3:] == '.h5']
+        zeroWF = qp.retrieve_hdf5_data(os.path.join(folder,filesList[0]),'WF')
+        phiL,gamL,theL,nstates = (qp.retrieve_hdf5_data(os.path.join(folder,filesList[0]),'WF')).shape
+        filesN = len(filesList)
+        allwf = np.empty((filesN,phiL,gamL,theL,nstates),dtype=complex)
+        alltime = np.empty((filesN))
+        for i,fn in enumerate(filesList):
+            fnn = os.path.join(folder,fn)
+            allwf[i] = qp.retrieve_hdf5_data(fnn,'WF')
+            alltime[i] = qp.retrieve_hdf5_data(fnn,'Time')[0]
+        with open(regions_file, "rb") as input_file:
+            cubess = pickle.load(input_file)
+
+        fig_regions = plt.figure(figsize=(15,6))
+        regionsN = len(cubess)
+
+        regions_vector = np.empty((filesN,regionsN))
+        fs_vector = np.empty(filesN)
+
+        labels_region = []
+        for r in range(regionsN):
+            labels_region.append(cubess[r]['label'])
+            for f in range(filesN):
+                if r == 0: # to do this once and not n_region times
+                    time = alltime[f]
+                    fs_vector[f] = time
+
+                uno = allwf[f,:,:,:,0] # Ground state
+                due = cubess[r]['cube'] # yeah, because of time
+                value = np.linalg.norm(uno*due)
+                regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
+
+        dataf_regions = pd.DataFrame(regions_vector, columns=labels_region)
+        dataf_regions['fs'] = fs_vector
+        dataf_regions.plot(title = 'S0 in different regions',x=['fs']);
+        regions_info = fig_to_html(fig_regions)
+
+    else:
+        regions_info = '<font color="red"> WARNING, file regions not found</font>'
+
     # second figure
     fig2 = plt.figure(figsize=(15,4))
     ax1 = fig2.add_subplot(111)
@@ -282,6 +329,7 @@ def main():
                      "folder_string" : folder_string,
                      "date_string" : date_string,
                      "running_string": running_string,
+                     "regions_info" : regions_info,
                      "info_string": info_string,
                      "popul_figure": popul_figure,
                      "kin_tot_figure": kin_tot_figure,
