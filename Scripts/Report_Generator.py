@@ -265,44 +265,48 @@ def main():
     if os.path.isfile(regions_file):
         import pickle
         filesList = [ fn for fn in sorted(os.listdir(folder)) if fn[:8] == 'Gaussian' and fn[-3:] == '.h5']
-        zeroWF = qp.retrieve_hdf5_data(os.path.join(folder,filesList[0]),'WF')
-        phiL,gamL,theL,nstates = (qp.retrieve_hdf5_data(os.path.join(folder,filesList[0]),'WF')).shape
-        filesN = len(filesList)
-        allwf = np.empty((filesN,phiL,gamL,theL,nstates),dtype=complex)
-        alltime = np.empty((filesN))
-        for i,fn in enumerate(filesList):
-            fnn = os.path.join(folder,fn)
-            allwf[i] = qp.retrieve_hdf5_data(fnn,'WF')
-            alltime[i] = qp.retrieve_hdf5_data(fnn,'Time')[0]
-        with open(regions_file, "rb") as input_file:
-            cubess = pickle.load(input_file)
+        if filesList != []:
+            zeroWF = qp.retrieve_hdf5_data(os.path.join(folder,filesList[0]),'WF')
+            phiL,gamL,theL,nstates = (qp.retrieve_hdf5_data(os.path.join(folder,filesList[0]),'WF')).shape
+            filesN = len(filesList)
+            allwf = np.empty((filesN,phiL,gamL,theL,nstates),dtype=complex)
+            alltime = np.empty((filesN))
+            for i,fn in enumerate(filesList):
+                fnn = os.path.join(folder,fn)
+                allwf[i] = qp.retrieve_hdf5_data(fnn,'WF')
+                alltime[i] = qp.retrieve_hdf5_data(fnn,'Time')[0]
+            with open(regions_file, "rb") as input_file:
+                cubess = pickle.load(input_file)
 
-        fig_regions = plt.figure(figsize=(15,6))
-        regionsN = len(cubess)
+            regionsN = len(cubess)
 
-        regions_vector = np.empty((filesN,regionsN))
-        fs_vector = np.empty(filesN)
+            regions_vector = np.empty((filesN,regionsN))
+            fs_vector = np.empty(filesN)
 
-        labels_region = []
-        for r in range(regionsN):
-            labels_region.append(cubess[r]['label'])
-            for f in range(filesN):
-                if r == 0: # to do this once and not n_region times
-                    time = alltime[f]
-                    fs_vector[f] = time
+            labels_region = []
+            for r in range(regionsN):
+                labels_region.append(cubess[r]['label'])
+                for f in range(filesN):
+                    if r == 0: # to do this once and not n_region times
+                        time = alltime[f]
+                        fs_vector[f] = time
 
-                uno = allwf[f,:,:,:,0] # Ground state
-                due = cubess[r]['cube'] # yeah, because of time
-                value = np.linalg.norm(uno*due)
-                regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
+                    uno = allwf[f,:,:,:,0] # Ground state
+                    due = cubess[r]['cube']
+                    value = np.linalg.norm(uno*due)
+                    regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
 
-        dataf_regions = pd.DataFrame(regions_vector, columns=labels_region)
-        dataf_regions['fs'] = fs_vector
-        dataf_regions.plot(title = 'S0 in different regions',x=['fs']);
-        regions_info = fig_to_html(fig_regions)
+            fig_regions = plt.figure(figsize=(15,6))
+            ax_regions = fig_regions.add_subplot(111)
+            dataf_regions = pd.DataFrame(regions_vector, columns=labels_region)
+            dataf_regions['fs'] = fs_vector
+            dataf_regions.plot(title = 'S0 in different regions', ax=ax_regions, x=['fs']);
+            regions_info = fig_to_html(fig_regions)
+        else:
+            regions_info = '<font color="red"> WARNING</font> wavefunction files not found, impossible to extract regions info.'
 
     else:
-        regions_info = '<font color="red"> WARNING, file regions not found</font>'
+        regions_info = '<font color="red"> WARNING, file regions not found. Use the jupyter notebook to create one.</font>'
 
     # second figure
     fig2 = plt.figure(figsize=(15,4))
@@ -315,7 +319,7 @@ def main():
     # third figure
     fig3 = plt.figure(figsize=(15,4))
     ax1 = fig3.add_subplot(111)
-    ax1.set_ylabel('Hartree')
+    ax1.set_ylabel('Ev')
     data['Kinetic_Moved'] = data['Kinetic'] + data['Potential'][0]
     data.plot(title = 'Comparison Potential Total Kinetic', ax=ax1, x=['fs'] ,y=['Kinetic_Moved','Potential','Total'], figsize=(15,5))
 
@@ -346,6 +350,12 @@ def main():
 
     print('\nFile {} written.\n'.format(filename))
 
+    if args.data:
+        filename_popu = 'Report_{}_populations.csv'.format(project)
+        filename_region = 'Report_{}_regions.csv'.format(project)
+        df2.to_csv(filename_popu)
+        dataf_regions.to_csv(filename_region)
+
     # open the browser or not
     if args.browser:
         webbrowser.open(filename)
@@ -366,6 +376,10 @@ def parseCL():
                         dest="running",
                         action='store_true',
                         help="tells the report that the calculation is running")
+    parser.add_argument("-d", "--data-raw",
+                        dest="data",
+                        action='store_true',
+                        help="creates a csv raw file alongside the html")
 
     return parser.parse_args()
 
