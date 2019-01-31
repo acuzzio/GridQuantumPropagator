@@ -9,7 +9,7 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          makeJustAnother2DgraphComplexALLS, derivative2dGamThe, retrieve_hdf5_data,
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
          makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu,
-         graphic_Pulse,derivative3dMu,equilibriumIndex, readWholeH5toDict)
+         graphic_Pulse,derivative3dMu,equilibriumIndex, readWholeH5toDict, err)
 from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
                                            Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
                                            Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
@@ -266,6 +266,15 @@ def propagate3D(dataDict, inputDict):
         print('File -> {}'.format(wffn))
         wf_not_norm = retrieve_hdf5_data(wffn,'WF')
         wf = wf_not_norm/np.linalg.norm(wf_not_norm)
+
+    if 'absorb' in inputDict:
+        good('ABSORBING POTENTIAL is taken from file')
+        file_absorb = inputDict['absorb']
+        print('{}'.format(file_absorb))
+        inp['absorb'] = retrieve_hdf5_data(file_absorb,'absorb')
+    else:
+        good('NO ABSORBING POTENTIAL')
+        inp['absorb'] = np.zeros_like(inp['potCube'])
 
     #############################
     # PROPAGATOR SELECTION HERE #

@@ -16,7 +16,7 @@ cdef extern from "complex.h":
 
 
 def version_Cpropagator():
-    return('0.0.0010')
+    return('0.0.0011')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -71,8 +71,9 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         int s,p,g,t,phiL=inp['phiL'],gamL=inp['gamL'],theL=inp['theL'],nstates=inp['nstates']
         int d,carte,tuPlL,s_p
         int [:,:] tuPl
-        double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe'],V
+        double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe'],V,Ab
         double [:,:,:,:] Vm = inp['potCube']
+        double [:,:,:,:] absorb = inp['absorb']
         double [:,:,:,:,:] Km = inp['kinCube']
         double [:,:,:,:,:,:] Dm = inp['dipCube']
         double [:,:,:,:,:,:] Nm = inp['nacCube']
@@ -87,7 +88,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double complex d2G_dgt_numerator_cross_1,d2G_dgt_numerator_cross_2,d2G_dgt_numerator
         double complex d2G_dpg,d2G_dpt,d2G_dgt,d2G_dgp,d2G_dtp,d2G_dtg
         double complex Tpp,Tpg,Tpt,Tgp,Tgg,Tgt,Ttp,Ttg,Ttt
-        double complex Ttot,Vtot,Mtot,Ntot
+        double complex Ttot,Vtot,Mtot,Ntot,Atot
 
     new = np.empty_like(GRID)
     kinS = np.empty_like(GRID)
@@ -117,6 +118,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                for t in range(theL):
                    G = GRID[p,g,t,s]
                    V = Vm[p,g,t,s]
+                   Ab = absorb[p,g,t,s]
 
                    # derivatives in phi
                    if p == 0:
@@ -254,6 +256,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
 
                    Ttot = (Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt)
                    Vtot = V * G
+                   Atot = Ab * G * 1j
 
                    # loop and sum on other states.
                    Mtot = 0
@@ -347,7 +350,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                        Ntot = Ntot - (dG_dp_oth + dG_dg_oth + dG_dt_oth)
 
                    if selector == 1:
-                       new[p,g,t,s] = I * (Ttot+Vtot+Mtot+Ntot)
+                       new[p,g,t,s] = I * (Ttot+Vtot+Atot+Mtot+Ntot)
                    else:
                        kinS[p,g,t,s] = Ttot + Ntot
                        potS[p,g,t,s] = Vtot

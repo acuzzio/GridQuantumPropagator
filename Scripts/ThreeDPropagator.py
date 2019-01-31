@@ -78,6 +78,7 @@ directions2 : /home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/direction
 # init_mom : (0,0,0) # to give initial momentum
 # kind : Phi  # 3D The Gam TheGam
 # multiply_nac : just to multiply/take them out
+# absorb : /path/to/abs_cube.h5
 
 '''
 
