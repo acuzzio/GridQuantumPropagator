@@ -156,6 +156,19 @@ def propagate3D(dataDict, inputDict):
     inp['outFol'] = nameRoot
     numStates = inputDict['states']
 
+    ###################
+    # Absorbing Thing #
+    ###################
+
+    if 'absorb' in inputDict:
+        good('ABSORBING POTENTIAL is taken from file')
+        file_absorb = inputDict['absorb']
+        print('{}'.format(file_absorb))
+        inp['absorb'] = retrieve_hdf5_data(file_absorb,'absorb')
+    else:
+        good('NO ABSORBING POTENTIAL')
+        inp['absorb'] = np.zeros_like(inp['potCube'])
+
 
     ################
     # slice states #
@@ -217,6 +230,7 @@ def propagate3D(dataDict, inputDict):
             warning('Gam is {}, NOT EQUILIBRIUM'.format(gsm_gam_ind))
 
         inp['potCube'] = inp['potCube'][gsm_phi_ind,gsm_gam_ind,:,:numStates]
+        inp['absorb']  = inp['absorb'][gsm_phi_ind,gsm_gam_ind,:,:numStates]
         inp['kinCube'] = inp['kinCube'][gsm_phi_ind,gsm_gam_ind,:]
         inp['dipCube'] = inp['dipCube'][gsm_phi_ind,gsm_gam_ind,:,:,:numStates,:numStates]
         inp['nacCube'] = inp['nacCube'][gsm_phi_ind,gsm_gam_ind,:,:numStates,:numStates,:]
@@ -266,15 +280,6 @@ def propagate3D(dataDict, inputDict):
         print('File -> {}'.format(wffn))
         wf_not_norm = retrieve_hdf5_data(wffn,'WF')
         wf = wf_not_norm/np.linalg.norm(wf_not_norm)
-
-    if 'absorb' in inputDict:
-        good('ABSORBING POTENTIAL is taken from file')
-        file_absorb = inputDict['absorb']
-        print('{}'.format(file_absorb))
-        inp['absorb'] = retrieve_hdf5_data(file_absorb,'absorb')
-    else:
-        good('NO ABSORBING POTENTIAL')
-        inp['absorb'] = np.zeros_like(inp['potCube'])
 
     #############################
     # PROPAGATOR SELECTION HERE #

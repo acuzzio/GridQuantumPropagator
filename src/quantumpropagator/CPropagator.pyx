@@ -16,7 +16,7 @@ cdef extern from "complex.h":
 
 
 def version_Cpropagator():
-    return('0.0.0011')
+    return('0.0.0013')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -256,7 +256,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
 
                    Ttot = (Tpp + Tpg + Tpt + Tgp + Tgg + Tgt + Ttp + Ttg + Ttt)
                    Vtot = V * G
-                   Atot = Ab * G * 1j
+                   Atot = - Ab * G * 1j
 
                    # loop and sum on other states.
                    Mtot = 0
@@ -350,7 +350,8 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                        Ntot = Ntot - (dG_dp_oth + dG_dg_oth + dG_dt_oth)
 
                    if selector == 1:
-                       new[p,g,t,s] = I * (Ttot+Vtot+Atot+Mtot+Ntot)
+                       #new[p,g,t,s] = I * (Ttot + Vtot + Mtot + Ntot)
+                       new[p,g,t,s] = I * (Ttot + Vtot + Atot + Mtot + Ntot)
                    else:
                        kinS[p,g,t,s] = Ttot + Ntot
                        potS[p,g,t,s] = Vtot
@@ -734,8 +735,9 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
     cdef:
         int s,t,theL=inp['theL'],nstates=inp['nstates']
         int d,carte
-        double dthe=inp['dthe'],V
+        double dthe=inp['dthe'],V,Ab
         double [:,:] Vm = inp['potCube']
+        double [:,:] absorb = inp['absorb']
         double [:,:,:] Km = inp['kinCube']
         double [:,:,:,:] Dm = inp['dipCube']
         double [:,:,:,:] Nm = inp['nacCube']
@@ -744,7 +746,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
         double complex I = -1j
         double complex dG_dt, d2G_dt2, G, dG_dt_oth
         double complex Ttt
-        double complex Ttot,Vtot,Mtot,Ntot
+        double complex Ttot,Vtot,Mtot,Ntot,Atot
 
     new = np.empty_like(GRID)
     kinS = np.empty_like(GRID)
@@ -761,6 +763,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
         for t in range(theL):
             G = GRID[t,s]
             V = Vm[t,s]
+            Ab = absorb[t,s]
 
             # derivatives in theta
             if t == 0:
@@ -790,6 +793,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
 
             Ttot = Ttt
             Vtot = V * G
+            Atot = - Ab * G * 1j
 
             # loop and sum on other states.
             Mtot = 0
@@ -839,7 +843,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
                 #    print(((-2.0/3)*Nm[t-1,s,d,2])/dthe)
             #print(Ntot)
             if selector == 1:
-                new[t,s] = I * (Ttot+Vtot+Mtot+Ntot)
+                new[t,s] = I * (Ttot + Vtot + Mtot + Ntot + Atot)
             else:
                 kinS[t,s] = Ttot + Ntot
                 potS[t,s] = Vtot
