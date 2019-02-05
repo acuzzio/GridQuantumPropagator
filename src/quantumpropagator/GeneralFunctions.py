@@ -14,6 +14,12 @@ import pickle
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def find_numpy_index_minumum(array):
+    '''
+    I always forget this syntax. Given a numpy array, will give back the indexes of the minimum
+    array :: numpy array
+    '''
+    return (np.unravel_index(array.argmin(), array.shape))
 
 def equilibriumIndex(fn,dataDict):
     '''

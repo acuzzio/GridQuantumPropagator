@@ -222,7 +222,7 @@ def propagate3D(dataDict, inputDict):
         wf = wf / norm_wf
     elif kind == 'The':
 
-        sposta = True
+        sposta = False
         if sposta:
             gsm_phi_ind = 20
             gsm_gam_ind = 20
@@ -492,9 +492,15 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     good('Initial condition printing')
 
     # Take equilibrium points
-    gsm_phi_ind = dataDict['phis'].index('P000-000')
-    gsm_gam_ind = dataDict['gams'].index('P016-923')
-    gsm_the_ind = dataDict['thes'].index('P114-804')
+    #gsm_phi_ind = dataDict['phis'].index('P000-000')
+    #gsm_gam_ind = dataDict['gams'].index('P016-923')
+    #gsm_the_ind = dataDict['thes'].index('P114-804')
+
+    gsm_phi_ind = 29
+    gsm_gam_ind = 28
+    gsm_the_ind = 55
+
+    warning('Equilibrium points put by hand: {} {} {}'.format(gsm_phi_ind,gsm_gam_ind,gsm_the_ind))
 
     # Take values array from labels
     phis,gams,thes = fromLabelsToFloats(dataDict)
