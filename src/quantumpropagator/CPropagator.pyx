@@ -78,7 +78,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double [:,:,:,:,:,:] Dm = inp['dipCube']
         double [:,:,:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
-        double complex [:,:,:,:] new, kinS, potS, pulS
+        double complex [:,:,:,:] new, kinS, potS, pulS, absS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
         double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
@@ -94,6 +94,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
     kinS = np.empty_like(GRID)
     potS = np.empty_like(GRID)
     pulS = np.empty_like(GRID)
+    absS = np.empty_like(GRID)
 
     pulseV = np.empty((3))
 
@@ -356,10 +357,12 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
                        kinS[p,g,t,s] = Ttot + Ntot
                        potS[p,g,t,s] = Vtot
                        pulS[p,g,t,s] = Mtot
+                       absS[p,g,t,s] = Atot
+
     if selector == 1:
         return(new)
     else:
-        return(kinS,potS,pulS)
+        return(kinS,potS,pulS,absS)
 
 
 #########################
@@ -742,7 +745,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
         double [:,:,:,:] Dm = inp['dipCube']
         double [:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
-        double complex [:,:] new, kinS, potS, pulS
+        double complex [:,:] new, kinS, potS, pulS, absS
         double complex I = -1j
         double complex dG_dt, d2G_dt2, G, dG_dt_oth
         double complex Ttt
@@ -752,6 +755,7 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
     kinS = np.empty_like(GRID)
     potS = np.empty_like(GRID)
     pulS = np.empty_like(GRID)
+    absS = np.empty_like(GRID)
 
     pulseV = np.empty((3))
 
@@ -848,9 +852,10 @@ cdef Cderivative1D_The_Mu(double time, double complex [:,:] GRID,dict inp, int s
                 kinS[t,s] = Ttot + Ntot
                 potS[t,s] = Vtot
                 pulS[t,s] = Mtot
+                absS[t,s] = Atot
 
     if selector == 1:
         return(new)
     else:
-        return(kinS,potS,pulS)
+        return(kinS,potS,pulS,absS)
 

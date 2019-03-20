@@ -177,8 +177,8 @@ def propagate3D(dataDict, inputDict):
     kind = inp['kind']
 
     # Take equilibrium points from directionFile
-    #warning('This is a bad equilibriumfinder')
-    #gsm_phi_ind, gsm_gam_ind, gsm_the_ind = equilibriumIndex(inputDict['directions1'],dataDict)
+    # warning('This is a bad equilibriumfinder')
+    # gsm_phi_ind, gsm_gam_ind, gsm_the_ind = equilibriumIndex(inputDict['directions1'],dataDict)
     gsm_phi_ind, gsm_gam_ind, gsm_the_ind = (29,28,55)
     warning('You inserted equilibrium points by hand: {} {} {}'.format(gsm_phi_ind, gsm_gam_ind, gsm_the_ind))
 
@@ -301,7 +301,7 @@ def propagate3D(dataDict, inputDict):
     print('\ntail -f {}\n'.format(outputFileP))
 
     # calculating initial total/potential/kinetic
-    kin, pot, pul = CEnergy(t,wf,inp)
+    kin, pot, pul, absS = CEnergy(t,wf,inp)
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     pulse_interaction = np.vdot(wf,pul)
@@ -319,7 +319,7 @@ def propagate3D(dataDict, inputDict):
     writeH5fileDict(dataH5filename,inp)
 
     # print top of table
-    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   | Pulse_Inter. |  Pulse X   |  Pulse Y   |  Pulse Z   |'
+    header = ' Coun |  step N   |       fs   |  NORM devia.  | Kin. Energy  | Pot. Energy  | Total Energy | Tot devia.   | Pulse_Inter. |  Pulse X   |  Pulse Y   |  Pulse Z   |  Norm Loss |'
     bar = ('-' * (len(header)))
     print('Energies in ElectronVolt \n{}\n{}\n{}'.format(bar,header,bar))
 
@@ -404,11 +404,14 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t*0.02418884,t])])
-    kin, pot, pul = CEnergy(t,wf,inp)
+    kin, pot, pul, absS = CEnergy(t,wf,inp)
 
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
     pulse_interaction = np.vdot(wf,pul)
+    absorbing_potential = np.vdot(wf,absS)
+    # you asked and discussed with Stephan about it. This is the norm loss due to CAP complex absorbing potential. It needs to be multiplied by -2i.
+    absorbing_potential_thing = np.real(-2j * absorbing_potential)
     total = kinetic + potential + pulse_interaction
     initialTotal = inp['initialTotal']
     norm_wf = np.linalg.norm(wf)
@@ -418,8 +421,8 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
     #if int(rows) // counter == 0:
     #    print('zero')
 
-    outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+10.3e} | {:+10.3e} | {:+10.3e} |'
-    outputString = outputStringS.format(counter, ii,t*0.02418884,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']) )
+    outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+10.3e} | {:+10.3e} | {:+10.3e} | {:+10.3e} |'
+    outputString = outputStringS.format(counter, ii,t*0.02418884,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']), absorbing_potential_thing)
     print(outputString)
 
     kind = inp['kind']
@@ -438,8 +441,8 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
         oofP.write(outputStringSP + '\n')
 
     with open(outputFile, "a") as oof:
-        outputStringS2 = '{} {} {} {} {} {} {} {} {} {} {}'
-        outputString2 = outputStringS2.format(counter,ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']))
+        outputStringS2 = '{} {} {} {} {} {} {} {} {} {} {} {}'
+        outputString2 = outputStringS2.format(counter,ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']), absorbing_potential_thing)
         oof.write(outputString2 + '\n')
 
     #####################
