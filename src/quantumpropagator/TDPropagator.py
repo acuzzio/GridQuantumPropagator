@@ -15,6 +15,41 @@ from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, 
                                            Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
                                            Cderivative_1D_The,Crk4Ene3d, version_Cpropagator, pulZe)
 
+def calculate_stuffs_on_WF(single_wf, inp, outputFile):
+    '''
+    This function is a standalone function that recreates the output file counting also the absorbing potential
+    '''
+    counter = 0
+    ii = 0
+    wf = single_wf['WF']
+    t_fs,t = single_wf['Time']
+    kind = inp['kind']
+    if kind != '3d':
+        err('This function is implemented only in 3d code')
+    CEnergy, Cpropagator = select_propagator(kind)
+    kin, pot, pul, absS = CEnergy(t,wf,inp)
+    kinetic = np.vdot(wf,kin)
+    potential = np.vdot(wf,pot)
+    pulse_interaction = np.vdot(wf,pul)
+    absorbing_potential = np.vdot(wf,absS)
+    absorbing_potential_thing = np.real(-2j * absorbing_potential)
+    total = kinetic + potential + pulse_interaction
+    initialTotal = inp['initialTotal']
+    norm_wf = np.linalg.norm(wf)
+
+    outputStringS = ' {:04d} |{:10d} |{:11.4f} | {:+e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+7.5e} | {:+10.3e} | {:+10.3e} | {:+10.3e} | {:+10.3e} |'
+    outputString = outputStringS.format(counter, ii,t*0.02418884,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']), absorbing_potential_thing)
+    print(outputString)
+
+    with open(outputFile, "a") as oof:
+        #outputStringS2 = '{} {} {} {} {} {} {} {} {} {} {} {}'
+        #outputString2 = outputStringS2.format(counter,ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']), absorbing_potential_thing)
+        outputStringS2 = '{}'
+        outputString2 = outputStringS2.format(absorbing_potential_thing)
+        oof.write(outputString2 + '\n')
+
+
+
 def expandcube(inp):
     return inp
 

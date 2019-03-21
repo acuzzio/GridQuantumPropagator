@@ -30,6 +30,7 @@ setup(
      'Scripts/generateGeomsAroundConical.py',
      'Scripts/Report_Generator.py',
      'Scripts/ThreeDPropagator.py',
+     'Scripts/CreateOutputFilesFromWF.py',
      'Scripts/PostProcessing3dData.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib', 'pyyaml','cython'],
     extras_require={'test': ['nose', 'coverage']},
