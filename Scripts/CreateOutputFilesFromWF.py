@@ -1,10 +1,14 @@
 ''' This is to postprocess a folder full of wavefunctions. '''
 
 import glob
+import numpy as np
 import os
+import pandas as pd
+import pickle
 
 from argparse import ArgumentParser
 from quantumpropagator import calculate_stuffs_on_WF, readWholeH5toDict, err
+import quantumpropagator as qp
 
 def read_single_arguments():
     '''
@@ -18,6 +22,10 @@ def read_single_arguments():
                         required=True,
                         type=str,
                         help="This is the folder where the wavefunctions are")
+    parser.add_argument("-r", "--regions",
+                        dest="r",
+                        type=str,
+                        help="This enables Regions mode and you should indicate regions file")
 
     args = parser.parse_args()
 
@@ -42,26 +50,73 @@ def main():
 
     a = read_single_arguments()
 
+    folder_root = a.f
     folder = os.path.join(os.path.abspath(a.f), 'Gaussian')
     all_h5 = os.path.join(os.path.abspath(a.f), 'allInput.h5')
     output_of_Grid = os.path.join(os.path.abspath(a.f), 'output')
     output_of_this = os.path.join(os.path.abspath(a.f), 'Output_Abs')
+    output_regions = os.path.join(os.path.abspath(a.f), 'Output_Regions.csv')
 
-    check_output_of_Grid(output_of_Grid)
+    if a.r != None:
+        regions_file = os.path.abspath(a.r)
+        if os.path.isfile(regions_file) and not os.path.isfile(output_regions):
+            filesList = [ fn for fn in sorted(os.listdir(folder_root)) if fn[:8] == 'Gaussian' and fn[-3:] == '.h5']
+            if filesList != []:
+                zeroWF = qp.retrieve_hdf5_data(os.path.join(folder_root,filesList[0]),'WF')
+                phiL,gamL,theL,nstates = (qp.retrieve_hdf5_data(os.path.join(folder_root,filesList[0]),'WF')).shape
+                filesN = len(filesList)
+                allwf = np.empty((filesN,phiL,gamL,theL,nstates),dtype=complex)
+                alltime = np.empty((filesN))
+                for i,fn in enumerate(filesList):
+                    fnn = os.path.join(folder_root,fn)
+                    allwf[i] = qp.retrieve_hdf5_data(fnn,'WF')
+                    alltime[i] = qp.retrieve_hdf5_data(fnn,'Time')[0]
 
-    if os.path.isfile(output_of_this):
-        print('\n\nrm {}\n\n'.format(output_of_this))
-        err('Watch out. File Output_Abs already exists into folder')
+                with open(regions_file, "rb") as input_file:
+                    cubess = pickle.load(input_file)
 
-    global_expression = folder + '*.h5'
+                regionsN = len(cubess)
 
-    list_of_wavefunctions = sorted(glob.glob(global_expression))
+                regions_vector = np.empty((filesN,regionsN))
+                fs_vector = np.empty(filesN)
 
-    all_h5_dict = readWholeH5toDict(all_h5)
+                labels_region = []
+                for r in range(regionsN):
+                    labels_region.append(cubess[r]['label'])
+                    for f in range(filesN):
+                        if r == 0: # to do this once and not n_region times
+                            time = alltime[f]
+                            fs_vector[f] = time
 
-    for single_wf in list_of_wavefunctions:
-        wf_dict = readWholeH5toDict(single_wf)
-        calculate_stuffs_on_WF(wf_dict, all_h5_dict, output_of_this)
+                        uno = allwf[f,:,:,:,0] # Ground state
+                        due = cubess[r]['cube']
+                        value = np.linalg.norm(uno*due)
+                        regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
+                        #print(r,f)
+
+
+        else:
+            err('I do not see the regions file OR the Output_Regions.csv already exists')
+
+        dataf_regions = pd.DataFrame(regions_vector, columns=labels_region)
+        dataf_regions.to_csv(output_regions)
+    else:
+
+        check_output_of_Grid(output_of_Grid)
+
+        if os.path.isfile(output_of_this):
+            print('\n\nrm {}\n\n'.format(output_of_this))
+            err('Watch out. File Output_Abs already exists into folder')
+
+        global_expression = folder + '*.h5'
+
+        list_of_wavefunctions = sorted(glob.glob(global_expression))
+
+        all_h5_dict = readWholeH5toDict(all_h5)
+
+        for single_wf in list_of_wavefunctions:
+            wf_dict = readWholeH5toDict(single_wf)
+            calculate_stuffs_on_WF(wf_dict, all_h5_dict, output_of_this)
 
 if __name__ == "__main__":
     main()

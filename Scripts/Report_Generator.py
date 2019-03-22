@@ -201,6 +201,7 @@ def main():
     allout = os.path.join(folder,'allInput.h5')
     outfn = os.path.join(folder,'output')
     outfnP = os.path.join(folder,'outputPopul')
+    out_ABS = os.path.join(folder,'Output_Abs')
     readme_file = os.path.join(folder,'README')
 
     if os.path.isfile(readme_file):
@@ -215,7 +216,23 @@ def main():
 
     data = pd.read_csv(outfn, delim_whitespace=True, header=None);
     dataP = pd.read_csv(outfnP, delim_whitespace=True, header=None);
-    data.columns = ['count','steps','fs','Norm Deviation','Kinetic','Potential','Total','Total deviation','Xpulse','Ypulse','Zpulse']
+
+    # I get column number to assure there is the absorbing potential norm loss
+    # March 2019, the number of column in output file is 11. This can get tricky if I change 
+    # this number.
+    data_col_number = data.shape[1]
+
+    if data_col_number == 11:
+        print('\n\nThis is a folder before March 2019 without absorbing potential')
+        if os.path.isfile(out_ABS):
+            print('An abs file is present, anyway')
+            dataA = pd.read_csv(out_ABS, delim_whitespace=True, header=None);
+            # I add the Abs column to this
+            data = pd.concat([data, dataA], axis=1);
+        else:
+            qp.err('This routine now works ONLY if you have the Abs file or use last version')
+
+    data.columns = ['count','steps','fs','Norm Deviation','Kinetic','Potential','Total','Total deviation','Xpulse','Ypulse','Zpulse','Norm Loss']
     result = pd.concat([data, dataP], axis=1);
 
 
