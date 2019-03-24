@@ -88,9 +88,9 @@ def main():
                             time = alltime[f]
                             fs_vector[f] = time
 
-                        uno = allwf[f,:,:,:,0] # Ground state
+                        uno = qp.abs2(allwf[f,:,:,:,0]) # Ground state
                         due = cubess[r]['cube']
-                        value = np.linalg.norm(uno*due)
+                        value = np.linalg.norm(uno*due)**2
                         regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
                         #print(r,f)
 
