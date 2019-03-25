@@ -20,6 +20,7 @@ def calculate_stuffs_on_WF(single_wf, inp, outputFile):
     This function is a standalone function that recreates the output file counting also the absorbing potential
     '''
     counter = 0
+    nstates = inp['nstates']
     ii = 0
     wf = single_wf['WF']
     t_fs,t = single_wf['Time']
@@ -41,11 +42,23 @@ def calculate_stuffs_on_WF(single_wf, inp, outputFile):
     outputString = outputStringS.format(counter, ii,t*0.02418884,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), fromHartoEv(pulse_interaction.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']), absorbing_potential_thing)
     print(outputString)
 
+    kind = inp['kind']
+    outputString_abs = "{:11.4f} {:+7.5e}".format(t,absorbing_potential_thing)
+    for i in range(nstates):
+        if kind == '3d':
+            singleStatewf = wf[:,:,:,i]
+            singleAbspote = absS[:,:,:,i]
+            norm_loss_this_step = np.real(-2j * np.vdot(singleStatewf,singleAbspote))
+        if kind == 'GamThe':
+            err('no 2d here')
+        elif kind == 'Phi' or kind == 'Gam' or kind == 'The':
+            err('no 1d here')
+
+        outputString_abs += " {:+7.5e} ".format(norm_loss_this_step)
+
     with open(outputFile, "a") as oof:
-        #outputStringS2 = '{} {} {} {} {} {} {} {} {} {} {} {}'
-        #outputString2 = outputStringS2.format(counter,ii,t/41.3,1-norm_wf,fromHartoEv(kinetic.real),fromHartoEv(potential.real),fromHartoEv(total.real),fromHartoEv(initialTotal - total.real), pulZe(t,inp['pulseX']), pulZe(t,inp['pulseY']), pulZe(t,inp['pulseZ']), absorbing_potential_thing)
         outputStringS2 = '{}'
-        outputString2 = outputStringS2.format(absorbing_potential_thing)
+        outputString2 = outputStringS2.format(outputString_abs)
         oof.write(outputString2 + '\n')
 
 
@@ -333,6 +346,7 @@ def propagate3D(dataDict, inputDict):
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
+    outputFileA = os.path.join(nameRoot, 'output_Absorbing')
     print('\ntail -f {}\n'.format(outputFileP))
 
     # calculating initial total/potential/kinetic
