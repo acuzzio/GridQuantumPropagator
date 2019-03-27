@@ -35,7 +35,7 @@ def Crk4Ene3d(f, t, y, inp):
 
 def pulZe(t, param_Pulse):
     '''
-    Warning ... this functions works strangely...
+    Pulse function
     '''
     Ed,omega,sigma,phase,t0 = param_Pulse
     num = (t-t0)**2

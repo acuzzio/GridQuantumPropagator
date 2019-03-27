@@ -90,7 +90,7 @@ def main():
 
                         uno = qp.abs2(allwf[f,:,:,:,0]) # Ground state
                         due = cubess[r]['cube']
-                        value = np.linalg.norm(uno*due)**2
+                        value = np.linalg.norm(uno*due)
                         regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
                         #print(r,f)
 
