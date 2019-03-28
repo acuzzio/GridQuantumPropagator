@@ -51,67 +51,62 @@ def main():
     a = read_single_arguments()
 
     folder_root = a.f
-    folder = os.path.join(os.path.abspath(a.f), 'Gaussian')
+    folder_Gau = os.path.join(os.path.abspath(a.f), 'Gaussian')
     all_h5 = os.path.join(os.path.abspath(a.f), 'allInput.h5')
     output_of_Grid = os.path.join(os.path.abspath(a.f), 'output')
     output_of_this = os.path.join(os.path.abspath(a.f), 'Output_Abs')
     output_regions = os.path.join(os.path.abspath(a.f), 'Output_Regions.csv')
+    output_regionsA = os.path.join(os.path.abspath(a.f), 'Output_Regions')
 
     if a.r != None:
         regions_file = os.path.abspath(a.r)
-        if os.path.isfile(regions_file) and not os.path.isfile(output_regions):
-            filesList = [ fn for fn in sorted(os.listdir(folder_root)) if fn[:8] == 'Gaussian' and fn[-3:] == '.h5']
-            if filesList != []:
-                zeroWF = qp.retrieve_hdf5_data(os.path.join(folder_root,filesList[0]),'WF')
-                phiL,gamL,theL,nstates = (qp.retrieve_hdf5_data(os.path.join(folder_root,filesList[0]),'WF')).shape
-                filesN = len(filesList)
-                allwf = np.empty((filesN,phiL,gamL,theL,nstates),dtype=complex)
-                alltime = np.empty((filesN))
-                for i,fn in enumerate(filesList):
-                    fnn = os.path.join(folder_root,fn)
-                    allwf[i] = qp.retrieve_hdf5_data(fnn,'WF')
-                    alltime[i] = qp.retrieve_hdf5_data(fnn,'Time')[0]
+        if os.path.isfile(regions_file):
+            global_expression = folder_Gau + '*.h5'
+            list_of_wavefunctions = sorted(glob.glob(global_expression))
 
-                with open(regions_file, "rb") as input_file:
-                    cubess = pickle.load(input_file)
+            start_from = 0
 
-                regionsN = len(cubess)
+            if os.path.isfile(output_regionsA):
+                count_output_lines = len(open(output_of_Grid).readlines())
+                count_regions_lines = len(open(output_regionsA).readlines())
+                count_h5 = len(list_of_wavefunctions)
+                if count_regions_lines > count_h5:
+                    err('something strange {} -> {}'.format(count_h5,count_regions_lines))
+                start_from = count_regions_lines
 
-                regions_vector = np.empty((filesN,regionsN))
-                fs_vector = np.empty(filesN)
+            with open(regions_file, "rb") as input_file:
+                cubess = pickle.load(input_file)
 
-                labels_region = []
+            regionsN = len(cubess)
+
+            print('\n\nI will start from {}\n\n'.format(start_from))
+            for fn in list_of_wavefunctions[start_from:]:
+                allwf = qp.retrieve_hdf5_data(fn,'WF')
+                alltime = qp.retrieve_hdf5_data(fn,'Time')[0]
+                outputString_reg = ""
                 for r in range(regionsN):
-                    labels_region.append(cubess[r]['label'])
-                    for f in range(filesN):
-                        if r == 0: # to do this once and not n_region times
-                            time = alltime[f]
-                            fs_vector[f] = time
-
-                        uno = allwf[f,:,:,:,0] # Ground state
-                        due = cubess[r]['cube']
-                        value = np.linalg.norm(uno*due)**2
-                        print(value)
-                        regions_vector[f,r] = value   # yes yes, I am swapping because of pandas
-                        #print(r,f)
+                    uno = allwf[:,:,:,0] # Ground state
+                    due = cubess[r]['cube']
+                    value = np.linalg.norm(uno*due)**2
+                    outputString_reg += " {} ".format(value)
+                with open(output_regionsA, "a") as out_reg:
+                    print(outputString_reg)
+                    out_reg.write(outputString_reg + '\n')
 
 
         else:
-            err('I do not see the regions file OR the Output_Regions.csv already exists')
+            err('I do not see the regions file'.format(regions_file))
 
-        dataf_regions = pd.DataFrame(regions_vector, columns=labels_region)
-        dataf_regions.to_csv(output_regions)
-    else:
+    else: # regions mode or not?
 
         check_output_of_Grid(output_of_Grid)
 
-        global_expression = folder + '*.h5'
+        global_expression = folder_Gau + '*.h5'
         list_of_wavefunctions = sorted(glob.glob(global_expression))
 
         start_from = 0
 
         if os.path.isfile(output_of_this):
-            print('\n\nrm {}\n\n'.format(output_of_this))
             count_output_lines = len(open(output_of_Grid).readlines())
             count_abs_lines = len(open(output_of_this).readlines())
             count_h5 = len(list_of_wavefunctions)
