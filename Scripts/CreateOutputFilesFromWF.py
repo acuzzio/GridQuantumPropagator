@@ -105,17 +105,24 @@ def main():
 
         check_output_of_Grid(output_of_Grid)
 
+        global_expression = folder + '*.h5'
+        list_of_wavefunctions = sorted(glob.glob(global_expression))
+
+        start_from = 0
+
         if os.path.isfile(output_of_this):
             print('\n\nrm {}\n\n'.format(output_of_this))
-            err('Watch out. File Output_Abs already exists into folder')
-
-        global_expression = folder + '*.h5'
-
-        list_of_wavefunctions = sorted(glob.glob(global_expression))
+            count_output_lines = len(open(output_of_Grid).readlines())
+            count_abs_lines = len(open(output_of_this).readlines())
+            count_h5 = len(list_of_wavefunctions)
+            if count_abs_lines > count_h5:
+                err('something strange {} -> {} ->  {}'.format(count_h5,count_abs_lines,count_output_lines))
+            # if Abs file is there, I need to skip all the wavefunctions I already calculated.
+            start_from = count_abs_lines
 
         all_h5_dict = readWholeH5toDict(all_h5)
 
-        for single_wf in list_of_wavefunctions:
+        for single_wf in list_of_wavefunctions[start_from:]:
             wf_dict = readWholeH5toDict(single_wf)
             calculate_stuffs_on_WF(wf_dict, all_h5_dict, output_of_this)
 
