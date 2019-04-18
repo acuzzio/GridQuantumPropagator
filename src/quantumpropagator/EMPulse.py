@@ -42,13 +42,18 @@ def component(t):
 def envel(t,Ed,sigma,t0):
     '''
     It returns the value of the gaussian envelope for the pulse at time t
+    now it works with arrays, too
     '''
     num = (t-t0)**2
     den = 2*(sigma**2)
-    if den == 0:
-        return 0.0
+    if (den == 0):
+        if type(t) == float:
+            result = 0.0
+        else:
+            result = np.zeros_like(t)
     else:
-        return Ed * np.exp(-num/den)
+        result = Ed * np.exp(-num/den)
+    return result
 
 def pulse(t,Ed,omega,sigma,phi,t0):
     '''

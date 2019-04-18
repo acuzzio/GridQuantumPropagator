@@ -16,7 +16,7 @@ cdef extern from "complex.h":
 
 
 def version_Cpropagator():
-    return('0.0.0015')
+    return('0.0.0016')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -36,12 +36,16 @@ def Crk4Ene3d(f, t, y, inp):
 def pulZe(t, param_Pulse):
     '''
     Pulse function
+    it works both with an array of time and a single time value
     '''
     Ed,omega,sigma,phase,t0 = param_Pulse
     num = (t-t0)**2
     den = 2.0*(sigma**2)
     if (den == 0):
-        result = 0.0
+        if type(t) == float:
+            result = 0.0
+        else:
+            result = np.zeros_like(t)
     else:
         result = Ed * (np.cos(omega*(t-t0)+phase)) * np.exp(-num/den)
     return result
