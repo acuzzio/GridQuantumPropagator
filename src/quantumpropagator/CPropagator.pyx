@@ -14,7 +14,6 @@ from libc.stdio cimport printf
 cdef extern from "complex.h":
         double complex cexp(double complex)
 
-
 def version_Cpropagator():
     return('0.0.0016')
 
