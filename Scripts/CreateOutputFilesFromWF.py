@@ -68,7 +68,7 @@ def difference_mode(file_zero):
 
 def difference_this(file_zero_abs, wave, output_file_name):
     '''
-    given the three paths, this will create the difference in S0
+    given the three paths, this will create the difference in wavepacket
     '''
     zero = readWholeH5toDict(file_zero_abs)
     other = readWholeH5toDict(wave)
@@ -80,11 +80,11 @@ def difference_this(file_zero_abs, wave, output_file_name):
     other_pop = qp.abs2(other_wf)
     difference = zero_pop - other_pop
     outputDict = {'WF' : difference, 'Time0' : zero_time, 'Time1' : other_time}
-    #print(np.amax(difference))
-    #print(np.amin(difference))
-    #print(difference.shape)
+    print('{} cube is done: {} {}'.format(os.path.basename(wave),
+                                          np.amax(difference),
+                                          np.amin(difference)
+                                          ))
     qp.writeH5fileDict(output_file_name, outputDict)
-
 
 def main():
     '''
