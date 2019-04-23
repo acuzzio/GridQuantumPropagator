@@ -26,6 +26,10 @@ def read_single_arguments():
                         dest="r",
                         type=str,
                         help="This enables Regions mode and you should indicate regions file")
+    parser.add_argument("-d", "--difference",
+                        dest="d",
+                        type=str,
+                        help="This enables Difference mode and you should point wf zero file")
 
     args = parser.parse_args()
 
@@ -41,6 +45,45 @@ def check_output_of_Grid(fn):
     number_of_line = len(first_line.split(' '))
     if number_of_line != 11:
         err('Watch out. File output already have good format...')
+
+def difference_mode(file_zero):
+    '''
+    This function will create a difference folder into the main one
+    In this folder, new difference GaussianWF files are created, to visualize the difference
+    in population between file_zero (usually after pulse) and the rest.
+    '''
+    file_zero_abs = os.path.abspath(file_zero)
+    wf_file_name_no_ext = os.path.splitext(os.path.basename(file_zero))[0]
+    folder_root = os.path.dirname(file_zero_abs)
+    difference_folder = os.path.join(folder_root, 'difference_with_{}'.format(wf_file_name_no_ext))
+    if not os.path.exists(difference_folder):
+        os.mkdir(difference_folder)
+    global_expression = folder_root + '/Gaussian*.h5'
+    list_of_wavefunctions = sorted(glob.glob(global_expression))
+
+    for iwave,wave in enumerate(list_of_wavefunctions[:]):
+        name_this = os.path.splitext(os.path.basename(wave))[0]
+        output_file_name = os.path.join(difference_folder, 'diff_{}_{}_{}.h5'.format(wf_file_name_no_ext,name_this,iwave))
+        difference_this(file_zero_abs,wave,output_file_name)
+
+def difference_this(file_zero_abs, wave, output_file_name):
+    '''
+    given the three paths, this will create the difference in S0
+    '''
+    zero = readWholeH5toDict(file_zero_abs)
+    other = readWholeH5toDict(wave)
+    zero_wf = zero['WF']
+    other_wf = other['WF']
+    zero_time = zero['Time']
+    other_time = other['Time']
+    zero_pop = qp.abs2(zero_wf)
+    other_pop = qp.abs2(other_wf)
+    difference = zero_pop - other_pop
+    outputDict = {'WF' : difference, 'Time0' : zero_time, 'Time1' : other_time}
+    #print(np.amax(difference))
+    #print(np.amin(difference))
+    #print(difference.shape)
+    qp.writeH5fileDict(output_file_name, outputDict)
 
 
 def main():
@@ -58,7 +101,12 @@ def main():
     output_regions = os.path.join(os.path.abspath(a.f), 'Output_Regions.csv')
     output_regionsA = os.path.join(os.path.abspath(a.f), 'Output_Regions')
 
-    if a.r != None:
+    if a.d != None:
+        # we need to enter Difference mode
+        difference_mode(a.d)
+
+    elif a.r != None:
+        # If we are in REGIONS mode
         regions_file = os.path.abspath(a.r)
         if os.path.isfile(regions_file):
             global_expression = folder_Gau + '*.h5'
