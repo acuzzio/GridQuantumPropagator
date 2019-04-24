@@ -29,7 +29,7 @@ def read_single_arguments():
     parser.add_argument("-d", "--difference",
                         dest="d",
                         type=str,
-                        help="This enables Difference mode and you should point wf zero file")
+                        help="This enables Difference mode and you should point wf zero file. If a file name is omitted, it does time derivative.")
 
     args = parser.parse_args()
 
@@ -61,10 +61,11 @@ def difference_mode(file_zero):
     global_expression = folder_root + '/Gaussian*.h5'
     list_of_wavefunctions = sorted(glob.glob(global_expression))
 
-    for iwave,wave in enumerate(list_of_wavefunctions[:]):
+    for wave in list_of_wavefunctions[:]:
         name_this = os.path.splitext(os.path.basename(wave))[0]
-        output_file_name = os.path.join(difference_folder, 'diff_{}_{}_{}.h5'.format(wf_file_name_no_ext,name_this,iwave))
+        output_file_name = os.path.join(difference_folder, 'diff_{}_{}.h5'.format(wf_file_name_no_ext,name_this))
         difference_this(file_zero_abs,wave,output_file_name)
+
 
 def difference_this(file_zero_abs, wave, output_file_name):
     '''
@@ -86,6 +87,23 @@ def difference_this(file_zero_abs, wave, output_file_name):
                                           ))
     qp.writeH5fileDict(output_file_name, outputDict)
 
+def derivative_mode(folder):
+    '''
+    This function will create a derivative folder into the main one
+    In this folder, new difference GaussianWF files are created, to visualize the difference
+    in population between file_zero (usually after pulse) and the rest.
+    '''
+    folder_root = os.path.abspath(folder)
+    derivative_folder = os.path.join(folder_root, 'derivative_with_time')
+    if not os.path.exists(derivative_folder):
+        os.mkdir(derivative_folder)
+    global_expression = folder_root + '/Gaussian*.h5'
+    list_of_wavefunctions = sorted(glob.glob(global_expression))
+
+    for iwave, (wave1,wave2) in enumerate(zip(list_of_wavefunctions,list_of_wavefunctions[1:])):
+        output_file_name = os.path.join(derivative_folder, 'derivative_time_{:04}.h5'.format(iwave))
+        difference_this(wave1,wave2,output_file_name)
+
 def main():
     '''
     This will launch the postprocessing thing
@@ -103,7 +121,12 @@ def main():
 
     if a.d != None:
         # we need to enter Difference mode
-        difference_mode(a.d)
+        if a.d == 'derivative':
+            print('I will calculate derivatives into {}'.format(folder_root))
+            derivative_mode(os.path.abspath(a.f))
+        else:
+            print('I will calculate differences with {}'.format(a.d))
+            difference_mode(a.d)
 
     elif a.r != None:
         # If we are in REGIONS mode
