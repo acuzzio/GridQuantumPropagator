@@ -10,31 +10,6 @@ from argparse import ArgumentParser
 from quantumpropagator import calculate_stuffs_on_WF, readWholeH5toDict, err
 import quantumpropagator as qp
 
-def read_single_arguments():
-    '''
-    This funcion reads the command line arguments and assign the values on
-    the namedTuple for the 3D grid propagator.
-    '''
-    d = 'This script will launch a Grid quantum propagation'
-    parser = ArgumentParser(description=d)
-    parser.add_argument("-f", "--folder",
-                        dest="f",
-                        required=True,
-                        type=str,
-                        help="This is the folder where the wavefunctions are")
-    parser.add_argument("-r", "--regions",
-                        dest="r",
-                        type=str,
-                        help="This enables Regions mode and you should indicate regions file")
-    parser.add_argument("-d", "--difference",
-                        dest="d",
-                        type=str,
-                        help="This enables Difference mode and you should point wf zero file. If a file name is omitted, it does time derivative.")
-
-    args = parser.parse_args()
-
-    return args
-
 def check_output_of_Grid(fn):
     '''
     checks if this file first line has 11 number of fields
@@ -87,7 +62,7 @@ def difference_this(file_zero_abs, wave, output_file_name):
                                           ))
     qp.writeH5fileDict(output_file_name, outputDict)
 
-def derivative_mode(folder):
+def derivative_mode(folder,every_tot):
     '''
     This function will create a derivative folder into the main one
     In this folder, new difference GaussianWF files are created, to visualize the difference
@@ -101,8 +76,38 @@ def derivative_mode(folder):
     list_of_wavefunctions = sorted(glob.glob(global_expression))
 
     for iwave, (wave1,wave2) in enumerate(zip(list_of_wavefunctions,list_of_wavefunctions[1:])):
-        output_file_name = os.path.join(derivative_folder, 'derivative_time_{:04}.h5'.format(iwave))
-        difference_this(wave1,wave2,output_file_name)
+        if iwave % every_tot == 0:
+            output_file_name = os.path.join(derivative_folder, 'derivative_time_{:04}.h5'.format(iwave))
+            difference_this(wave1,wave2,output_file_name)
+
+def read_single_arguments():
+    '''
+    This funcion reads the command line arguments and assign the values on
+    the namedTuple for the 3D grid propagator.
+    '''
+    d = 'This script will launch a Grid quantum propagation'
+    parser = ArgumentParser(description=d)
+    parser.add_argument("-f", "--folder",
+                        dest="f",
+                        required=True,
+                        type=str,
+                        help="This is the folder where the wavefunctions are")
+    parser.add_argument("-r", "--regions",
+                        dest="r",
+                        type=str,
+                        help="This enables Regions mode and you should indicate regions file")
+    parser.add_argument("-d", "--difference",
+                        dest="d",
+                        type=str,
+                        help="This enables Difference mode and you should point wf zero file")
+    parser.add_argument("-t", "--time_derivative",
+                        dest="t",
+                        type=int,
+                        help="This enables time derivative mode. It requires an integer to decide how many frames need to be skipped")
+
+    args = parser.parse_args()
+
+    return args
 
 def main():
     '''
@@ -119,14 +124,15 @@ def main():
     output_regions = os.path.join(os.path.abspath(a.f), 'Output_Regions.csv')
     output_regionsA = os.path.join(os.path.abspath(a.f), 'Output_Regions')
 
-    if a.d != None:
+    if a.t != None:
+        # derivative mode
+        print('I will calculate derivatives into {} every {} frames'.format(folder_root, a.t))
+        derivative_mode(os.path.abspath(a.f), a.t)
+
+    elif a.d != None:
         # we need to enter Difference mode
-        if a.d == 'derivative':
-            print('I will calculate derivatives into {}'.format(folder_root))
-            derivative_mode(os.path.abspath(a.f))
-        else:
-            print('I will calculate differences with {}'.format(a.d))
-            difference_mode(a.d)
+        print('I will calculate differences with {}'.format(a.d))
+        difference_mode(a.d)
 
     elif a.r != None:
         # If we are in REGIONS mode

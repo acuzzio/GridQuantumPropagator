@@ -19,6 +19,7 @@ install:
   - source activate quantumpropagator
 
   # Package dependencies
+  - pip install --upgrade pip
   - pip install nose coverage cython numpy
   - source activate quantumpropagator
 
