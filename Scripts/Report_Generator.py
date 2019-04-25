@@ -272,7 +272,7 @@ def main():
     colors = ['b', 'g', 'r', 'm', 'c', 'y', 'mediumpurple', 'k']
 
     result2.plot(title = 'Population and Pulse', ax = ax1,  x=['fs'], y=popul, linewidth=0.8, color = colors)
-    result2.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False, xlim=(-0.04,0.04));
+    result2.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False, ylim=(-0.04,0.04));
 
     popul_figure = fig_to_html(fig)
 
