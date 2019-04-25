@@ -272,7 +272,7 @@ def main():
     colors = ['b', 'g', 'r', 'm', 'c', 'y', 'mediumpurple', 'k']
 
     result2.plot(title = 'Population and Pulse', ax = ax1,  x=['fs'], y=popul, linewidth=0.8, color = colors)
-    result2.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False);
+    result2.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False, xlim=(-0.04,0.04));
 
     popul_figure = fig_to_html(fig)
 
@@ -346,7 +346,7 @@ def main():
 
     # setting the html
     template_vars = {"title" : title_Repo,
-                     "table_output": df2.to_html(),
+                     "table_output": df2.to_html(max_rows=50),
                      "folder_string" : folder_string,
                      "date_string" : date_string,
                      "running_string": running_string,
