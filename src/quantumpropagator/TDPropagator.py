@@ -43,7 +43,7 @@ def calculate_stuffs_on_WF(single_wf, inp, outputFile):
     print(outputString)
 
     kind = inp['kind']
-    outputString_abs = "{:11.4f} {:+7.5e}".format(t,absorbing_potential_thing)
+    outputStringA = "{:11.4f} {:+7.5e}".format(t,absorbing_potential_thing)
     for i in range(nstates):
         if kind == '3d':
             singleStatewf = wf[:,:,:,i]
@@ -54,11 +54,11 @@ def calculate_stuffs_on_WF(single_wf, inp, outputFile):
         elif kind == 'Phi' or kind == 'Gam' or kind == 'The':
             err('no 1d here')
 
-        outputString_abs += " {:+7.5e} ".format(norm_loss_this_step)
+        outputStringA += " {:+7.5e} ".format(norm_loss_this_step)
 
     with open(outputFile, "a") as oof:
         outputStringS2 = '{}'
-        outputString2 = outputStringS2.format(outputString_abs)
+        outputString2 = outputStringS2.format(outputStringA)
         oof.write(outputString2 + '\n')
 
 
@@ -338,7 +338,7 @@ def propagate3D(dataDict, inputDict):
 
     # INITIAL DYNAMICS VALUES
     dt = inp['dt']
-    t = 0
+    t = 0.0
     counter  = 0
     fulltime = inp['fullTime']
     fulltimeSteps = int(fulltime/dt)
@@ -346,7 +346,7 @@ def propagate3D(dataDict, inputDict):
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
-    outputFileA = os.path.join(nameRoot, 'output_Absorbing')
+    outputFileA = os.path.join(nameRoot, 'Output_Abs')
     print('\ntail -f {}\n'.format(outputFileP))
 
     # calculating initial total/potential/kinetic
@@ -376,9 +376,9 @@ def propagate3D(dataDict, inputDict):
         if (ii % deltasGraph) == 0 or ii==fulltimeSteps-1:
             #  async is awesome. But it is not needed in 1d and maybe in 2d.
             if kind == '3D':
-                asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+                asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFileA,CEnergy)
             else:
-                doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+                doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFileA,CEnergy)
             counter += 1
 
         wf = Crk4Ene3d(Cpropagator,t,wf,inp)
@@ -405,6 +405,7 @@ def restart_propagation(inp,inputDict):
     fulltimeSteps = int(fulltime/dt)
     outputFile = os.path.join(nameRoot, 'output')
     outputFileP = os.path.join(nameRoot, 'outputPopul')
+    outputFileA = os.path.join(nameRoot, 'Output_Abs')
 
     if (inputDict['fullTime'] == inp['fullTime']):
         good('Safe restart with same fulltime')
@@ -438,16 +439,16 @@ def restart_propagation(inp,inputDict):
         if ((ii % deltasGraph) == 0 or ii==fulltimeSteps-1):
                 #  async is awesome. But it is not needed in 1d and maybe in 2d.
                 if kind == '3D':
-                    asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+                    asyncFun(doAsyncStuffs,wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFileA,CEnergy)
                 else:
-                    doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy)
+                    doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFileA,CEnergy)
                 counter += 1
 
         wf = Crk4Ene3d(Cpropagator,t,wf,inp)
         t  = t + dt
 
 
-def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
+def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFileA,CEnergy):
     nameRoot = inputDict['outFol']
     nstates = inp['nstates']
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
@@ -476,15 +477,22 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,CEnergy):
 
     kind = inp['kind']
     outputStringSP = "{:11.4f}".format(t/41.3)
+    outputStringA = "{:11.4f} {:+7.5e}".format(t,absorbing_potential_thing)
     for i in range(nstates):
         if kind == '3d':
             singleStatewf = wf[:,:,:,i]
+            singleAbspote = absS[:,:,:,i]
+            norm_loss_this_step = np.real(-2j * np.vdot(singleStatewf,singleAbspote))
         if kind == 'GamThe':
             singleStatewf = wf[:,:,i]
         elif kind == 'Phi' or kind == 'Gam' or kind == 'The':
             singleStatewf = wf[:,i]
+
+        outputStringA += " {:+7.5e} ".format(norm_loss_this_step)
         outputStringSP += " {:+7.5e} ".format(np.linalg.norm(singleStatewf)**2)
 
+    with open(outputFileA, "a") as oofA:
+        oofA.write(outputStringA + '\n')
 
     with open(outputFileP, "a") as oofP:
         oofP.write(outputStringSP + '\n')

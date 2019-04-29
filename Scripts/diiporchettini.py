@@ -27,7 +27,7 @@ import glob
 import yaml
 
 def loadInputYAML(fn):
-    ''' 
+    '''
     this function reads the input file and returns a dictionary with inputs
     fn :: filePath
     '''
@@ -55,7 +55,7 @@ def createMeshFromData(name, origin, verts, faces):
     # Create mesh from given verts, faces.
     me.from_pydata(verts, [], faces)
     # Update mesh with new data
-    me.update()    
+    me.update()
     return ob
 
 #http://scikit-image.org/docs/dev/auto_examples/plot_marching_cubes.html
@@ -66,7 +66,7 @@ def generateIso(data,iso,mat,frame,state):
     try:
         verts, faces, normals, values = measure.marching_cubes(data, iso)
     except ValueError:
-        print('No iso here') 
+        print('No iso here')
         return None
 
     name = 'frame{:03d}_iso_{}_state_{}'.format(frame,iso,state)
@@ -83,11 +83,11 @@ def generateIso(data,iso,mat,frame,state):
     else:
         # no slots
         ob.data.materials.append(mat)
-    
+
     # enter in and out from editmode : )  <- bug? this will fill the surface better
     bpy.ops.object.editmode_toggle()
     bpy.ops.object.editmode_toggle()
-    
+
     bpy.context.scene.frame_set(i-1)
     ob.hide = True
     ob.hide_render = True
@@ -99,13 +99,13 @@ def generateIso(data,iso,mat,frame,state):
     ob.hide_render = False
     ob.keyframe_insert(data_path="hide")
     ob.keyframe_insert(data_path="hide_render")
-    
+
     bpy.context.scene.frame_set(i+1)
     ob.hide = True
     ob.hide_render = True
     ob.keyframe_insert(data_path="hide")
     ob.keyframe_insert(data_path="hide_render")
-    
+
     for obj in bpy.data.objects:
         obj.select = False
 
@@ -128,14 +128,14 @@ for i,fn in enumerate(allH5[:]):
     for state in range(8):
         nameMaterial = "Material.{:03d}".format(state+1)
         mat = bpy.data.materials.get(nameMaterial)
-    
+
         print('doing {}'.format(fn))
-    
+
         wf = openh5(fn,'WF')
         ground2 = abs2(wf[:,:,:,state])
-        
+
         ground = np.swapaxes(ground2,0,2)
-        
+
         #for iso in [0.000001, 0.00001, 0.0001]:
         for iso in  [0.0001]:
             generateIso(ground,iso,mat,i,state)
@@ -154,8 +154,8 @@ def doThis(strei):
                 bpy.data.objects[object_name].select = True
                 bpy.ops.object.delete()
             else:
-                print('I just deselect')    
-                
+                print('I just deselect')
+
 
 # workaround to REMESH the MC-Mesh
 #ob2 = createMeshFromData('dual_contouring',(0,0,0),verts,(faces.astype(int)).tolist())
