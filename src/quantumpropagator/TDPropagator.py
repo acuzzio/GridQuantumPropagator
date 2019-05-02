@@ -194,9 +194,20 @@ def propagate3D(dataDict, inputDict):
         warning('kincube divided by {}'.format(kokoko))
 
     if 'multiply_nac' in inputDict:
+        # this keyword can be used to multiply NACs. It works with a float or a list of triplet
+        # multiply_nac : 10  -> will multiply all by 10
+        # multiply_nac : [[1,2,10.0],[3,4,5.0]] -> will multiply 1,2 by 10 and 3,4 by 5
         nac_multiplier = inputDict['multiply_nac']
-        warning('Nac are multiplied by {}'.format(nac_multiplier))
-        inp['nacCube'] = inp['nacCube'] * nac_multiplier
+        if type(nac_multiplier) == int or type(nac_multiplier) == float:
+            warning('all Nacs are multiplied by {}'.format(nac_multiplier))
+            inp['nacCube'] = inp['nacCube'] * nac_multiplier
+        if type(nac_multiplier) == list:
+            warning('There is a list of nac multiplications, check input')
+            for state_one, state_two, multiply_factor in nac_multiplier:
+                inp['nacCube'][:,:,:,state_one,state_two,:] = inp['nacCube'][:,:,:,state_one,state_two,:]*multiply_factor
+                inp['nacCube'][:,:,:,state_two,state_one,:] = inp['nacCube'][:,:,:,state_two,state_one,:]*multiply_factor
+                warning('NACS corresponding of state {} and state {} are multiplied by {}'.format(state_one, state_two, multiply_factor))
+        inp['Nac_multiplier'] = nac_multiplier
 
 
     nameRoot = create_enumerated_folder(inputDict['outFol'])
@@ -460,10 +471,10 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFil
     potential = np.vdot(wf,pot)
     pulse_interaction = np.vdot(wf,pul)
     absorbing_potential = np.vdot(wf,absS)
-    print(absorbing_potential)
+    #print(absorbing_potential)
     # you asked and discussed with Stephan about it. This is the norm loss due to CAP complex absorbing potential. It needs to be multiplied by -2i.
     absorbing_potential_thing = np.real(-2j * absorbing_potential)
-    print(absorbing_potential_thing)
+    #print(absorbing_potential_thing)
     total = kinetic + potential + pulse_interaction
     initialTotal = inp['initialTotal']
     norm_wf = np.linalg.norm(wf)
