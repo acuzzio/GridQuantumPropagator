@@ -15,7 +15,7 @@ cdef extern from "complex.h":
         double complex cexp(double complex)
 
 def version_Cpropagator():
-    return('0.0.0016')
+    return('0.0.0018')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -62,6 +62,7 @@ def Cderivative3dMu(t,GRID,inp):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
+@cython.nonecheck(False)
 cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, int selector):
     '''
     derivative done for a 3d Grid on all the coordinates

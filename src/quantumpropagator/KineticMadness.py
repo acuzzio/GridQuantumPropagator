@@ -106,16 +106,6 @@ def calc_s_mat(phi,gam,the,verbose=None):
         stringZ = 'Identity itself:\n{}\nCart/int matrix:\n{}\nShape: {}\n\nS (inverted) Matrix:\n{}\nIts shape: {}'
         print(stringZ.format(identity,dcart_dint_mat, dcart_dint_mat.shape, dint_dcart_mat, dint_dcart_mat.shape))
 
-    # good('only Z')
-
-    # only_z_mat = dcart_dint_mat[2:24:3] # take only z values
-    # only_z_inverse = np.linalg.pinv(only_z_mat)
-    # identity2 = only_z_inverse @ only_z_mat
-
-    # if verbose:
-    #     stringZ = '\n\n\nCart/int matrix Z :\n{}\nShape: {}\n\nS (Z inverted) Matrix:\n{}\n{}'
-    #     print(stringZ.format(only_z_mat, only_z_mat.shape, only_z_inverse,only_z_inverse.shape))
-    #     print (identity2)
 
     return(dint_dcart_mat)
 
@@ -301,4 +291,3 @@ def calc_g_G(phi,gam,the,verbose=None):
 
 if __name__ == "__main__":
     calc_s_mat(2.0,15,50,True)
-    #calc_g_G(2,15,50,True)

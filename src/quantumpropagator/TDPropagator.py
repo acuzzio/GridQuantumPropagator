@@ -2,6 +2,8 @@
 
 import numpy as np
 import os
+import pickle
+import datetime
 from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_input_to_AU,
          warning, labTranformA, gaussian2, makeJustAnother2DgraphComplex,
          fromHartreetoCmMin1, makeJustAnother2DgraphMULTI,derivative3d,rk4Ene3d,derivative1dPhi,
@@ -465,7 +467,10 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFil
     name = os.path.join(nameRoot, 'Gaussian' + '{:04}'.format(counter))
     h5name = name + ".h5"
     writeH5file(h5name,[("WF", wf),("Time", [t*0.02418884,t])])
+    time1 = datetime.datetime.now()
     kin, pot, pul, absS = CEnergy(t,wf,inp)
+    time2 = datetime.datetime.now()
+    print(time2-time1)
 
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
@@ -693,8 +698,18 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
 
 if __name__ == "__main__":
     fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/input.yml'
-    fn2 = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/datainput.npy'
-    inputDict = bring_input_to_AU(loadInputYAML(fn1))
-    dataDict = np.load(fn2) # this is a numpy wrapper, for this we use [()]
-    propagate3D(dataDict[()], inputDict)
+    inputAU = bring_input_to_AU(loadInputYAML(fn1))
+    if 'dataFile' in inputAU:
+        name_data_file = inputAU['dataFile']
+        # LAUNCH THE PROPAGATION, BITCH 
+        if name_data_file[-3:] == 'npy':
+            data = np.load(name_data_file)
+            # [()] <- because np.load returns a numpy wrapper on the dictionary
+            dictionary_data = data[()]
+            propagate3D(dictionary_data, inputAU)
+        elif name_data_file[-3:] == 'kle':
+            with open(name_data_file, "rb") as input_file:
+                dictionary_data = pickle.load(input_file)
+            propagate3D(dictionary_data, inputAU)
+
 
