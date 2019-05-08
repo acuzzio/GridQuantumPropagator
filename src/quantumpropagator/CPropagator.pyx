@@ -1,6 +1,9 @@
 # distutils: extra_compile_args = -fopenmp
 # distutils: extra_link_args = -fopenmp
 
+import Cython.Compiler.Options
+Cython.Compiler.Options.annotate = True
+
 import numpy as np
 cimport numpy as np
 #import quantumpropagator.EMPulse as pp
@@ -15,7 +18,7 @@ cdef extern from "complex.h":
         double complex cexp(double complex)
 
 def version_Cpropagator():
-    return('0.0.0018')
+    return('0.0.0020')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -48,6 +51,78 @@ def pulZe(t, param_Pulse):
     else:
         result = Ed * (np.cos(omega*(t-t0)+phase)) * np.exp(-num/den)
     return result
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.nonecheck(False)
+def CextractMomentum3d(double complex [:,:,:,:] GRID, dict inp):
+    '''
+    Function that extract momentum from a wavefunction
+    GRID :: np.array[:,:,:,:] <- wavefunction[phis,gams,thes,states]
+    inp :: dictionary of various inputs
+    '''
+    cdef:
+        int s,p,g,t,phiL=inp['phiL'],gamL=inp['gamL'],theL=inp['theL'],nstates=inp['nstates']
+        int tuPlL,s_p
+        double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe']
+        double complex [:,:,:,:] momSp,momSg,momSt
+        double complex I = -1j
+        double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
+
+    momSp = np.empty_like(GRID)
+    momSg = np.empty_like(GRID)
+    momSt = np.empty_like(GRID)
+
+    tuPlL = nstates*phiL
+
+    #for s_p in prange(tuPlL, nogil=True, schedule='dynamic'):
+    for s_p in range(tuPlL):
+       s = s_p // phiL
+       p = s_p % phiL
+       for g in range(gamL):
+          for t in range(theL):
+              # phi
+              if p == 0:
+                  dG_dp_oth = (                                                      (2.0/3)*GRID[p+1,g,t,s] + (-1.0/12)*GRID[p+2,g,t,s]) / dphi
+              elif p == 1:
+                  dG_dp_oth = (                           (-2.0/3)*GRID[p-1,g,t,s] + (2.0/3)*GRID[p+1,g,t,s] + (-1.0/12)*GRID[p+2,g,t,s]) / dphi
+              elif p == phiL-2:
+                  dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,s] + (-2.0/3)*GRID[p-1,g,t,s] + (2.0/3)*GRID[p+1,g,t,s]                            ) / dphi
+              elif p == phiL-1:
+                  dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,s] + (-2.0/3)*GRID[p-1,g,t,s]                                                      ) / dphi
+              else:
+                  dG_dp_oth = ((1.0/12)*GRID[p-2,g,t,s] + (-2.0/3)*GRID[p-1,g,t,s] + (2.0/3)*GRID[p+1,g,t,s] + (-1.0/12)*GRID[p+2,g,t,s]) / dphi
+
+              # gamma
+              if g == 0:
+                  dG_dg_oth = (                                                      (2.0/3)*GRID[p,g+1,t,s] + (-1.0/12)*GRID[p,g+2,t,s]) / dgam
+              elif g == 1:
+                  dG_dg_oth = (                           (-2.0/3)*GRID[p,g-1,t,s] + (2.0/3)*GRID[p,g+1,t,s] + (-1.0/12)*GRID[p,g+2,t,s]) / dgam
+              elif g == gamL-2:
+                  dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,s] + (-2.0/3)*GRID[p,g-1,t,s] + (2.0/3)*GRID[p,g+1,t,s]                            ) / dgam
+              elif g == gamL-1:
+                  dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,s] + (-2.0/3)*GRID[p,g-1,t,s]                                                      ) / dgam
+              else:
+                  dG_dg_oth = ((1.0/12)*GRID[p,g-2,t,s] + (-2.0/3)*GRID[p,g-1,t,s] + (2.0/3)*GRID[p,g+1,t,s] + (-1.0/12)*GRID[p,g+2,t,s]) / dgam
+
+              # theta
+              if t == 0:
+                  dG_dt_oth = (                                                      (2.0/3)*GRID[p,g,t+1,s] + (-1.0/12)*GRID[p,g,t+2,s]) / dthe
+              elif t == 1:
+                  dG_dt_oth = (                           (-2.0/3)*GRID[p,g,t-1,s] + (2.0/3)*GRID[p,g,t+1,s] + (-1.0/12)*GRID[p,g,t+2,s]) / dthe
+              elif t == theL-2:
+                  dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,s] + (-2.0/3)*GRID[p,g,t-1,s] + (2.0/3)*GRID[p,g,t+1,s]                            ) / dthe
+              elif t == theL-1:
+                  dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,s] + (-2.0/3)*GRID[p,g,t-1,s]                                                      ) / dthe
+              else:
+                  dG_dt_oth = ((1.0/12)*GRID[p,g,t-2,s] + (-2.0/3)*GRID[p,g,t-1,s] + (2.0/3)*GRID[p,g,t+1,s] + (-1.0/12)*GRID[p,g,t+2,s]) / dthe
+
+              momSp[p,g,t,s] = I * dG_dp_oth
+              momSg[p,g,t,s] = I * dG_dg_oth
+              momSt[p,g,t,s] = I * dG_dt_oth
+
+    return(np.asarray(momSp),np.asarray(momSg),np.asarray(momSt))
 
 def CextractEnergy3dMu(t,GRID,inp):
     '''wrapper for 3d integrator in Kinetic-Potential mode'''
