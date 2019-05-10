@@ -1,0 +1,3 @@
+alias uno='python setup.py develop'
+alias due='cython -a src/quantumpropagator/CPropagator.pyx'
+alias tre='firefox src/quantumpropagator/CPropagator.html'

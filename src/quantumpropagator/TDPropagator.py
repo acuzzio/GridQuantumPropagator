@@ -695,8 +695,7 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
 
     return(wf)
 
-
-if __name__ == "__main__":
+def main():
     fn1 = '/home/alessio/Desktop/a-3dScanSashaSupport/n-Propagation/input.yml'
     inputAU = bring_input_to_AU(loadInputYAML(fn1))
     if 'dataFile' in inputAU:
@@ -713,3 +712,6 @@ if __name__ == "__main__":
             propagate3D(dictionary_data, inputAU)
 
 
+if __name__ == "__main__":
+    import cProfile
+    cProfile.run('main()', sort='time')
