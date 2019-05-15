@@ -14,12 +14,30 @@ import pickle
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def pickleLoad(fn):
+    '''
+    tedious to remember protocol flag and stuffs
+    fn :: FilePath
+    '''
+    return pickle.load(open(fn,'rb'))
+
+def pickleSave(fn,thing):
+    '''
+    tedious part 2
+    fn :: FilePath
+    thing :: Structure to save
+    '''
+    with open(fn, "wb" ) as pickle_file:
+        pickle.dump(thing, pickle_file, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 def find_numpy_index_minumum(array):
     '''
     I always forget this syntax. Given a numpy array, will give back the indexes of the minimum
     array :: numpy array
     '''
     return (np.unravel_index(array.argmin(), array.shape))
+
 
 def equilibriumIndex(fn,dataDict):
     '''
@@ -767,7 +785,7 @@ def transformTrajectoryIntoBlenderData(name,traj):
                     paletti.append((pos2,center,dueL))
     print('{} {}'.format(atomsN,frameN))
     blender_dict = {'spheres' : spheres, 'paletti' : paletti}
-    pickle.dump(blender_dict, open(name, "wb" ) )
+    pickleSave(name, blender_dict)
     print(paletti)
     print('There are {} atoms and {} paletti'.format(len(spheres),len(paletti)))
 
