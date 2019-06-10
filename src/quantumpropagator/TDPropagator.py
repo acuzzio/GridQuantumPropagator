@@ -655,13 +655,13 @@ def initialCondition3d(wf, dataDict, factor=None, displ=None, init_mom=None):
     if displPhi != 0 or displGam != 0 or displThe != 0:
         warning('Some displacements activated | Phi {} | Gam {} | The {}'.format(displPhi,displGam,displThe))
 
-    phi0 = phis[gsm_phi_ind + displPhi]
-    gam0 = gams[gsm_gam_ind + displGam]
-    the0 = thes[gsm_the_ind + displThe]
+    phi0 = phis[displPhi]
+    gam0 = gams[displGam]
+    the0 = thes[displThe]
 
     # initial moments?
-    init_mom = init_mom or (0,0,0)
-    init_momPhi,init_momGam,init_momThe = init_mom
+    init_mom = init_mom or (0, 0, 0)
+    init_momPhi, init_momGam, init_momThe = init_mom
     if init_momPhi != 0 or init_momGam != 0 or init_momThe != 0:
         warning('Some inititial moment is activated | Phi {} | Gam {} | The {}'.format(init_momPhi,init_momGam,init_momThe))
 
