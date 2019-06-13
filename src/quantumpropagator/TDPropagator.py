@@ -12,10 +12,6 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
          writeH5file, writeH5fileDict, heatMap2dWavefunction, abs2, fromHartoEv,
          makeJustAnother2DgraphComplexSINGLE, fromLabelsToFloats, derivative2dGamTheMu,
          graphic_Pulse,derivative3dMu,equilibriumIndex, readWholeH5toDict, err)
-from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
-                                           Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
-                                           Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
-                                           Cderivative_1D_The,Crk4Ene3d, version_Cpropagator, pulZe)
 
 def calculate_stuffs_on_WF(single_wf, inp, outputFile):
     '''
