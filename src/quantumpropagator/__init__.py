@@ -51,7 +51,4 @@ from .SinglePointPropagator import (single_point_propagation, printEvenergy)
 from .Densities import (give_me_swapd_oxiallyl, transform_numpy_into_format)
 from .KineticMadness import (calc_g_G, calc_s_mat)
 from .TDPropagator import propagate3D, restart_propagation, calculate_stuffs_on_WF
-from .CPropagator import (Crk4Ene3d, CextractEnergy3dMu, Cderivative3dMu, Cenergy_1D_Phi,
-                          Cderivative_1D_Phi,Cenergy_1D_Gam, Cderivative_1D_Gam,Cenergy_1D_The,
-                          Cderivative_1D_The, pulZe,version_Cpropagator, CextractMomentum3d)
 from .IpythonJupyter import *

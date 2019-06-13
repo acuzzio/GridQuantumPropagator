@@ -3,14 +3,8 @@ My setup !
 '''
 
 from setuptools import setup
-from Cython.Build import cythonize
 import numpy
 
-import Cython.Compiler.Options
-
-#Cython.Compiler.Options.get_directive_defaults()['profile'] = True
-#Cython.Compiler.Options.get_directive_defaults()['linetrace'] = True
-#Cython.Compiler.Options.get_directive_defaults()['binding'] = True
 
 setup(
     name='quantumpropagator',
@@ -39,8 +33,5 @@ setup(
      'Scripts/CreateOutputFilesFromWF.py',
      'Scripts/PostProcessing3dData.py'],
     install_requires=['h5py', 'numpy', 'scipy', 'pandas', 'matplotlib', 'pyyaml','cython'],
-    extras_require={'test': ['nose', 'coverage']},
-    ext_modules=cythonize('src/quantumpropagator/CPropagator.pyx'),
-    #ext_modules=cythonize('src/quantumpropagator/CPropagator.pyx', compiler_directives={'linetrace': True}),
     include_dirs=[numpy.get_include()]
 )
