@@ -135,7 +135,7 @@ def Cderivative3dMu(t,GRID,inp):
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.nonecheck(False)
-cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,::1] GRID, dict inp, int selector):
+cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, int selector):
     '''
     derivative done for a 3d Grid on all the coordinates
     t :: Double -> time
@@ -148,13 +148,13 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,::1] GRID, dict inp,
         int d,carte,tuPlL,s_p
         int [:,:] tuPl
         double dphi=inp['dphi'],dgam=inp['dgam'],dthe=inp['dthe'],V,Ab
-        double [:,:,:,::1] Vm = inp['potCube']
-        double [:,:,:,::1] absorb = inp['absorb']
-        double [:,:,:,:,::1] Km = inp['kinCube']
-        double [:,:,:,:,:,::1] Dm = inp['dipCube']
-        double [:,:,:,:,:,::1] Nm = inp['nacCube']
+        double [:,:,:,:] Vm = inp['potCube']
+        double [:,:,:,:] absorb = inp['absorb']
+        double [:,:,:,:,:] Km = inp['kinCube']
+        double [:,:,:,:,:,:] Dm = inp['dipCube']
+        double [:,:,:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
-        double complex [:,:,:,::1] new, kinS, potS, pulS, absS
+        double complex [:,:,:,:] new, kinS, potS, pulS, absS
         double complex I = -1j
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
         double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
