@@ -362,6 +362,12 @@ def propagate3D(dataDict, inputDict):
     outputFileA = os.path.join(nameRoot, 'Output_Abs')
     print('\ntail -f {}\n'.format(outputFileP))
 
+    if inputDict['readme']:
+        outputFilereadme = os.path.join(nameRoot, 'README')
+        with open(outputFilereadme, "w") as oofRR:
+            oofRR.write(inputDict['readme'])
+            print('file readme written')
+
     # calculating initial total/potential/kinetic
     kin, pot, pul, absS = CEnergy(t,wf,inp)
     kinetic = np.vdot(wf,kin)
