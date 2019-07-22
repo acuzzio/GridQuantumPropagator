@@ -31,9 +31,9 @@ def main():
         data_frame = pd.read_csv(file_name, header=None, delim_whitespace=True,
                                  names=['fs', 'abs_tot', 'abs_0', 'abs_1', 'abs_2',
                                         'abs_3', 'abs_4', 'abs_5', 'abs_6', 'abs_7'])
-        data_frame2 = pd.read_csv(file_name2, header=None, delim_whitespace=True,
-                                  names=['FC', 'Reac', 'Prod'])
-        len_df_2 = len(data_frame2.index)
+        #data_frame2 = pd.read_csv(file_name2, header=None, delim_whitespace=True,
+        #                          names=['FC', 'Reac', 'Prod'])
+        #len_df_2 = len(data_frame2.index)
         print('\nLast Point is {} AU\n'.format(data_frame['fs'].iloc[-1]))
         print('\nColumn sum of absorbing potential is:\n')
         delta_t = data_frame['fs'][1]

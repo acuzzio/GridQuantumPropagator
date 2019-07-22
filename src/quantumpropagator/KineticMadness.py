@@ -1,14 +1,17 @@
-''' This module precompute along a 3x3 grid the Jacobian to use in the podolsky form of the Kinetic energy operator'''
+'''
+This module precompute along a 3x3 grid the Jacobian to use in the podolsky form of the Kinetic
+energy operator
+'''
 
 import numpy as np
-from numpy import (dot,cos,sin,sqrt,array,deg2rad,stack)
+from numpy import (dot, cos, sin, sqrt, array, stack)
 from quantumpropagator import good
 #from numpy import (dot,cos,sin,sqrt,sum,array,stack,deg2rad)
 #from numpy.linalg import norm
 
 
 
-def calc_s_mat(phi,gam,the,verbose=None):
+def calc_s_mat(phi, gam, the, verbose=None):
     '''
     phi :: Double - values of phi
     gam :: Double - values of gam in RADIANS
