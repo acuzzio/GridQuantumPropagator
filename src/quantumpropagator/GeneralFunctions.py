@@ -14,6 +14,18 @@ import pickle
 #import pdb
 #pdb.set_trace() #to debug h=help
 
+def create_list_of_colors(list_itself, cmap=None):
+    '''
+    This function is to create colors for graphs which are different when you
+    have a variable number of elements
+    list_itself :: List <- the list that you want to color
+    cmap :: String <- the colors you want
+    '''
+    cmap = cmap or 'hsv'
+    viridis = cm.get_cmap(cmap,12) # I create the CMAP object
+    return viridis(np.linspace(0,1, len(list_itself)+1))
+
+
 def pickleLoad(fn):
     '''
     tedious to remember protocol flag and stuffs
