@@ -55,7 +55,7 @@ def pulZe2(t, param_Pulse):
     it works both with an array of time and a single time value
     This one is the new kind of pulse, which is consistent in energy space
     '''
-    Ed,omega,sigma,phase,t0 = param_Pulse
+    Ed,omega,sigma,phi,t0 = param_Pulse
     num = (t-t0)**2
     den = 2*(sigma**2)
 
