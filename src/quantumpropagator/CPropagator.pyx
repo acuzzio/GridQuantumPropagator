@@ -15,7 +15,7 @@ cdef extern from "complex.h":
         double complex cexp(double complex)
 
 def version_Cpropagator():
-    return('0.0.0021')
+    return('0.0.0022')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -47,6 +47,24 @@ def pulZe(t, param_Pulse):
             result = np.zeros_like(t)
     else:
         result = Ed * (np.cos(omega*(t-t0)+phase)) * np.exp(-num/den)
+    return result
+
+def pulZe2(t, param_Pulse):
+    '''
+    Pulse function
+    it works both with an array of time and a single time value
+    This one is the new kind of pulse, which is consistent in energy space
+    '''
+    Ed,omega,sigma,phase,t0 = param_Pulse
+    num = (t-t0)**2
+    den = 2*(sigma**2)
+
+    if (den == 0):
+        result = 0.0
+    else:
+        num2 = np.sin(omega*(t-t0) + phi) * (t-t0)
+        den2 = omega * sigma**2
+        result = Ed *  np.exp(-num/den)* (np.cos(omega*(t-t0) + phi) - num2/den2 )
     return result
 
 @cython.boundscheck(False)
@@ -174,9 +192,9 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
 
     pulseV = np.empty((3))
 
-    pulseV[0] = pulZe(time,inp['pulseX'])
-    pulseV[1] = pulZe(time,inp['pulseY'])
-    pulseV[2] = pulZe(time,inp['pulseZ'])
+    pulseV[0] = pulZe2(time,inp['pulseX'])
+    pulseV[1] = pulZe2(time,inp['pulseY'])
+    pulseV[2] = pulZe2(time,inp['pulseZ'])
 
     #for s in range(nstates):
 
