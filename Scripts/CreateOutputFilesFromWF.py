@@ -7,7 +7,7 @@ import pandas as pd
 import pickle
 
 from argparse import ArgumentParser
-from quantumpropagator import calculate_stuffs_on_WF, readWholeH5toDict, err
+from quantumpropagator import calculate_stuffs_on_WF, readWholeH5toDict, err, calculate_dipole_fast_wrapper
 import quantumpropagator as qp
 
 def check_output_of_Grid(fn):
@@ -104,10 +104,43 @@ def read_single_arguments():
                         dest="t",
                         type=int,
                         help="This enables time derivative mode. It requires an integer to decide how many frames need to be skipped")
-
+    parser.add_argument("-m", "--dipole",
+                        dest="m",
+                        action='store_true',
+                        help="this flag calculates dipoles on the wavefunction")
     args = parser.parse_args()
 
     return args
+
+
+def calculate_dipole(wf, all_h5_dict):
+    '''
+    This function will calculate the dipole in x,y,z components given a wavepacket and an allH5 file
+    fn :: FilePath <- the path of the wavefunction
+    all_h5_dict :: Dictionary <- the dictionary created by the simulation.
+    '''
+    pL, gL, tL, nstates = wf.shape
+
+    dipoles = all_h5_dict['dipCube']
+    xd = yd = zd = 0.0
+    for p in range(15,pL-15):
+        for g in range(15,gL-15):
+            for t in range(30,tL-30):
+                for i in range(nstates):
+                    for j in range(i+1):
+                        if j != i:
+                            # out of diagonal
+                            xd += 2 * np.real( np.conj(wf[p,g,t,i]) * wf[p,g,t,j] * dipoles[p,g,t,0,i,j])
+                            yd += 2 * np.real( np.conj(wf[p,g,t,i]) * wf[p,g,t,j] * dipoles[p,g,t,1,i,j])
+                            zd += 2 * np.real( np.conj(wf[p,g,t,i]) * wf[p,g,t,j] * dipoles[p,g,t,2,i,j])
+                        else:
+                            # diagonal
+                            xd += qp.abs2(wf[p,g,t,i]) * dipoles[p,g,t,0,i,i]
+                            yd += qp.abs2(wf[p,g,t,i]) * dipoles[p,g,t,1,i,i]
+                            zd += qp.abs2(wf[p,g,t,i]) * dipoles[p,g,t,2,i,i]
+
+    return(xd,yd,zd)
+
 
 def main():
     '''
@@ -123,6 +156,8 @@ def main():
     output_of_this = os.path.join(os.path.abspath(a.f), 'Output_Abs')
     output_regions = os.path.join(os.path.abspath(a.f), 'Output_Regions.csv')
     output_regionsA = os.path.join(os.path.abspath(a.f), 'Output_Regions')
+    output_dipole = os.path.join(os.path.abspath(a.f), 'Output_Dipole')
+
 
     if a.t != None:
         # derivative mode
@@ -133,6 +168,35 @@ def main():
         # we need to enter Difference mode
         print('I will calculate differences with {}'.format(a.d))
         difference_mode(a.d)
+
+    elif a.m:
+        print('We are in dipole mode')
+        global_expression = folder_Gau + '*.h5'
+        list_of_wavefunctions = sorted(glob.glob(global_expression))
+
+        start_from = 0
+        if os.path.isfile(output_dipole): # I make sure that output exist and that I have same amount of lines...
+            count_output_lines = len(open(output_of_Grid).readlines())
+            count_regions_lines = len(open(output_dipole).readlines())
+            count_h5 = len(list_of_wavefunctions)
+            if count_regions_lines > count_h5:
+                err('something strange {} -> {}'.format(count_h5,count_regions_lines))
+            start_from = count_regions_lines
+
+        all_h5_dict = readWholeH5toDict(all_h5)
+
+        print('This analysis will start from {}'.format(start_from))
+
+        for fn in list_of_wavefunctions[start_from:]:
+            wf = qp.retrieve_hdf5_data(fn,'WF')
+            alltime = qp.retrieve_hdf5_data(fn,'Time')[0]
+            #dipx, dipy, dipz = calculate_dipole(wf, all_h5_dict)
+            dipx, dipy, dipz = calculate_dipole_fast_wrapper(wf, all_h5_dict)
+            out_string = '{} {} {} {}'.format(alltime, dipx, dipy, dipz)
+            with open(output_dipole, "a") as out_reg:
+                out_reg.write(out_string + '\n')
+
+
 
     elif a.r != None:
         # If we are in REGIONS mode

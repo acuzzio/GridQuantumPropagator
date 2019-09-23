@@ -15,7 +15,7 @@ cdef extern from "complex.h":
         double complex cexp(double complex)
 
 def version_Cpropagator():
-    return('0.0.0023')
+    return('0.0.0024')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -66,6 +66,45 @@ def pulZe2(t, param_Pulse):
         den2 = omega * sigma**2
         result = Ed *  np.exp(-num/den)* (np.cos(omega*(t-t0) + phi) - num2/den2 )
     return result
+
+def calculate_dipole_fast_wrapper(wf, all_h5_dict):
+    '''
+    quick dipole calculation for WF
+    '''
+    pL, gL, tL, nstates = wf.shape
+    dipoles = all_h5_dict['dipCube']
+    return calculate_dipole_fast(wf, dipoles, pL, gL, tL, nstates)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.nonecheck(False)
+cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dipoles, int pL, int gL, int tL, int nstates):
+    '''
+    dipole fast calculation
+    '''
+    cdef:
+        int p,g,t,i,j
+        double xd,yd,zd,abs2_grid
+
+    xd = yd = zd = 0.0
+    for p in range(15,pL-15):
+        for g in range(15,gL-15):
+            for t in range(30,tL-30):
+                for i in range(nstates):
+                    for j in range(i+1):
+                        if j != i:
+                            xd = xd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,0,i,j]).real
+                            yd = yd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,1,i,j]).real
+                            zd = zd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,2,i,j]).real
+                        else:
+                            abs2_grid = wf[p,g,t,i].real**2 + wf[p,g,t,i].imag**2
+                            xd = xd  + (abs2_grid * dipoles[p,g,t,0,i,i])
+                            yd = yd  + (abs2_grid * dipoles[p,g,t,1,i,i])
+                            zd = zd  + (abs2_grid * dipoles[p,g,t,2,i,i])
+    return(xd,yd,zd)
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

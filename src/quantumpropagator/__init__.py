@@ -55,5 +55,6 @@ from .TDPropagator import propagate3D, restart_propagation, calculate_stuffs_on_
 from .IpythonJupyter import *
 from .CPropagator import (Crk4Ene3d, CextractEnergy3dMu, Cderivative3dMu, Cenergy_1D_Phi,
                           Cderivative_1D_Phi,Cenergy_1D_Gam, Cderivative_1D_Gam,Cenergy_1D_The,
-                          Cderivative_1D_The, pulZe,version_Cpropagator, CextractMomentum3d)
+                          Cderivative_1D_The, pulZe,version_Cpropagator, CextractMomentum3d,
+                          calculate_dipole_fast_wrapper)
 
