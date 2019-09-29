@@ -15,7 +15,7 @@ cdef extern from "complex.h":
         double complex cexp(double complex)
 
 def version_Cpropagator():
-    return('0.0.0024')
+    return('0.0.0025 the one with all dipoles')
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -85,8 +85,17 @@ cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dip
     dipole fast calculation
     '''
     cdef:
-        int p,g,t,i,j
+        int p,g,t,i,j,index
         double xd,yd,zd,abs2_grid
+        double [:] out_of_diagonal_x, out_of_diagonal_y, out_of_diagonal_z
+        double [:] diagonal_x, diagonal_y, diagonal_z
+
+    out_of_diagonal_x = np.zeros(((nstates*nstates-nstates)/2))
+    out_of_diagonal_y = np.zeros(((nstates*nstates-nstates)/2))
+    out_of_diagonal_z = np.zeros(((nstates*nstates-nstates)/2))
+    diagonal_x = np.zeros(nstates)
+    diagonal_y = np.zeros(nstates)
+    diagonal_z = np.zeros(nstates)
 
     xd = yd = zd = 0.0
     for p in range(15,pL-15):
@@ -95,15 +104,22 @@ cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dip
                 for i in range(nstates):
                     for j in range(i+1):
                         if j != i:
+                            index = (nstates*(nstates-1)/2) - (nstates-i)*((nstates-i)-1)/2 + j - i - 1
                             xd = xd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,0,i,j]).real
                             yd = yd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,1,i,j]).real
                             zd = zd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,2,i,j]).real
+                            out_of_diagonal_x[index] = out_of_diagonal_x[index] + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,0,i,j]).real
+                            out_of_diagonal_y[index] = out_of_diagonal_y[index] + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,1,i,j]).real
+                            out_of_diagonal_z[index] = out_of_diagonal_z[index] + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,2,i,j]).real
                         else:
                             abs2_grid = wf[p,g,t,i].real**2 + wf[p,g,t,i].imag**2
                             xd = xd  + (abs2_grid * dipoles[p,g,t,0,i,i])
                             yd = yd  + (abs2_grid * dipoles[p,g,t,1,i,i])
                             zd = zd  + (abs2_grid * dipoles[p,g,t,2,i,i])
-    return(xd,yd,zd)
+                            diagonal_x[i] = diagonal_x[i] + (abs2_grid * dipoles[p,g,t,0,i,i])
+                            diagonal_y[i] = diagonal_y[i] + (abs2_grid * dipoles[p,g,t,1,i,i])
+                            diagonal_z[i] = diagonal_z[i] + (abs2_grid * dipoles[p,g,t,2,i,i])
+    return(xd,yd,zd,diagonal_x,diagonal_y,diagonal_z,out_of_diagonal_x,out_of_diagonal_y,out_of_diagonal_z)
 
 
 @cython.boundscheck(False)

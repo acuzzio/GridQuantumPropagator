@@ -191,8 +191,16 @@ def main():
             wf = qp.retrieve_hdf5_data(fn,'WF')
             alltime = qp.retrieve_hdf5_data(fn,'Time')[0]
             #dipx, dipy, dipz = calculate_dipole(wf, all_h5_dict)
-            dipx, dipy, dipz = calculate_dipole_fast_wrapper(wf, all_h5_dict)
-            out_string = '{} {} {} {}'.format(alltime, dipx, dipy, dipz)
+            dipx, dipy, dipz, diagx, diagy, diagz, oodiag_x, oodiag_y, oodiag_z = calculate_dipole_fast_wrapper(wf, all_h5_dict)
+            perm_x = ' '.join(['{}'.format(x) for x in diagx])
+            perm_y = ' '.join(['{}'.format(y) for y in diagy])
+            perm_z = ' '.join(['{}'.format(z) for z in diagz])
+            trans_x = ' '.join(['{}'.format(x) for x in oodiag_x])
+            trans_y = ' '.join(['{}'.format(y) for y in oodiag_y])
+            trans_z = ' '.join(['{}'.format(z) for z in oodiag_z])
+            out_string = '{} {} {} {} {} {} {} {} {} {}'.format(alltime, dipx, dipy, dipz, perm_x, perm_y, perm_z,
+                                                                trans_x, trans_y, trans_z)
+            print(out_string)
             with open(output_dipole, "a") as out_reg:
                 out_reg.write(out_string + '\n')
 
