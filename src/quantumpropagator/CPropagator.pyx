@@ -90,21 +90,21 @@ cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dip
         double [:] out_of_diagonal_x, out_of_diagonal_y, out_of_diagonal_z
         double [:] diagonal_x, diagonal_y, diagonal_z
 
-    out_of_diagonal_x = np.zeros(((nstates*nstates-nstates)/2))
-    out_of_diagonal_y = np.zeros(((nstates*nstates-nstates)/2))
-    out_of_diagonal_z = np.zeros(((nstates*nstates-nstates)/2))
     diagonal_x = np.zeros(nstates)
     diagonal_y = np.zeros(nstates)
     diagonal_z = np.zeros(nstates)
+    out_of_diagonal_x = np.zeros(((nstates*nstates-nstates)/2))
+    out_of_diagonal_y = np.zeros(((nstates*nstates-nstates)/2))
+    out_of_diagonal_z = np.zeros(((nstates*nstates-nstates)/2))
 
     xd = yd = zd = 0.0
     for p in range(15,pL-15):
         for g in range(15,gL-15):
             for t in range(30,tL-30):
                 for i in range(nstates):
-                    for j in range(i+1):
+                    for j in range(i,nstates):
+                        index = (nstates*(nstates-1)/2) - (nstates-i)*((nstates-i)-1)/2 + j - i - 1
                         if j != i:
-                            index = (nstates*(nstates-1)/2) - (nstates-i)*((nstates-i)-1)/2 + j - i - 1
                             xd = xd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,0,i,j]).real
                             yd = yd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,1,i,j]).real
                             zd = zd  + 2 * (wf[p,g,t,i].conjugate() * wf[p,g,t,j] * dipoles[p,g,t,2,i,j]).real

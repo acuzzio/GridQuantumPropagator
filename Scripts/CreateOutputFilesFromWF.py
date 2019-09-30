@@ -200,7 +200,7 @@ def main():
             trans_z = ' '.join(['{}'.format(z) for z in oodiag_z])
             out_string = '{} {} {} {} {} {} {} {} {} {}'.format(alltime, dipx, dipy, dipz, perm_x, perm_y, perm_z,
                                                                 trans_x, trans_y, trans_z)
-            print(out_string)
+            # print(output_dipole)
             with open(output_dipole, "a") as out_reg:
                 out_reg.write(out_string + '\n')
 
