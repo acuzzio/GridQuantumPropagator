@@ -96,6 +96,10 @@ def read_single_arguments():
                         dest="r",
                         type=str,
                         help="This enables Regions mode and you should indicate regions file")
+    parser.add_argument("-o", "--output_file",
+                        dest="o",
+                        type=str,
+                        help="This to get new file path")
     parser.add_argument("-d", "--difference",
                         dest="d",
                         type=str,
@@ -156,7 +160,11 @@ def main():
     output_of_this = os.path.join(os.path.abspath(a.f), 'Output_Abs')
     output_regions = os.path.join(os.path.abspath(a.f), 'Output_Regions.csv')
     output_regionsA = os.path.join(os.path.abspath(a.f), 'Output_Regions')
-    output_dipole = os.path.join(os.path.abspath(a.f), 'Output_Dipole')
+
+    if a.o != None:
+        output_dipole = a.o
+    else:
+        output_dipole = os.path.join(os.path.abspath(a.f), 'Output_Dipole')
 
 
     if a.t != None:
