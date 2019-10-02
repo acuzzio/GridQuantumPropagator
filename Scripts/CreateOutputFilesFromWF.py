@@ -7,7 +7,7 @@ import pandas as pd
 import pickle
 
 from argparse import ArgumentParser
-from quantumpropagator import calculate_stuffs_on_WF, readWholeH5toDict, err, calculate_dipole_fast_wrapper
+from quantumpropagator import calculate_stuffs_on_WF, readWholeH5toDict, err, calculate_dipole_fast_wrapper, warning
 import quantumpropagator as qp
 
 def check_output_of_Grid(fn):
@@ -117,7 +117,7 @@ def read_single_arguments():
     return args
 
 
-def calculate_dipole(wf, all_h5_dict):
+def calculate_dipole_slow(wf, all_h5_dict):
     '''
     This function will calculate the dipole in x,y,z components given a wavepacket and an allH5 file
     fn :: FilePath <- the path of the wavefunction
@@ -163,6 +163,11 @@ def main():
 
     if a.o != None:
         output_dipole = a.o
+        center_subcube = (22,22,110)
+        extent_subcube = (7,7,20)
+        default_tuple_for_cube = (22-7,22+7,22-7,22+7,110-20,110+20)
+        # this warning is with respect of NEXT '''if a.o != None:'''
+        warning('Watch out, you are using an hardcoded dipole cut {} !!'.format(default_tuple_for_cube))
     else:
         output_dipole = os.path.join(os.path.abspath(a.f), 'Output_Dipole')
 
@@ -199,7 +204,10 @@ def main():
             wf = qp.retrieve_hdf5_data(fn,'WF')
             alltime = qp.retrieve_hdf5_data(fn,'Time')[0]
             #dipx, dipy, dipz = calculate_dipole(wf, all_h5_dict)
-            dipx, dipy, dipz, diagx, diagy, diagz, oodiag_x, oodiag_y, oodiag_z = calculate_dipole_fast_wrapper(wf, all_h5_dict)
+            if a.o != None:
+                dipx, dipy, dipz, diagx, diagy, diagz, oodiag_x, oodiag_y, oodiag_z = calculate_dipole_fast_wrapper(wf, all_h5_dict, default_tuple_for_cube)
+            else:
+                dipx, dipy, dipz, diagx, diagy, diagz, oodiag_x, oodiag_y, oodiag_z = calculate_dipole_fast_wrapper(wf, all_h5_dict)
             perm_x = ' '.join(['{}'.format(x) for x in diagx])
             perm_y = ' '.join(['{}'.format(y) for y in diagy])
             perm_z = ' '.join(['{}'.format(z) for z in diagz])

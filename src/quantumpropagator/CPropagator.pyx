@@ -15,7 +15,47 @@ cdef extern from "complex.h":
         double complex cexp(double complex)
 
 def version_Cpropagator():
-    return('0.0.0025 the one with all dipoles')
+    return('0.0.0026 the one with FT')
+
+
+def fft_artisanal(time,signal):
+    '''
+    This performs fourier transform of the signal at time.
+    time :: np.array(double) <- AU
+    signal :: np.array(double) <- AU
+
+    it returns:
+    fft_array :: np.array(complex) <- AU
+    np.array(freq) :: np.array(double) <- AU
+    '''
+    dt = time[1] - time[0]
+    nstep = time.size
+    all_time = nstep * dt
+    sx = -np.pi/dt
+    dx = np.pi/dt
+    dw = (2 * np.pi)/all_time
+    freq = np.arange(sx,dx,dw)
+    fft_array, freq = fft_c(time, signal, freq, dt, nstep)
+    return (fft_array, np.array(freq))
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.nonecheck(False)
+cdef fft_c(double [:] time, double [:] signal, double [:] freq, int dt, int nstep):
+    # this is a simple FT using complex exp function cexp
+    cdef:
+        int k,j
+        double complex I = -1j
+
+    fft_array = np.zeros(nstep, dtype=complex)
+
+    for k in range(nstep):
+        for j in range(nstep):
+
+            fft_array[k] = fft_array[k] + cexp(I * freq[k] * time[j]) * signal[j]
+
+    return(fft_array, freq)
 
 def Crk4Ene3d(f, t, y, inp):
     '''
@@ -67,20 +107,33 @@ def pulZe2(t, param_Pulse):
         result = Ed *  np.exp(-num/den)* (np.cos(omega*(t-t0) + phi) - num2/den2 )
     return result
 
-def calculate_dipole_fast_wrapper(wf, all_h5_dict):
+def calculate_dipole_fast_wrapper(wf, all_h5_dict, default_tuple_for_cube=None):
     '''
     quick dipole calculation for WF
     '''
     pL, gL, tL, nstates = wf.shape
+
+    default_tuple_for_cube = default_tuple_for_cube or None
+
+    if default_tuple_for_cube == None:
+        pmin = 15
+        pmax = pL-15
+        gmin = 15
+        gmax = gL-15
+        tmin = 30
+        tmax = tL-30
+    else:
+        pmin,pmax,gmin,gmax,tmin,tmax = default_tuple_for_cube
+
     dipoles = all_h5_dict['dipCube']
-    return calculate_dipole_fast(wf, dipoles, pL, gL, tL, nstates)
+    return calculate_dipole_fast(wf, dipoles, nstates, pmin, pmax, gmin, gmax, tmin, tmax)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.nonecheck(False)
-cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dipoles, int pL, int gL, int tL, int nstates):
+cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dipoles, int nstates, int pmin, int pmax, int gmin, int gmax, int tmin, int tmax):
     '''
     dipole fast calculation
     '''
@@ -98,9 +151,9 @@ cdef calculate_dipole_fast(double complex [:,:,:,:] wf, double [:,:,:,:,:,:] dip
     out_of_diagonal_z = np.zeros(((nstates*nstates-nstates)/2))
 
     xd = yd = zd = 0.0
-    for p in range(15,pL-15):
-        for g in range(15,gL-15):
-            for t in range(30,tL-30):
+    for p in range(pmin, pmax):
+        for g in range(gmin, gmax):
+            for t in range(tmin, tmax):
                 for i in range(nstates):
                     for j in range(i,nstates):
                         index = (nstates*(nstates-1)/2) - (nstates-i)*((nstates-i)-1)/2 + j - i - 1
