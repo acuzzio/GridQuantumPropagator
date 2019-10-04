@@ -360,7 +360,7 @@ def propagate3D(dataDict, inputDict):
     t = 0.0
     counter  = 0
     fulltime = inp['fullTime']
-    fulltimeSteps = int(fulltime/dt)
+    fulltimeSteps = int(fulltime/abs(dt))
     deltasGraph = inputDict['deltasGraph']
     print('I will do {} steps.\n'.format(fulltimeSteps))
     outputFile = os.path.join(nameRoot, 'output')
