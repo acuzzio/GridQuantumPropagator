@@ -124,6 +124,7 @@ def propagate3D(dataDict, inputDict):
     if 'initial_state' in inputDict:
         initial_state = inputDict['initial_state']
         warning('Initial gaussian wavepacket in state {}'.format(initial_state))
+
     else:
         initial_state = 0
 
@@ -351,6 +352,11 @@ def propagate3D(dataDict, inputDict):
 
     # INITIAL DYNAMICS VALUES
     dt = inp['dt']
+
+    if 'reverse_time' in inputDict:
+        warning('Time is reversed !!')
+        dt = -dt
+
     t = 0.0
     counter  = 0
     fulltime = inp['fullTime']
