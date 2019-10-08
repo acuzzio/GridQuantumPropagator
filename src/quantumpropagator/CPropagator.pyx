@@ -250,18 +250,23 @@ def CextractMomentum3d(double complex [:,:,:,:] GRID, dict inp):
 def CextractEnergy3dMu(t,GRID,inp):
     '''wrapper for 3d integrator in Kinetic-Potential mode'''
     #print('ENERGY -> t: {} , wf inside: {}'.format(t,GRID.shape))
-    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,0))
+    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,0,1))
 
 def Cderivative3dMu(t,GRID,inp):
     '''wrapper for 3d integrator'''
     #print('PROPAG -> t: {} , wf inside: {}'.format(t,GRID.shape))
-    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,1))
+    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,1,1))
+
+def Cderivative3dMu_reverse_time(t,GRID,inp):
+    '''wrapper for 3d integrator time reversed'''
+    #print('PROPAG -> t: {} , wf inside: {}'.format(t,GRID.shape))
+    return np.asarray(Cderivative3dMu_cyt(t,GRID,inp,1,-1))
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.nonecheck(False)
-cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, int selector):
+cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, int selector, int reverse_or_not):
     '''
     derivative done for a 3d Grid on all the coordinates
     t :: Double -> time
@@ -281,7 +286,7 @@ cdef Cderivative3dMu_cyt(double time, double complex [:,:,:,:] GRID, dict inp, i
         double [:,:,:,:,:,:] Nm = inp['nacCube']
         double [:] pulseV
         double complex [:,:,:,:] new, kinS, potS, pulS, absS
-        double complex I = -1j
+        double complex I = -1j * reverse_or_not
         double complex dG_dp, d2G_dp2, dG_dg, d2G_dg2, dG_dt, d2G_dt2, G
         double complex dG_dp_oth, dG_dg_oth, dG_dt_oth
         double complex d2G_dcross_numerator_p,d2G_dcross_numerator_g,d2G_dcross_numerator_t

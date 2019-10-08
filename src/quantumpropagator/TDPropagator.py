@@ -15,7 +15,8 @@ from quantumpropagator import (printDict, printDictKeys, loadInputYAML, bring_in
 from quantumpropagator.CPropagator import (CextractEnergy3dMu, Cderivative3dMu, Cenergy_2d_GamThe,
                                            Cderivative_2d_GamThe,Cenergy_1D_Phi, Cderivative_1D_Phi,
                                            Cenergy_1D_Gam, Cderivative_1D_Gam, Cenergy_1D_The,
-                                           Cderivative_1D_The,Crk4Ene3d, version_Cpropagator, pulZe)
+                                           Cderivative_1D_The,Crk4Ene3d, version_Cpropagator, pulZe,
+                                           Cderivative3dMu_reverse_time)
 
 def calculate_stuffs_on_WF(single_wf, inp, outputFile):
     '''
@@ -335,13 +336,16 @@ def propagate3D(dataDict, inputDict):
     else:
         err('I do not recognize the kind')
 
+    initial_time_simulation = 0.0
     # take a wf from file (and not from initial condition)
     if 'initialFile' in inputDict:
         warning('we are taking initial wf from file')
         wffn = inputDict['initialFile']
         print('File -> {}'.format(wffn))
         wf_not_norm = retrieve_hdf5_data(wffn,'WF')
-        wf = wf_not_norm/np.linalg.norm(wf_not_norm)
+        initial_time_simulation = retrieve_hdf5_data(wffn,'Time')[1] # in hartree
+        #wf = wf_not_norm/np.linalg.norm(wf_not_norm)
+        wf = wf_not_norm
 
     #############################
     # PROPAGATOR SELECTION HERE #
@@ -356,8 +360,9 @@ def propagate3D(dataDict, inputDict):
     if 'reverse_time' in inputDict:
         warning('Time is reversed !!')
         dt = -dt
+        Cpropagator = Cderivative3dMu_reverse_time
 
-    t = 0.0
+    t = initial_time_simulation
     counter  = 0
     fulltime = inp['fullTime']
     fulltimeSteps = int(fulltime/abs(dt))
@@ -482,7 +487,7 @@ def doAsyncStuffs(wf,t,ii,inp,inputDict,counter,outputFile,outputFileP,outputFil
     time1 = datetime.datetime.now()
     kin, pot, pul, absS = CEnergy(t,wf,inp)
     time2 = datetime.datetime.now()
-    print(time2-time1)
+    #print(time2-time1)
 
     kinetic = np.vdot(wf,kin)
     potential = np.vdot(wf,pot)
