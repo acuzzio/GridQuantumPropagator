@@ -268,11 +268,11 @@ def main():
 
     result2 = result.rename(index=str, columns=rename_dict)
 
-
     colors = ['b', 'g', 'r', 'm', 'c', 'y', 'mediumpurple', 'k']
 
-    result2.plot(title = 'Population and Pulse', ax = ax1,  x=['fs'], y=popul, linewidth=0.8, color = colors)
-    result2.plot(title = 'Population and Pulse', ax = ax2,  x=['fs'], y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False, ylim=(-0.04,0.04));
+    result2.plot(title = 'Population and Pulse', ax = ax1,  x='fs', y=popul, linewidth=0.8, color = colors)
+    #result2.plot(title = 'Population and Pulse', ax = ax2,  x='fs', y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False, ylim=(-0.04,0.04));
+    result2.plot(title = 'Population and Pulse', ax = ax2,  x='fs', y=['Xpulse','Ypulse','Zpulse'], linewidth=0.5,ls='--', legend=False);
 
     popul_figure = fig_to_html(fig)
 
@@ -317,7 +317,7 @@ def main():
             ax_regions = fig_regions.add_subplot(111)
             dataf_regions = pd.DataFrame(regions_vector, columns=labels_region)
             dataf_regions['fs'] = fs_vector
-            dataf_regions.plot(title = 'S0 in different regions', ax=ax_regions, x=['fs']);
+            dataf_regions.plot(title = 'S0 in different regions', ax=ax_regions, x='fs');
             regions_info = fig_to_html(fig_regions)
         else:
             regions_info = '<font color="red"> WARNING</font> wavefunction files not found, impossible to extract regions info.'
@@ -338,7 +338,7 @@ def main():
     ax1 = fig3.add_subplot(111)
     ax1.set_ylabel('Ev')
     data['Kinetic_Moved'] = data['Kinetic'] + data['Potential'][0]
-    data.plot(title = 'Comparison Potential Total Kinetic', ax=ax1, x=['fs'] ,y=['Kinetic_Moved','Potential','Total'], figsize=(15,5))
+    data.plot(title = 'Comparison Potential Total Kinetic', ax=ax1, x='fs' ,y=['Kinetic_Moved','Potential','Total'], figsize=(15,5))
 
     kin_tot_figure = fig_to_html(fig3)
 
