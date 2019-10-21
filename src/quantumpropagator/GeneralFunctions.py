@@ -9,10 +9,25 @@ import yaml
 import sys
 import math
 import pickle
+import glob
+
+from .h5Reader import retrieve_hdf5_data
 
 #Debug time
 #import pdb
 #pdb.set_trace() #to debug h=help
+
+def check_time_stamps_in_wf_folder():
+    '''
+    This function is used to check the times into a folder of wf.
+    Mainly to know the time of those frames.
+    to be launched from inside the folder.
+    '''
+    list_files = sorted(glob.glob('Gau*.h5'))
+    for single_file in list_files:
+        times = retrieve_hdf5_data(single_file,'Time')
+        #print('{:7.3f} fs / {8.3f} AU : {}'.format(times[0], times[1], single_file))
+        print('{:7.3f} fs : {}'.format(times[0], single_file))
 
 def create_list_of_colors(list_itself, cmap=None):
     '''
